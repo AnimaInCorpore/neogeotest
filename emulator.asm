@@ -261,6 +261,16 @@ write_data:
 
 	dbf		d7,1b
 
+	lea		write_display_address(pc),a0
+	move.l	(a0),d0
+	add.l	#512*2*8,d0
+	cmp.l	#0x600000+512*2*224,d0
+	jlt		4f
+
+	move.l	#0x600000,d0
+4:
+	move.l	d0,(a0)
+
 	movem.l	(sp)+,d0-a6
 
 	rts
@@ -366,6 +376,15 @@ character_bitmaps:
 	dc.b	0b01111110
 	dc.b	0b01100110
 	dc.b	0b01100110
+	dc.b	0b00000000
+
+	dc.b	0b00000000
+	dc.b	0b01111100
+	dc.b	0b01100110
+	dc.b	0b01111100
+	dc.b	0b01100110
+	dc.b	0b01100110
+	dc.b	0b01111100
 	dc.b	0b00000000
 
 	dc.b	0b00000000
