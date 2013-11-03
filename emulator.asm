@@ -57,6 +57,7 @@ emulator:
 
 
 	move	#0xa000,sr															| Trace start.
+	jbra	0xc00402															| Call NeoGeo BIOS init routine.
 
 1:	cmp.b	#0x39,0xfc02.w														| Wait for SPACE.
 	jne		1b
@@ -108,12 +109,129 @@ bus_error_handler:
 trace_handler:
 	movem.l	d0-a6,-(sp)
 
-	lea		0x600000,a0
+	move.l	15*4+2(sp),d0
+	jbsr	write_long_data
+
+	movem.l	(sp)+,d0-a6
+
+	rte
+
+|-------------------------------------------------------------------------------
+|
+|	HBL interrupt handler.
+|
+|-------------------------------------------------------------------------------
+
+hbl_handler:
+
+	rte
+
+|-------------------------------------------------------------------------------
+|
+|	VBL interrupt handler.
+|
+|-------------------------------------------------------------------------------
+
+vbl_handler:
+	movem.l	a0-a1,-(sp)
+
+	lea		test_address(pc),a0
+	move.l	(a0),a1
+	not		(a1)+
+	move.l	a1,(a0)
+
+	movem.l	(sp)+,a0-a1
+
+	rte
+
+test_address:
+	dc.l	0x600000
+
+|-------------------------------------------------------------------------------
+|
+|	IKBD interrupt handler.
+|
+|-------------------------------------------------------------------------------
+
+ikbd_handler:
+
+	rte
+
+|-------------------------------------------------------------------------------
+|
+|	Write byte data.
+|
+|	d0.b = data to be written.
+|
+|-------------------------------------------------------------------------------
+
+write_byte_data:
+	movem.l	d0-d1,-(sp)
+
+	swap	d0
+	lsl.l	#8,d0
+	move	#2,d1
+	jbsr	write_data
+
+	movem.l	(sp)+,d0-d1
+
+	rts
+
+|-------------------------------------------------------------------------------
+|
+|	Write word data.
+|
+|	d0.w = data to be written.
+|
+|-------------------------------------------------------------------------------
+
+write_word_data:
+	movem.l	d0-d1,-(sp)
+
+	swap	d0
+	move	#4,d1
+	jbsr	write_data
+
+	movem.l	(sp)+,d0-d1
+
+	rts
+
+|-------------------------------------------------------------------------------
+|
+|	Write long data.
+|
+|	d0.l = data to be written.
+|
+|-------------------------------------------------------------------------------
+
+write_long_data:
+	move.l	d1,-(sp)
+
+	move	#8,d1
+	jbsr	write_data
+
+	move.l	(sp)+,d1
+
+	rts
+
+
+|-------------------------------------------------------------------------------
+|
+|	Write data.
+|
+|	d0.l = data to be written.
+|	d1.l = number of characters of the data to be written.
+|
+|-------------------------------------------------------------------------------
+
+write_data:
+	movem.l	d0-a6,-(sp)
+
+	move.l	write_display_address(pc),a0
 	lea		character_bitmaps(pc),a1
 
-	move.l	15*4+2(sp),d0
-
-	move	#8-1,d7
+	move	d1,d7
+	subq	#1,d7
 1:
 	rol.l	#4,d0
 	move	d0,d1
@@ -145,7 +263,10 @@ trace_handler:
 
 	movem.l	(sp)+,d0-a6
 
-	rte
+	rts
+
+write_display_address:
+	dc.l	0x600000
 
 character_bitmaps:
 	dc.b	0b00000000
@@ -282,47 +403,6 @@ character_bitmaps:
 	dc.b	0b01100000
 	dc.b	0b01100000
 	dc.b	0b00000000
-
-|-------------------------------------------------------------------------------
-|
-|	HBL interrupt handler.
-|
-|-------------------------------------------------------------------------------
-
-hbl_handler:
-
-	rte
-
-|-------------------------------------------------------------------------------
-|
-|	VBL interrupt handler.
-|
-|-------------------------------------------------------------------------------
-
-vbl_handler:
-	movem.l	a0-a1,-(sp)
-
-	lea		test_address(pc),a0
-	move.l	(a0),a1
-	not		(a1)+
-	move.l	a1,(a0)
-
-	movem.l	(sp)+,a0-a1
-
-	rte
-
-test_address:
-	dc.l	0x600000
-
-|-------------------------------------------------------------------------------
-|
-|	IKBD interrupt handler.
-|
-|-------------------------------------------------------------------------------
-
-ikbd_handler:
-
-	rte
 
 emulator_end:
 
