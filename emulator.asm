@@ -175,8 +175,12 @@ bus_error_handler:
 trace_handler:
 	movem.l	d0-a6,-(sp)
 
-	move.l	15*4+2(sp),d0
+	move.l	15*4+8(sp),d0
 	jbsr	write_long_data
+	jbsr	write_space
+	move.l	d0,a0
+	move	(a0),d0
+	jbsr	write_word_data
 	jbsr	write_new_line
 
 	movem.l	(sp)+,d0-a6
@@ -247,9 +251,9 @@ write_space:
 
 	dbf		d7,1b
 
-	lea		-512*2*8(a0),a0
+	lea		-512*2*8+8*2(a0),a0
 
-	move.l	write_display_address(pc),a1
+	lea		write_display_address(pc),a1
 	move.l	a0,(a1)
 
 	movem.l	(sp)+,d0-a6
@@ -330,12 +334,12 @@ write_word_data:
 |-------------------------------------------------------------------------------
 
 write_long_data:
-	move.l	d1,-(sp)
+	movem.l	d0-d1,-(sp)
 
 	move	#8,d1
 	jbsr	write_data
 
-	move.l	(sp)+,d1
+	movem.l	(sp)+,d0-d1
 
 	rts
 
