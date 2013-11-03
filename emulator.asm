@@ -56,8 +56,15 @@ emulator:
 
 
 
-	move	#0xa000,sr															| Trace start.
-	jbra	0xc00402															| Call NeoGeo BIOS init routine.
+|	move	#0xa000,sr															| Trace start.
+|	jbra	0xc00402															| Call NeoGeo BIOS init routine.
+
+
+
+	move	#0xa700,sr
+	jbra	0xc11002
+
+
 
 1:	cmp.b	#0x39,0xfc02.w														| Wait for SPACE.
 	jne		1b
@@ -98,6 +105,65 @@ mmu_data:
 bus_error_handler:
 	move.l	#0xff000000,0x9800.w
 
+	btst	#6,0xa(sp)
+	jeq		1f
+
+	move.l	#0x00ff0000,0x9800.w
+1:
+
+
+
+
+
+
+
+
+
+	jra		2f
+
+	move.l	(sp),d0
+	jbsr	write_long_data
+	move.l	4(sp),d0
+	jbsr	write_long_data
+	move.l	8(sp),d0
+	jbsr	write_long_data
+	move.l	12(sp),d0
+	jbsr	write_long_data
+	move.l	16(sp),d0
+	jbsr	write_long_data
+	move.l	24(sp),d0
+	jbsr	write_long_data
+	move.l	32(sp),d0
+	jbsr	write_long_data
+	move.l	36(sp),d0
+	jbsr	write_long_data
+	move.l	40(sp),d0
+	jbsr	write_long_data
+	move.l	44(sp),d0
+	jbsr	write_long_data
+	move.l	48(sp),d0
+	jbsr	write_long_data
+	move.l	52(sp),d0
+	jbsr	write_long_data
+	move.l	56(sp),d0
+	jbsr	write_long_data
+	move.l	60(sp),d0
+	jbsr	write_long_data
+
+1:	jra		1b
+
+
+
+
+2:
+
+1:	cmp.b	#0x39,0xfc02.w
+	jeq		1b
+
+
+	or		#0x8000,(sp)
+	bclr	#8,0xa(sp)
+
 	rte
 
 |-------------------------------------------------------------------------------
@@ -111,6 +177,7 @@ trace_handler:
 
 	move.l	15*4+2(sp),d0
 	jbsr	write_long_data
+	jbsr	write_new_line
 
 	movem.l	(sp)+,d0-a6
 
@@ -156,6 +223,64 @@ test_address:
 ikbd_handler:
 
 	rte
+
+|-------------------------------------------------------------------------------
+|
+|	Write space.
+|
+|-------------------------------------------------------------------------------
+
+write_space:
+	movem.l	d0-a6,-(sp)
+
+	move.l	write_display_address(pc),a0
+
+	move	#8-1,d7
+1:
+	move	#8-1,d6
+2:
+	clr		(a0)+
+
+	dbf		d6,2b
+
+	lea		512*2-8*2(a0),a0
+
+	dbf		d7,1b
+
+	lea		-512*2*8(a0),a0
+
+	move.l	write_display_address(pc),a1
+	move.l	a0,(a1)
+
+	movem.l	(sp)+,d0-a6
+
+	rts
+
+|-------------------------------------------------------------------------------
+|
+|	Write new line.
+|
+|-------------------------------------------------------------------------------
+
+write_new_line:
+	movem.l	d0-a6,-(sp)
+
+	lea		write_display_address(pc),a0
+
+	move.l	(a0),d0
+	add.l	#512*2*8,d0
+	and.l	#0xffffe000,d0
+
+	cmp.l	#0x600000+512*2*224,d0
+	jlt		1f
+
+	move.l	#0x600000,d0
+1:
+	move.l	d0,(a0)
+
+	movem.l	(sp)+,d0-a6
+
+	rts
 
 |-------------------------------------------------------------------------------
 |
@@ -261,15 +386,8 @@ write_data:
 
 	dbf		d7,1b
 
-	lea		write_display_address(pc),a0
-	move.l	(a0),d0
-	add.l	#512*2*8,d0
-	cmp.l	#0x600000+512*2*224,d0
-	jlt		4f
-
-	move.l	#0x600000,d0
-4:
-	move.l	d0,(a0)
+	lea		write_display_address(pc),a1
+	move.l	a0,(a1)
 
 	movem.l	(sp)+,d0-a6
 
