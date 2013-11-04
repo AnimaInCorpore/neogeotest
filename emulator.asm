@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
-.global emulator_vbl_handler
-.global emulator_ikbd_handler
+
+.equ	BREAKPOINT_ADDRESS,0xffffffff
 
 .text
 
@@ -211,7 +211,7 @@ vram_increment:
 |-------------------------------------------------------------------------------
 
 trace_handler:
-	cmp.l	#0xc130cc,0x8(sp)
+	cmp.l	#BREAKPOINT_ADDRESS,0x8(sp)
 	jeq		2f
 
 	cmp.b	#0x39,0xfc02.w
@@ -257,7 +257,7 @@ trace_handler:
 
 	movem.l	(sp)+,d0-a6
 1:
-	cmp.l	#0xc130cc,0x8(sp)
+	cmp.l	#BREAKPOINT_ADDRESS,0x8(sp)
 	jne		2f
 1:
 	cmp.b	#0x39,0xfc02.w
