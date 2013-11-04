@@ -55,14 +55,14 @@ emulator:
 
 
 
+	lea		0x600000,sp															| The NeoGeo stack pointer is not usable because the BIOS RAM check fails while the trace and bus error exceptions are active.
+	move	#0xa000,sr															| Trace start.
+	jbra	0xc00402															| Call NeoGeo BIOS init routine.
 
-|	move	#0xa000,sr															| Trace start.
-|	jbra	0xc00402															| Call NeoGeo BIOS init routine.
 
 
-
-	move	#0xa700,sr
-	jbra	0xc11002
+|	move	#0xa700,sr															| Skip the "move #0x2700,sr" of the NeoGeo init routine.
+|	jbra	0xc11002
 
 
 
@@ -103,66 +103,39 @@ mmu_data:
 |-------------------------------------------------------------------------------
 
 bus_error_handler:
-	move.l	#0xff000000,0x9800.w
+	cmp.l	#0x300001,0x10(sp)
+	jeq		2f
 
-	btst	#6,0xa(sp)
-	jeq		1f
+	movem.l	d0-a6,-(sp)
 
-	move.l	#0x00ff0000,0x9800.w
-1:
+|	move.l	#0xff000000,0x9800.w
 
+|	btst	#6,15*4+0xa(sp)
+|	jeq		2f
 
-
-
-
-
-
-
-
-	jra		2f
-
-	move.l	(sp),d0
-	jbsr	write_long_data
-	move.l	4(sp),d0
-	jbsr	write_long_data
-	move.l	8(sp),d0
-	jbsr	write_long_data
-	move.l	12(sp),d0
-	jbsr	write_long_data
-	move.l	16(sp),d0
-	jbsr	write_long_data
-	move.l	24(sp),d0
-	jbsr	write_long_data
-	move.l	32(sp),d0
-	jbsr	write_long_data
-	move.l	36(sp),d0
-	jbsr	write_long_data
-	move.l	40(sp),d0
-	jbsr	write_long_data
-	move.l	44(sp),d0
-	jbsr	write_long_data
-	move.l	48(sp),d0
-	jbsr	write_long_data
-	move.l	52(sp),d0
-	jbsr	write_long_data
-	move.l	56(sp),d0
-	jbsr	write_long_data
-	move.l	60(sp),d0
+	move.l	15*4+0x2(sp),d0
+	move	#0xffe0,d2
 	jbsr	write_long_data
 
-1:	jra		1b
+	jbsr	write_space
 
+	move.l	15*4+0x10(sp),d0
+	move	#0xffe0,d2
+	jbsr	write_long_data
 
+	jbsr	write_space
 
+	move	15*4+0xa(sp),d0
+	move	#0xffe0,d2
+	jbsr	write_word_data
 
+	jbsr	write_space
+	jbsr	write_new_line
+
+	movem.l	(sp)+,d0-a6
 2:
-
-1:	cmp.b	#0x39,0xfc02.w
-	jeq		1b
-
-
-	or		#0x8000,(sp)
-	bclr	#8,0xa(sp)
+	or		#0x8000,(sp)														| Reenable tracing.
+	bclr	#8,0xa(sp)															| Data fault processed.
 
 	rte
 
@@ -173,18 +146,49 @@ bus_error_handler:
 |-------------------------------------------------------------------------------
 
 trace_handler:
+	cmp.b	#0x39,0xfc02.w
+	jne		1f
+
 	movem.l	d0-a6,-(sp)
 
-	move.l	15*4+8(sp),d0
+	move.l	15*4+0x8(sp),d0
+	move	#0xffff,d2
 	jbsr	write_long_data
+
 	jbsr	write_space
+
 	move.l	d0,a0
 	move	(a0),d0
+	move	#0xffff,d2
 	jbsr	write_word_data
+
+	jbsr	write_space
 	jbsr	write_new_line
 
-	movem.l	(sp)+,d0-a6
+	clr		d1
 
+	move	#4-1,d7
+2:
+	move	#4-1,d6
+3:
+	move.l	(sp,d1.w*4),d0
+	move	#0xffff,d2
+	jbsr	write_long_data
+
+	jbsr	write_space
+
+	addq	#1,d1
+
+	dbf		d6,3b
+
+	jbsr	write_new_line
+
+	dbf		d7,2b
+
+	jbsr	write_home
+
+	movem.l	(sp)+,d0-a6
+1:
 	rte
 
 |-------------------------------------------------------------------------------
@@ -288,9 +292,26 @@ write_new_line:
 
 |-------------------------------------------------------------------------------
 |
+|	Write home.
+|
+|-------------------------------------------------------------------------------
+
+write_home:
+	movem.l	d0-a6,-(sp)
+
+	lea		write_display_address(pc),a0
+	move.l	#0x600000,(a0)
+
+	movem.l	(sp)+,d0-a6
+
+	rts
+
+|-------------------------------------------------------------------------------
+|
 |	Write byte data.
 |
 |	d0.b = data to be written.
+|	d2.w = 16 bit RGB text color.
 |
 |-------------------------------------------------------------------------------
 
@@ -311,6 +332,7 @@ write_byte_data:
 |	Write word data.
 |
 |	d0.w = data to be written.
+|	d2.w = 16 bit RGB text color.
 |
 |-------------------------------------------------------------------------------
 
@@ -330,6 +352,7 @@ write_word_data:
 |	Write long data.
 |
 |	d0.l = data to be written.
+|	d2.w = 16 bit RGB text color.
 |
 |-------------------------------------------------------------------------------
 
@@ -350,11 +373,14 @@ write_long_data:
 |
 |	d0.l = data to be written.
 |	d1.l = number of characters of the data to be written.
+|	d2.w = 16 bit RGB text color.
 |
 |-------------------------------------------------------------------------------
 
 write_data:
 	movem.l	d0-a6,-(sp)
+
+	move	d2,d4
 
 	move.l	write_display_address(pc),a0
 	lea		character_bitmaps(pc),a1
@@ -376,7 +402,8 @@ write_data:
 3:
 	add.b	d2,d2
 	scs		d3
-	ext.w	d3
+	ext		d3
+	and		d4,d3
 	move	d3,(a0)+
 
 	dbf		d5,3b
