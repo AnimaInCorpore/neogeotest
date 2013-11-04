@@ -224,7 +224,8 @@ program_rom_file_name:
 .even
 
 bios_rom_file_name:
-	.asciz	"sp-e.sp1"
+|	.asciz	"sp-e.sp1"
+	.asciz	"sp-j2.sp1"
 
 .even
 
