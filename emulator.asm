@@ -103,15 +103,73 @@ mmu_data:
 |-------------------------------------------------------------------------------
 
 bus_error_handler:
-	cmp.l	#0x300001,0x10(sp)
-	jeq		2f
+	cmp.l	#0x300001,0x10(sp)													| Watchdog kicked?
+	jeq		4f
 
 	movem.l	d0-a6,-(sp)
 
-|	move.l	#0xff000000,0x9800.w
+	move.l	15*4+0x10(sp),d0													| Access address.
+	move	15*4+0xa(sp),d1														| "Special Status Word".
 
-|	btst	#6,15*4+0xa(sp)
-|	jeq		2f
+	cmp.l	#0x3c0000,d0														| REG_VRAMADDR?
+	jne		2f
+
+	btst	#6,d1																| Read access?
+	jne		1f
+
+	lea		vram_address(pc),a0
+	move	15*4+0x18+0x2(sp),(a0)												| Write (word sized) data to REG_VRAMADDR.
+
+	jra		3f
+1:
+|	move	d1,d2
+|	and		#0x0030,d2															| Mask out "data size".
+
+	move	vram_address(pc),15*4+0x2c+0x2(sp)									| Read (word sized) data from REG_VRAMADDR.
+
+	jra		3f
+2:
+	cmp.l	#0x3c0002,d0														| REG_VRAMRW?
+	jne		2f
+
+	btst	#6,d1																| Read access?
+	jne		1f
+
+	lea		vram_address(pc),a0
+	move	(a0),d0
+
+	lea		0x580000,a1
+	move	15*4+0x18+0x2(sp),(a1,d0.w*2)										| Write (word sized) data to REG_VRAMRW.
+
+	lea		vram_increment(pc),a1
+	add		(a1),d0
+	move	d0,(a0)
+
+	jra		3f
+1:
+	lea		vram_address(pc),a0
+	move	(a0),d0
+
+	lea		0x580000,a1
+	move	(a1,d0.w*2),15*4+0x2c+0x2(sp)										| Read (word sized) data from REG_VRAMRW.
+
+	jra		3f
+2:
+	cmp.l	#0x3c0004,d0														| REG_VRAMMOD?
+	jne		2f
+
+	btst	#6,d1																| Read access?
+	jne		1f
+
+	lea		vram_increment(pc),a0
+	move	15*4+0x18+0x2(sp),(a0)												| Write (word sized) data to REG_VRAMMOD.
+
+	jra		3f
+1:
+	move	vram_increment(pc),15*4+0x2c+0x2(sp)								| Read (word sized) data from REG_VRAMMOD.
+
+	jra		3f
+2:
 
 	move.l	15*4+0x2(sp),d0
 	move	#0xffe0,d2
@@ -132,12 +190,19 @@ bus_error_handler:
 	jbsr	write_space
 	jbsr	write_new_line
 
+3:
 	movem.l	(sp)+,d0-a6
-2:
+4:
 	or		#0x8000,(sp)														| Reenable tracing.
 	bclr	#8,0xa(sp)															| Data fault processed.
 
 	rte
+
+vram_address:
+	ds.w	1
+
+vram_increment:
+	ds.w	1
 
 |-------------------------------------------------------------------------------
 |
@@ -146,9 +211,12 @@ bus_error_handler:
 |-------------------------------------------------------------------------------
 
 trace_handler:
+	cmp.l	#0xc130cc,0x8(sp)
+	jeq		2f
+
 	cmp.b	#0x39,0xfc02.w
 	jne		1f
-
+2:
 	movem.l	d0-a6,-(sp)
 
 	move.l	15*4+0x8(sp),d0
@@ -189,6 +257,12 @@ trace_handler:
 
 	movem.l	(sp)+,d0-a6
 1:
+	cmp.l	#0xc130cc,0x8(sp)
+	jne		2f
+1:
+	cmp.b	#0x39,0xfc02.w
+	jne		1b
+2:
 	rte
 
 |-------------------------------------------------------------------------------
