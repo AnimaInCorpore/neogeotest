@@ -2,6 +2,7 @@
 .global emulator_end
 
 .equ	BREAKPOINT_ADDRESS,0xffffffff
+.equ	SCREEN_ADDRESS,0x600000
 
 .text
 
@@ -15,6 +16,8 @@
 |-------------------------------------------------------------------------------
 
 emulator:
+	move	#0x2700,sr
+
 	lea		old_sp(pc),a1
 	move.l	sp,(a1)																| Save the Atari stack pointer.
 
@@ -49,9 +52,31 @@ emulator:
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
 
+	| Set screen memory.
+
+	move.l	#SCREEN_ADDRESS,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
+
+	| Clear screen memory.
+
+	lea		SCREEN_ADDRESS,a0
+1:
+	clr.l	(a0)+
+
+	cmp.l	#SCREEN_ADDRESS+512*2*224,a0
+	jlt		1b
+
+	| Start the emulation.
+
 |	lea		0x10F300,sp															| Set the initial NeoGeo stack pointer.
 	lea		0x600000,sp															| The NeoGeo stack pointer is not usable because the BIOS RAM check fails while the trace and bus error exceptions are active.
-	move	#0xa000,sr															| Trace start.
+|	move	#0xa000,sr															| Trace start.
 	jbra	0xc00402															| Call NeoGeo BIOS init routine.
 
 |-------------------------------------------------------------------------------
@@ -163,7 +188,7 @@ bus_error_handler:
 
 	jra		3f
 2:
-|	REG_STATUS_A.
+	| REG_STATUS_A.
 
 	cmp.l	#0x320001,d0
 	jne		2f
@@ -172,28 +197,58 @@ bus_error_handler:
 
 	jra		3f
 2:
+	| REG_SWPBIOS.
+
+	cmp.l	#0x3a0003,d0
+	jne		2f
+
+	lea		use_cartridge_vector_table(pc),a0
+	clr		(a0)
+
+	jra		3f
+2:
+	| REG_SWPROM.
+
+	cmp.l	#0x3a0013,d0
+	jne		2f
+
+	lea		use_cartridge_vector_table(pc),a0
+	move	#-1,(a0)
+
+	jra		3f
+2:
 
 	| Write unhandled access addresses on screen.
 
+	move	#0b0000011111100000,d2												| Red access = green color.
+
+	btst	#6,d1																| Read access?
+	jne		1f
+
+	move	#0b1111100000000000,d2												| Write access = red color.
+1:
 	move.l	15*4+0x2(sp),d0
-	move	#0xffe0,d2
 	jbsr	write_long_data
 
 	jbsr	write_space
 
 	move.l	15*4+0x10(sp),d0
-	move	#0xffe0,d2
 	jbsr	write_long_data
 
 	jbsr	write_space
 
 	move	15*4+0xa(sp),d0
-	move	#0xffe0,d2
 	jbsr	write_word_data
 
 	jbsr	write_space
 	jbsr	write_new_line
 
+	and		#0xf000,d1
+	jeq		3f
+1:
+	cmp.b	#0x01,0xfc02.w
+	jne		1b
+	jbra	emulator_exit
 3:
 	movem.l	(sp)+,d0-a6
 4:
@@ -206,6 +261,9 @@ vram_address:
 	ds.w	1
 
 vram_increment:
+	ds.w	1
+
+use_cartridge_vector_table:
 	ds.w	1
 
 |-------------------------------------------------------------------------------
@@ -297,7 +355,12 @@ hbl_handler:
 vbl_handler:
 	add.l	#0x01010001,0x9800.w
 
-	move.l	0x64.w,-(sp)
+	tst		use_cartridge_vector_table(pc)
+	jne		1f
+
+	jmp		0xc00438															| Jump to the BIOS VBL routine.
+1:
+	move.l	0x64.w,-(sp)														| Jump to the cartridge VBL routine.
 
 	rts
 
@@ -358,10 +421,10 @@ write_new_line:
 	add.l	#512*2*8,d0
 	and.l	#0xffffe000,d0
 
-	cmp.l	#0x600000+512*2*224,d0
+	cmp.l	#SCREEN_ADDRESS+512*2*224,d0
 	jlt		1f
 
-	move.l	#0x600000,d0
+	move.l	#SCREEN_ADDRESS,d0
 1:
 	move.l	d0,(a0)
 
@@ -379,7 +442,7 @@ write_home:
 	movem.l	d0-a6,-(sp)
 
 	lea		write_display_address(pc),a0
-	move.l	#0x600000,(a0)
+	move.l	#SCREEN_ADDRESS,(a0)
 
 	movem.l	(sp)+,d0-a6
 
@@ -504,7 +567,7 @@ write_data:
 	rts
 
 write_display_address:
-	dc.l	0x600000
+	dc.l	SCREEN_ADDRESS
 
 character_bitmaps:
 	dc.b	0b00000000
