@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc11c10
+.equ	BREAKPOINT_ADDRESS,0xc11c0a
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -203,23 +203,10 @@ bus_error_handler:
 	jne		2f
 
 	lea		reg_status_a_counter(pc),a0
+	eor		#0x0040,(a0)
+	move.b	#0x3d,0x10fee4
 
-	move	15*4(sp),d0
-	and		#0x0700,d0
-	cmp		#0x0700,d0
-	jne		1f
-
-	move	(a0),d0																| While interrupts are being disabled toggle the bit #5 by yourself.
-	eor		#0x0040,d0
-	move	d0,(a0)
-
-	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
-
-	jra		3f
-1:
-	move	(a0),d0																| See the VBL routine how it controls the value.
-
-	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
+	move.b	1(a0),15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
 
 	jra		3f
 2:
@@ -278,7 +265,7 @@ bus_error_handler:
 3:
 	movem.l	(sp)+,d0-a6
 
-|	or		#0x8000,(sp)														| Reenable tracing.
+	or		#0x8000,(sp)														| Reenable tracing.
 	bclr	#8,0xa(sp)															| Data fault processed.
 
 	rte
@@ -313,21 +300,30 @@ trace_handler:
 2:
 	movem.l	d0-a6,-(sp)
 
-	move.l	15*4+0x8(sp),d0
 	move	#0xffff,d2
+
+	move.l	15*4+0x8(sp),d0
 	jbsr	write_long_data
 
 	jbsr	write_space
 
 	move.l	d0,a0
 	move	(a0),d0
-	move	#0xffff,d2
+	jbsr	write_word_data
+
+	jbsr	write_space
+
+	move	2(a0),d0
+	jbsr	write_word_data
+
+	jbsr	write_space
+
+	move	4(a0),d0
 	jbsr	write_word_data
 
 	jbsr	write_space
 
 	move.l	15*4+0xc(sp),d0
-	move	#0xffff,d2
 	jbsr	write_long_data
 
 	jbsr	write_space
@@ -340,7 +336,6 @@ trace_handler:
 	move	#4-1,d6
 3:
 	move.l	(sp,d1.w*4),d0
-	move	#0xffff,d2
 	jbsr	write_long_data
 
 	jbsr	write_space
@@ -382,29 +377,15 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
-	not.l	0x9800.w
-
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
-	| Avoid the "calendar error".
-
-	move.l	a0,-(sp)
-
-	lea		reg_status_a_counter(pc),a0
-	move	#0x007f,(a0)
-
-	cmp.b	#0x3d-1,0x10fee4
-	jne		2f
-
-	move	#0x003f,(a0)
-2:
-	move.l	(sp)+,a0
-
-	| Go on.
+	move.l	#0b1111100000000000,0x9800.w
 
 	jmp		0xc00438															| Jump to the BIOS VBL routine.
 1:
+	move.l	#0b0000011111100000,0x9800.w
+
 	move.l	0x64.w,-(sp)														| Jump to the cartridge VBL routine.
 
 	rts
