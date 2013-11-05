@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc11c0a
+.equ	BREAKPOINT_ADDRESS,0xc11c5c
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -207,6 +207,15 @@ bus_error_handler:
 	move.b	#0x3d,0x10fee4
 
 	move.b	1(a0),15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
+
+	jra		3f
+2:
+	| REG_STATUS_B.
+
+	cmp.l	#0x380000,d0
+	jne		2f
+
+	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_B.
 
 	jra		3f
 2:
