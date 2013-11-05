@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc11d8e
+.equ	BREAKPOINT_ADDRESS,0xc16b9e
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
