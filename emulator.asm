@@ -115,14 +115,20 @@ mmu_data:
 |-------------------------------------------------------------------------------
 
 bus_error_handler:
-	cmp.l	#0x300001,0x10(sp)													| Watchdog kicked?
-	jeq		4f
-
 	movem.l	d0-a6,-(sp)
 
 	move.l	15*4+0x10(sp),d0													| Access address.
 	move	15*4+0xa(sp),d1														| "Special Status Word".
 
+	| REG_DIPSW (write = kick watchdog).
+
+	cmp.l	#0x300001,d0
+	jne		2f
+
+	move.b	0xff,15*4+0x2c+0x3(sp)												| Read (word sized) data from REG_DIPSW.
+
+	jra		3f
+2:
 	| REG_VRAMADDR.
 
 	cmp.l	#0x3c0000,d0
@@ -251,7 +257,6 @@ bus_error_handler:
 	jbra	emulator_exit
 3:
 	movem.l	(sp)+,d0-a6
-4:
 	or		#0x8000,(sp)														| Reenable tracing.
 	bclr	#8,0xa(sp)															| Data fault processed.
 

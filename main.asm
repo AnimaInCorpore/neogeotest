@@ -119,17 +119,6 @@ start:
 
 	jbsr	f030_init
 
-	| Set screen memory.
-
-	move.l	#0x600000,d0
-	swap	d0
-	move.b	d0,0x8201.w
-	swap	d0
-	move	d0,d1
-	ror		#8,d0
-	move.b	d0,0x8203.w
-	move.b	d1,0x820d.w
-
 	| Copy emulator program to 0x500000.
 
 	lea		emulator,a0
