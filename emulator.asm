@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc16b9e
+.equ	BREAKPOINT_ADDRESS,0xc11c10
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -190,6 +190,9 @@ bus_error_handler:
 	cmp.l	#0x300001,d0
 	jne		2f
 
+	cmp.b	#0x01,0xfc02.w
+	jeq		emulator_exit
+
 	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
 
 	jra		3f
@@ -200,13 +203,21 @@ bus_error_handler:
 	jne		2f
 
 	lea		reg_status_a_counter(pc),a0
-	move	(a0),d0
-	addq	#1,d0
+
+	move	15*4(sp),d0
+	and		#0x0700,d0
+	cmp		#0x0700,d0
+	jne		1f
+
+	move	(a0),d0																| While interrupts are being disabled toggle the bit #5 by yourself.
+	eor		#0x0040,d0
 	move	d0,(a0)
-	and		#0x3f,d0
-	sne		d0
-	and		#0x7f,d0
-	or		#0x3f,d0
+
+	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
+
+	jra		3f
+1:
+	move	(a0),d0																| See the VBL routine how it controls the value.
 
 	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
 
@@ -266,7 +277,8 @@ bus_error_handler:
 	jbra	emulator_exit
 3:
 	movem.l	(sp)+,d0-a6
-	or		#0x8000,(sp)														| Reenable tracing.
+
+|	or		#0x8000,(sp)														| Reenable tracing.
 	bclr	#8,0xa(sp)															| Data fault processed.
 
 	rte
@@ -281,7 +293,7 @@ use_cartridge_vector_table:
 	ds.w	1
 
 reg_status_a_counter:
-	ds.w	1
+	dc.w	0x007f
 
 |-------------------------------------------------------------------------------
 |
@@ -370,10 +382,26 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
-	add.l	#0x01010001,0x9800.w
+	not.l	0x9800.w
 
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
+
+	| Avoid the "calendar error".
+
+	move.l	a0,-(sp)
+
+	lea		reg_status_a_counter(pc),a0
+	move	#0x007f,(a0)
+
+	cmp.b	#0x3d-1,0x10fee4
+	jne		2f
+
+	move	#0x003f,(a0)
+2:
+	move.l	(sp)+,a0
+
+	| Go on.
 
 	jmp		0xc00438															| Jump to the BIOS VBL routine.
 1:
@@ -388,6 +416,8 @@ vbl_handler:
 |-------------------------------------------------------------------------------
 
 ikbd_handler:
+|	cmp.b	#0x01,0xfc02.w
+|	jeq		emulator_exit
 
 	rte
 
