@@ -205,6 +205,13 @@ load_roms:
 	cmp.l	a1,a0
 	jlt		1b
 
+	| Patch BIOS.
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#0x100000+0x8000+0x100000+0x8000+0x11c62,a0
+
+	move.l	#0x4e714e71,(a0)												| NOP out the checksum result check.
+
 	rts
 
 program_rom_file_name:

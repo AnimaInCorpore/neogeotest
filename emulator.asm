@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc11c5c
+.equ	BREAKPOINT_ADDRESS,0xc11c62
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -197,6 +197,22 @@ bus_error_handler:
 
 	jra		3f
 2:
+	| REG_SOUND.
+
+	cmp.l	#0x320000,d0
+	jne		2f
+
+	btst	#6,d1																| Read access?
+	jne		1f
+
+|	move	15*4+0x18+0x2(sp),(a0)												| Write (byte sized) data to REG_SOUND.
+
+	jra		3f
+1:
+	move.b	#0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_SOUND.
+
+	jra		3f
+2:
 	| REG_STATUS_A.
 
 	cmp.l	#0x320001,d0
@@ -236,6 +252,15 @@ bus_error_handler:
 
 	lea		use_cartridge_vector_table(pc),a0
 	move	#-1,(a0)
+
+	jra		3f
+2:
+	| REG_300081.
+
+	cmp.l	#0x300081,d0
+	jne		2f
+
+	move.b	#0x80,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_300081.
 
 	jra		3f
 2:
