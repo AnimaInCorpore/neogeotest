@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xffffffff
+.equ	BREAKPOINT_ADDRESS,0xc11be0
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -125,7 +125,7 @@ bus_error_handler:
 	cmp.l	#0x300001,d0
 	jne		2f
 
-	move.b	0xff,15*4+0x2c+0x3(sp)												| Read (word sized) data from REG_DIPSW.
+	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
 
 	jra		3f
 2:
