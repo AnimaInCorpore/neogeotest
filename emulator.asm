@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc11be0
+.equ	BREAKPOINT_ADDRESS,0xc11d8e
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -120,15 +120,6 @@ bus_error_handler:
 	move.l	15*4+0x10(sp),d0													| Access address.
 	move	15*4+0xa(sp),d1														| "Special Status Word".
 
-	| REG_DIPSW (write = kick watchdog).
-
-	cmp.l	#0x300001,d0
-	jne		2f
-
-	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
-
-	jra		3f
-2:
 	| REG_VRAMADDR.
 
 	cmp.l	#0x3c0000,d0
@@ -194,12 +185,30 @@ bus_error_handler:
 
 	jra		3f
 2:
+	| REG_DIPSW (write = kick watchdog).
+
+	cmp.l	#0x300001,d0
+	jne		2f
+
+	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
+
+	jra		3f
+2:
 	| REG_STATUS_A.
 
 	cmp.l	#0x320001,d0
 	jne		2f
 
-	move.b	#0x7f,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
+	lea		reg_status_a_counter(pc),a0
+	move	(a0),d0
+	addq	#1,d0
+	move	d0,(a0)
+	and		#0x3f,d0
+	sne		d0
+	and		#0x7f,d0
+	or		#0x3f,d0
+
+	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
 
 	jra		3f
 2:
@@ -269,6 +278,9 @@ vram_increment:
 	ds.w	1
 
 use_cartridge_vector_table:
+	ds.w	1
+
+reg_status_a_counter:
 	ds.w	1
 
 |-------------------------------------------------------------------------------
