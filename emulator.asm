@@ -49,32 +49,19 @@ emulator:
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
 
-	lea		0x10F300,sp															| Set the NeoGeo stack pointer.
-
-	move	#0x2000,sr															| Emulation started.
-
-
-
+|	lea		0x10F300,sp															| Set the initial NeoGeo stack pointer.
 	lea		0x600000,sp															| The NeoGeo stack pointer is not usable because the BIOS RAM check fails while the trace and bus error exceptions are active.
 	move	#0xa000,sr															| Trace start.
 	jbra	0xc00402															| Call NeoGeo BIOS init routine.
 
+|-------------------------------------------------------------------------------
 
-
-|	move	#0xa700,sr															| Skip the "move #0x2700,sr" of the NeoGeo init routine.
-|	jbra	0xc11002
-
-
-
-1:	cmp.b	#0x39,0xfc02.w														| Wait for SPACE.
-	jne		1b
-
-
-
-
-	move	#0x2700,sr															| Emulation stopped.
+emulator_exit:
+	move	#0x2700,sr
 
 	| Restore the Atari mode.
+
+	lea		mmu_data(pc),a0
 
 	clr.l	(a0)
 	pmove	(a0),tc																| Disable address translation.
@@ -111,7 +98,9 @@ bus_error_handler:
 	move.l	15*4+0x10(sp),d0													| Access address.
 	move	15*4+0xa(sp),d1														| "Special Status Word".
 
-	cmp.l	#0x3c0000,d0														| REG_VRAMADDR?
+	| REG_VRAMADDR.
+
+	cmp.l	#0x3c0000,d0
 	jne		2f
 
 	btst	#6,d1																| Read access?
@@ -129,7 +118,9 @@ bus_error_handler:
 
 	jra		3f
 2:
-	cmp.l	#0x3c0002,d0														| REG_VRAMRW?
+	| REG_VRAMRW.
+
+	cmp.l	#0x3c0002,d0
 	jne		2f
 
 	btst	#6,d1																| Read access?
@@ -155,7 +146,9 @@ bus_error_handler:
 
 	jra		3f
 2:
-	cmp.l	#0x3c0004,d0														| REG_VRAMMOD?
+	| REG_VRAMMOD.
+
+	cmp.l	#0x3c0004,d0
 	jne		2f
 
 	btst	#6,d1																| Read access?
@@ -170,6 +163,17 @@ bus_error_handler:
 
 	jra		3f
 2:
+|	REG_STATUS_A.
+
+	cmp.l	#0x320001,d0
+	jne		2f
+
+	move.b	#0x7f,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
+
+	jra		3f
+2:
+
+	| Write unhandled access addresses on screen.
 
 	move.l	15*4+0x2(sp),d0
 	move	#0xffe0,d2
@@ -211,6 +215,9 @@ vram_increment:
 |-------------------------------------------------------------------------------
 
 trace_handler:
+	cmp.b	#0x01,0xfc02.w
+	jeq		emulator_exit
+
 	cmp.l	#BREAKPOINT_ADDRESS,0x8(sp)
 	jeq		2f
 
@@ -229,6 +236,12 @@ trace_handler:
 	move	(a0),d0
 	move	#0xffff,d2
 	jbsr	write_word_data
+
+	jbsr	write_space
+
+	move.l	15*4+0xc(sp),d0
+	move	#0xffff,d2
+	jbsr	write_long_data
 
 	jbsr	write_space
 	jbsr	write_new_line
@@ -282,19 +295,11 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
-	movem.l	a0-a1,-(sp)
+	add.l	#0x01010001,0x9800.w
 
-	lea		test_address(pc),a0
-	move.l	(a0),a1
-	not		(a1)+
-	move.l	a1,(a0)
+	move.l	0x64.w,-(sp)
 
-	movem.l	(sp)+,a0-a1
-
-	rte
-
-test_address:
-	dc.l	0x600000
+	rts
 
 |-------------------------------------------------------------------------------
 |
