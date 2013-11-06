@@ -128,13 +128,20 @@ bus_error_handler:
 	jne		1f
 
 	lea		vram_address(pc),a0
-	move	15*4+0x18+0x2(sp),(a0)												| Write (word sized) data to REG_VRAMADDR.
+	move.l	15*4+0x18(sp),d0
+
+	and		#0x0030,d1															| Check for long data size write access.
+	jne		4f
+
+	swap	d0
+	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
+
+	jra		5f
+4:
+	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
 
 	jra		3f
 1:
-|	move	d1,d2
-|	and		#0x0030,d2															| Mask out "data size".
-
 	move	vram_address(pc),15*4+0x2c+0x2(sp)									| Read (word sized) data from REG_VRAMADDR.
 
 	jra		3f
@@ -149,7 +156,7 @@ bus_error_handler:
 
 	lea		vram_address(pc),a0
 	move	(a0),d0
-
+5:
 	lea		0x580000,a1
 	move	15*4+0x18+0x2(sp),(a1,d0.w*2)										| Write (word sized) data to REG_VRAMRW.
 
@@ -284,7 +291,6 @@ bus_error_handler:
 
 	jra		3f
 2:
-
 	| Write unhandled access addresses on screen.
 
 	jra		3f
@@ -321,7 +327,7 @@ bus_error_handler:
 3:
 	movem.l	(sp)+,d0-a6
 
-	or		#0x8000,(sp)														| Reenable tracing.
+|	or		#0x8000,(sp)														| Reenable tracing.
 	bclr	#8,0xa(sp)															| Data fault processed.
 
 	rte
@@ -337,6 +343,19 @@ use_cartridge_vector_table:
 
 reg_status_a_counter:
 	dc.w	0x007f
+
+|-------------------------------------------------------------------------------
+|
+|	Draw sprites.
+|
+|-------------------------------------------------------------------------------
+
+draw_sprites:
+	movem.l	d0-a6,-(sp)
+
+	movem.l	(sp)+,d0-a6
+
+	rts
 
 |-------------------------------------------------------------------------------
 |
@@ -423,7 +442,6 @@ trace_handler:
 |-------------------------------------------------------------------------------
 
 hbl_handler:
-
 	rte
 
 |-------------------------------------------------------------------------------
