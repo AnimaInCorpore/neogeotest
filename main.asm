@@ -208,9 +208,15 @@ load_roms:
 	| Patch BIOS.
 
 	move.l	neogeo_memory_pages_start,a0
-	add.l	#0x100000+0x8000+0x100000+0x8000+0x11c62,a0
 
-	move.l	#0x4e714e71,(a0)												| NOP out the checksum result check.
+	move.l	#0x100000+0x8000+0x100000+0x8000+0x11c14,d0
+	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the calendar check.
+
+	move.l	#0x100000+0x8000+0x100000+0x8000+0x11c1c,d0
+	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the calendar check.
+
+	move.l	#0x100000+0x8000+0x100000+0x8000+0x11c62,d0
+	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the checksum result check.
 
 	rts
 

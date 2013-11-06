@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xffffffff
+.equ	BREAKPOINT_ADDRESS,0xc11fb0
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -188,6 +188,9 @@ bus_error_handler:
 
 	cmp.l	#0x300001,d0
 	jne		2f
+1:
+	cmp.b	#0x39,0xfc02.w
+	jeq		1b
 
 	cmp.b	#0x01,0xfc02.w
 	jeq		emulator_exit
@@ -237,7 +240,7 @@ bus_error_handler:
 
 	lea		reg_status_a_counter(pc),a0
 	eor		#0x0040,(a0)
-	move.b	#0x3d,0x10fee4
+|	move.b	#0x3d,0x10fee4
 
 	move.b	1(a0),15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
 
@@ -283,6 +286,8 @@ bus_error_handler:
 2:
 
 	| Write unhandled access addresses on screen.
+
+	jra		3f
 
 	move	#0b0000011111100000,d2												| Red access = green color.
 
@@ -431,11 +436,13 @@ vbl_handler:
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
-	move.l	#0xff000000,0x9800.w												| Red screen frame.
+	add.l	#0x04000000,0x9800.w
+	and.l	#0xff000000,0x9800.w												| Flashing red screen frame.
 
 	jmp		0xc00438															| Jump to the BIOS VBL routine.
 1:
-	move.l	#0x00ff0000,0x9800.w												| Green screen frame.
+	add.l	#0x00040000,0x9800.w
+	and.l	#0x00ff0000,0x9800.w												| Flashing Green screen frame.
 
 	move.l	0x64.w,-(sp)														| Jump to the cartridge VBL routine.
 
