@@ -1,7 +1,7 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc11c62
+.equ	BREAKPOINT_ADDRESS,0xffffffff
 .equ	SCREEN_ADDRESS,0x600000
 
 .text
@@ -76,7 +76,6 @@ emulator:
 
 |	lea		0x10F300,sp															| Set the initial NeoGeo stack pointer.
 	lea		0x600000,sp															| The NeoGeo stack pointer is not usable because the BIOS RAM check fails while the trace and bus error exceptions are active.
-|	move	#0xa000,sr															| Trace start.
 	jbra	0xc00402															| Call NeoGeo BIOS init routine.
 
 |-------------------------------------------------------------------------------
@@ -209,7 +208,25 @@ bus_error_handler:
 
 	jra		3f
 1:
-	move.b	#0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_SOUND.
+	move.b	#0x01,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_SOUND.
+
+	jra		3f
+2:
+	| REG_P1CNT.
+
+	cmp.l	#0x300000,d0
+	jne		2f
+
+	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_P1CNT.
+
+	jra		3f
+2:
+	| REG_P2CNT.
+
+	cmp.l	#0x340000,d0
+	jne		2f
+
+	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_P2CNT.
 
 	jra		3f
 2:
@@ -414,11 +431,11 @@ vbl_handler:
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
-	move.l	#0b1111100000000000,0x9800.w
+	move.l	#0xff000000,0x9800.w												| Red screen frame.
 
 	jmp		0xc00438															| Jump to the BIOS VBL routine.
 1:
-	move.l	#0b0000011111100000,0x9800.w
+	move.l	#0x00ff0000,0x9800.w												| Green screen frame.
 
 	move.l	0x64.w,-(sp)														| Jump to the cartridge VBL routine.
 
