@@ -2,7 +2,7 @@
 .global emulator_end
 
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
-.equ	SCREEN_ADDRESS,0x600000
+.equ	SCREEN_ADDRESS,0x700000
 .equ	VRAM_ADDRESS,0x580000
 
 .text
@@ -392,6 +392,10 @@ draw_sprites:
 	lea		VRAM_ADDRESS+0x8400*2,a1
 	lea		SCREEN_ADDRESS,a2
 
+	move.l	#0x0000ffff,a4
+	move.l	#0xffff0000,a5
+	move.l	#0xffffffff,a6
+
 	clr		d0 | Index.
 	clr		d4 | Previous size.
 	clr		d5 | Previous X.
@@ -424,25 +428,6 @@ draw_sprites:
 	lsr		#7,d1
 	move	d1,d5
 4:
-|	movem.l	d0-d2,-(sp)
-
-|	move	d1,d0
-|	move	#0xffff,d2
-|	jbsr	write_word_data
-|	jbsr	write_space
-
-|	movem.l	(sp)+,d0-d2
-
-|	movem.l	d0-d2,-(sp)
-
-|	move	d2,d0
-|	move	#0xffff,d2
-|	jbsr	write_word_data
-|	jbsr	write_space
-|	jbsr	write_new_line
-
-|	movem.l	(sp)+,d0-d2
-
 	and.l	#0xffff,d2
 	swap	d2
 	lsr.l	#7,d2
@@ -450,65 +435,76 @@ draw_sprites:
 
 	lea		(a2,d2.l*2),a3
 
+|	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
+|	jlt		4f
+
+|	sub.l	#512*2*256,a3
+|4:
 	subq	#1,d3
 3:
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
 
 	lea		(512-16)*2(a3),a3
 
-	move.l	#0x0000ffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffff0000,(a3)+
+	move.l	a4,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a5,(a3)+
 
 	lea		(512-16)*2(a3),a3
 
 .rept 12
-	move.l	#0x0000ffff,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0xffff0000,(a3)+
+	move.l	a4,(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	move.l	a5,(a3)+
 
 	lea		(512-16)*2(a3),a3
 .endr
 
-	move.l	#0x0000ffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffffffff,(a3)+
-	move.l	#0xffff0000,(a3)+
+	move.l	a4,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a6,(a3)+
+	move.l	a5,(a3)+
 
 	lea		(512-16)*2(a3),a3
 
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
-	move.l	#0x00000000,(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
+	clr.l	(a3)+
 
 	lea		(512-16)*2(a3),a3
 
+	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
+	jge		2f
+	jlt		4f
+
+	sub.l	#512*2*256,a3
+4:
 	dbf		d3,3b
 2:
 	addq	#1,d0
