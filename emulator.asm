@@ -56,6 +56,7 @@ emulator:
 	| Set screen memory.
 
 	move.l	#SCREEN_ADDRESS,d0
+|	move.l	#VRAM_ADDRESS,d0
 	swap	d0
 	move.b	d0,0x8201.w
 	swap	d0
@@ -171,7 +172,9 @@ bus_error_handler:
 	move	(a0),d0
 5:
 	lea		VRAM_ADDRESS,a1
-	move	15*4+0x18+0x2(sp),(a1,d0.w*2)										| Write (word sized) data to REG_VRAMRW.
+	clr.l	d1
+	move	d0,d1
+	move	15*4+0x18+0x2(sp),(a1,d1.l*2)										| Write (word sized) data to REG_VRAMRW.
 
 |	move	#0xffff,d2
 |	jbsr	write_word_data
@@ -192,7 +195,9 @@ bus_error_handler:
 	move	(a0),d0
 
 	lea		VRAM_ADDRESS,a1
-	move	(a1,d0.w*2),15*4+0x2c+0x2(sp)										| Read (word sized) data from REG_VRAMRW.
+	clr.l	d1
+	move	d0,d1
+	move	(a1,d1.l*2),15*4+0x2c+0x2(sp)										| Read (word sized) data from REG_VRAMRW.
 
 	jra		3f
 2:
@@ -378,27 +383,18 @@ draw_sprites:
 	lea		VRAM_ADDRESS+0x8400*2,a1
 	lea		SCREEN_ADDRESS,a2
 
-	move	(a0),d0
-	move	#0xffff,d2
-	jbsr	write_word_data
-	jbsr	write_space
-	move	(a1),d0
-	move	#0xffff,d2
-	jbsr	write_word_data
-	jbsr	write_space
-	jbsr	write_new_line
-
 	clr		d0 | Index.
 	clr		d5 | Previous X.
 	clr		d6 | Previous Y.
 1:
 	move	(a0,d0.w*2),d2 | Y + Sticky + Size.
+
 	move	d2,d3
 	and		#0x3f,d3 | Sprite size.
 	jeq		2f
 
 	btst	#6,d2 | Sticky bit.
-	jne		3f
+	jeq		3f
 
 	move	d5,d1 | Use previous X.
 	move	d6,d2 | use previous Y.
@@ -415,15 +411,95 @@ draw_sprites:
 	lsr		#7,d1
 	move	d1,d5
 4:
+|	movem.l	d0-d2,-(sp)
+
+|	move	d1,d0
+|	move	#0xffff,d2
+|	jbsr	write_word_data
+|	jbsr	write_space
+
+|	movem.l	(sp)+,d0-d2
+
+|	movem.l	d0-d2,-(sp)
+
+|	move	d2,d0
+|	move	#0xffff,d2
+|	jbsr	write_word_data
+|	jbsr	write_space
+|	jbsr	write_new_line
+
+|	movem.l	(sp)+,d0-d2
+
 	and.l	#0xffff,d2
 	swap	d2
-	lsr		#7,d2
+	lsr.l	#7,d2
 	add		d1,d2
 
-	move.l	#0x0000ffff,(a1,d2.l*2)
+	lea		(a2,d2.l*2),a3
+
+	subq	#1,d3
+3:
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+
+	lea		(512-16)*2(a3),a3
+
+	move.l	#0x0000ffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffff0000,(a3)+
+
+	lea		(512-16)*2(a3),a3
+
+.rept 12
+	move.l	#0x0000ffff,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0xffff0000,(a3)+
+
+	lea		(512-16)*2(a3),a3
+.endr
+
+	move.l	#0x0000ffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffffffff,(a3)+
+	move.l	#0xffff0000,(a3)+
+
+	lea		(512-16)*2(a3),a3
+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+	move.l	#0x00000000,(a3)+
+
+	lea		(512-16)*2(a3),a3
+
+	dbf		d3,3b
 2:
 	addq	#1,d0
-	cmp		#512,d0
+	cmp		#448,d0
 	jne		1b
 
 	movem.l	(sp)+,d0-a6
