@@ -226,6 +226,11 @@ bus_error_handler:
 	cmp.b	#0x01,0xfc02.w
 	jeq		emulator_exit
 
+	cmp.b	#0x39,0xfc02.w
+	jne		1f
+
+	jbsr	draw_sprites
+1:
 	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
 
 	jra		3f
@@ -375,8 +380,6 @@ reg_status_a_counter:
 |-------------------------------------------------------------------------------
 
 draw_sprites:
-	not.l	0x9800.w
-
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
@@ -384,6 +387,7 @@ draw_sprites:
 	lea		SCREEN_ADDRESS,a2
 
 	clr		d0 | Index.
+	clr		d4 | Previous size.
 	clr		d5 | Previous X.
 	clr		d6 | Previous Y.
 1:
@@ -396,11 +400,14 @@ draw_sprites:
 	btst	#6,d2 | Sticky bit.
 	jeq		3f
 
+	move	d4,d3 | Use previous size.
 	move	d5,d1 | Use previous X.
 	move	d6,d2 | use previous Y.
 
 	jra		4f
 3:
+	move	d3,d4
+
 	lsr		#7,d2
 	move	#496,d1
 	sub		d2,d1
@@ -504,8 +511,6 @@ draw_sprites:
 
 	movem.l	(sp)+,d0-a6
 
-	not.l	0x9800.w
-
 	rts
 
 |-------------------------------------------------------------------------------
@@ -602,11 +607,6 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
-	cmp.b	#0x39,0xfc02.w
-	jne		1f
-
-	jbsr	draw_sprites
-1:
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
