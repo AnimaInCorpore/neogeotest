@@ -3,6 +3,7 @@
 
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
 .equ	SCREEN_ADDRESS,0x600000
+.equ	VRAM_ADDRESS,0x580000
 
 .text
 
@@ -114,6 +115,8 @@ mmu_data:
 |-------------------------------------------------------------------------------
 
 bus_error_handler:
+	move	#0x2700,sr
+
 	movem.l	d0-a6,-(sp)
 
 	move.l	15*4+0x10(sp),d0													| Access address.
@@ -133,11 +136,21 @@ bus_error_handler:
 	and		#0x0030,d1															| Check for long data size write access.
 	jne		4f
 
+|	move	#0b0000000000011111,d2
+|	jbsr	write_long_data
+|	jbsr	write_space
+|	jbsr	write_new_line
+
 	swap	d0
 	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
 
 	jra		5f
 4:
+|	move	#0b0000000000011111,d2
+|	jbsr	write_word_data
+|	jbsr	write_space
+|	jbsr	write_new_line
+
 	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
 
 	jra		3f
@@ -157,19 +170,28 @@ bus_error_handler:
 	lea		vram_address(pc),a0
 	move	(a0),d0
 5:
-	lea		0x580000,a1
+	lea		VRAM_ADDRESS,a1
 	move	15*4+0x18+0x2(sp),(a1,d0.w*2)										| Write (word sized) data to REG_VRAMRW.
+
+|	move	#0xffff,d2
+|	jbsr	write_word_data
+|	jbsr	write_space
 
 	lea		vram_increment(pc),a1
 	add		(a1),d0
 	move	d0,(a0)
+
+|	move	15*4+0x18+0x2(sp),d0
+|	jbsr	write_word_data
+|	jbsr	write_space
+|	jbsr	write_new_line
 
 	jra		3f
 1:
 	lea		vram_address(pc),a0
 	move	(a0),d0
 
-	lea		0x580000,a1
+	lea		VRAM_ADDRESS,a1
 	move	(a1,d0.w*2),15*4+0x2c+0x2(sp)										| Read (word sized) data from REG_VRAMRW.
 
 	jra		3f
@@ -195,9 +217,6 @@ bus_error_handler:
 
 	cmp.l	#0x300001,d0
 	jne		2f
-1:
-	cmp.b	#0x39,0xfc02.w
-	jeq		1b
 
 	cmp.b	#0x01,0xfc02.w
 	jeq		emulator_exit
@@ -351,9 +370,65 @@ reg_status_a_counter:
 |-------------------------------------------------------------------------------
 
 draw_sprites:
+	not.l	0x9800.w
+
 	movem.l	d0-a6,-(sp)
 
+	lea		VRAM_ADDRESS+0x8200*2,a0
+	lea		VRAM_ADDRESS+0x8400*2,a1
+	lea		SCREEN_ADDRESS,a2
+
+	move	(a0),d0
+	move	#0xffff,d2
+	jbsr	write_word_data
+	jbsr	write_space
+	move	(a1),d0
+	move	#0xffff,d2
+	jbsr	write_word_data
+	jbsr	write_space
+	jbsr	write_new_line
+
+	clr		d0 | Index.
+	clr		d5 | Previous X.
+	clr		d6 | Previous Y.
+1:
+	move	(a0,d0.w*2),d2 | Y + Sticky + Size.
+	move	d2,d3
+	and		#0x3f,d3 | Sprite size.
+	jeq		2f
+
+	btst	#6,d2 | Sticky bit.
+	jne		3f
+
+	move	d5,d1 | Use previous X.
+	move	d6,d2 | use previous Y.
+
+	jra		4f
+3:
+	lsr		#7,d2
+	move	#496,d1
+	sub		d2,d1
+	exg		d1,d2
+	move	d2,d6
+
+	move	(a1,d0.w*2),d1 | X.
+	lsr		#7,d1
+	move	d1,d5
+4:
+	and.l	#0xffff,d2
+	swap	d2
+	lsr		#7,d2
+	add		d1,d2
+
+	move.l	#0x0000ffff,(a1,d2.l*2)
+2:
+	addq	#1,d0
+	cmp		#512,d0
+	jne		1b
+
 	movem.l	(sp)+,d0-a6
+
+	not.l	0x9800.w
 
 	rts
 
@@ -451,16 +526,23 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
+	cmp.b	#0x39,0xfc02.w
+	jne		1f
+
+	jbsr	draw_sprites
+1:
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
-	add.l	#0x04000000,0x9800.w
-	and.l	#0xff000000,0x9800.w												| Flashing red screen frame.
+	move.l	#0xff000000,0x9800.w
+|	add.l	#0x04000000,0x9800.w
+|	and.l	#0xff000000,0x9800.w												| Flashing red screen frame.
 
 	jmp		0xc00438															| Jump to the BIOS VBL routine.
 1:
-	add.l	#0x00040000,0x9800.w
-	and.l	#0x00ff0000,0x9800.w												| Flashing Green screen frame.
+	move.l	#0x00ff0000,0x9800.w
+|	add.l	#0x00040000,0x9800.w
+|	and.l	#0x00ff0000,0x9800.w												| Flashing Green screen frame.
 
 	move.l	0x64.w,-(sp)														| Jump to the cartridge VBL routine.
 
