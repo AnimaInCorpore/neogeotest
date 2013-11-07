@@ -226,10 +226,13 @@ bus_error_handler:
 	cmp.b	#0x01,0xfc02.w
 	jeq		emulator_exit
 
-	cmp.b	#0x39,0xfc02.w
+	lea		sprite_draw_counter(pc),a0
+	move	(a0),d0
+	and		#0xf,d0
 	jne		1f
 
 	jbsr	draw_sprites
+	addq	#1,(a0)
 1:
 	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
 
@@ -372,6 +375,9 @@ use_cartridge_vector_table:
 
 reg_status_a_counter:
 	dc.w	0x007f
+
+sprite_draw_counter:
+	ds.w	1
 
 |-------------------------------------------------------------------------------
 |
@@ -607,6 +613,13 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
+	move.l	a0,-(sp)
+
+	lea		sprite_draw_counter(pc),a0
+	addq	#1,(a0)
+
+	move.l	(sp)+,a0
+
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
