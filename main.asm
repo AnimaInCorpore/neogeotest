@@ -147,6 +147,8 @@ start:
 load_roms:
 	| Load the program ROM.
 
+	Cconws	loading_program_rom_text
+
 	Fopen	program_rom_file_name,#0
 	move	d0,d7
 
@@ -184,6 +186,8 @@ load_roms:
 
 	| Load the BIOS ROM.
 
+	Cconws	loading_bios_rom_text
+
 	Fopen	bios_rom_file_name,#0
 	move	d0,d7
 
@@ -218,15 +222,65 @@ load_roms:
 	move.l	#0x100000+0x8000+0x100000+0x8000+0x11c62,d0
 	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the checksum result check.
 
+	| Load sprite ROMs (only the first 4 MiB of 16 MiB).
+
+	Cconws	loading_sprite_roms_text
+
+	Fopen	sprite1_rom_file_name,#0
+	move	d0,d7
+
+	Fread	d7,#0x200000,0x500000
+
+	Fclose	d7
+
+	Fopen	sprite2_rom_file_name,#0
+	move	d0,d7
+
+	Fread	d7,#0x200000,0xa00000
+
+	Fclose	d7
+
+	lea		0x500000,a0
+	lea		0xa00000,a1
+	lea		0x700000,a2
+	lea		0xb00000,a3
+1:
+.rept 16
+	move.b	(a0)+,(a2)+
+	move.b	(a1)+,(a2)+
+.endr
+
+	cmp.l	a3,a2
+	jlt		1b
+
 	rts
 
 program_rom_file_name:
 	.asciz	"201-p1.p1"
 
-.even
-
 bios_rom_file_name:
 	.asciz	"sp-s2.sp1"
+
+sprite1_rom_file_name:
+	.asciz	"201-c1.c1"
+
+sprite2_rom_file_name:
+	.asciz	"201-c2.c2"
+
+sprite3_rom_file_name:
+	.asciz	"201-c3.c3"
+
+sprite4_rom_file_name:
+	.asciz	"201-c4.c4"
+
+loading_program_rom_text:
+	.asciz	"Loading program ROM...\r\n"
+
+loading_bios_rom_text:
+	.asciz	"Loading BIOS ROM...\r\n"
+
+loading_sprite_roms_text:
+	.asciz	"Loading sprite ROMs...\r\n"
 
 .even
 

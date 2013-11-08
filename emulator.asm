@@ -2,7 +2,7 @@
 .global emulator_end
 
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
-.equ	SCREEN_ADDRESS,0x700000
+.equ	SCREEN_ADDRESS,0x600000
 .equ	VRAM_ADDRESS,0x580000
 
 .text
@@ -53,6 +53,24 @@ emulator:
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
 
+	| Clear screen memory.
+
+	lea		SCREEN_ADDRESS,a0
+1:
+	clr.l	(a0)+
+
+	cmp.l	#SCREEN_ADDRESS+512*2*224,a0
+	jlt		1b
+
+	| Clear VRAM memory.
+
+	lea		VRAM_ADDRESS,a0
+1:
+	clr.l	(a0)+
+
+	cmp.l	#VRAM_ADDRESS+0x10000*2,a0
+	jlt		1b
+
 	| Set screen memory.
 
 	move.l	#SCREEN_ADDRESS,d0
@@ -64,15 +82,6 @@ emulator:
 	ror		#8,d0
 	move.b	d0,0x8203.w
 	move.b	d1,0x820d.w
-
-	| Clear screen memory.
-
-	lea		SCREEN_ADDRESS,a0
-1:
-	clr.l	(a0)+
-
-	cmp.l	#SCREEN_ADDRESS+512*2*224,a0
-	jlt		1b
 
 	| Start the emulation.
 
