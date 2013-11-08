@@ -403,10 +403,6 @@ draw_sprites:
 1:
 	move	(a0,d0.w*2),d2 | Y + Sticky + Size.
 
-	move	d2,d3
-	and		#0x3f,d3 | Sprite size.
-	jeq		2f
-
 	btst	#6,d2 | Sticky bit.
 	jeq		3f
 
@@ -416,6 +412,10 @@ draw_sprites:
 
 	jra		4f
 3:
+	move	d2,d3
+	and		#0x3f,d3 | Sprite size.
+	jeq		2f
+
 	move	d3,d4
 
 	lsr		#7,d2
@@ -428,20 +428,32 @@ draw_sprites:
 	lsr		#7,d1
 	move	d1,d5
 4:
-	and.l	#0xffff,d2
 	swap	d2
+	clr		d2
 	lsr.l	#7,d2
 	add		d1,d2
 
 	lea		(a2,d2.l*2),a3
 
-|	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
-|	jlt		4f
-
-|	sub.l	#512*2*256,a3
-|4:
 	subq	#1,d3
 3:
+	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
+	jlt		4f
+
+	sub.l	#512*2*256,a3
+4:
+	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
+	jge		4f
+
+	add.l	#512*2*16,a3
+	jra		5f
+4:
+	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
+	jlt		4f
+
+	add.l	#512*2*16,a3
+	jra		5f
+4:
 	clr.l	(a3)+
 	clr.l	(a3)+
 	clr.l	(a3)+
@@ -498,13 +510,7 @@ draw_sprites:
 	clr.l	(a3)+
 
 	lea		(512-16)*2(a3),a3
-
-	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
-	jge		2f
-	jlt		4f
-
-	sub.l	#512*2*256,a3
-4:
+5:
 	dbf		d3,3b
 2:
 	addq	#1,d0
