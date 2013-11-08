@@ -228,7 +228,7 @@ bus_error_handler:
 
 	lea		sprite_draw_counter(pc),a0
 	move	(a0),d0
-	and		#0xf,d0
+	and		#0x7,d0
 	jne		1f
 
 	jbsr	draw_sprites
@@ -406,10 +406,11 @@ draw_sprites:
 	btst	#6,d1 | Check sticky bit.
 	jeq		3f
 
-	move	d4,d3 | Use previous height.
 	add		#16,d5
 	move	d5,d1 | Use previous X position + 16.
 	move	d6,d2 | use previous Y position.
+	move	d4,d3 | Use previous height.
+	jeq		2f | Avoid having 0 as the height.
 
 	jra		4f
 3:

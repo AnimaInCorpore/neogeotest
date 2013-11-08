@@ -29,10 +29,10 @@ TIA				TIBs			TICs			TIDs
 0x50000001		0x05000001		[EMU_RAM]		[INVALID]		[INVALID]		[INVALID]		[INVALID]
 0x60000001		0x06000001		0x00600001		[INVALID]		[INVALID]		[INVALID]		[INVALID]
 0x70000001		0x07000001		0x00700001		[INVALID]		[INVALID]		[INVALID]		[INVALID]
-0x80000041		0x08000001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		[INVALID]
-0x90000041		0x09000001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		[INVALID]
-0xa0000041		0x0a000001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		[INVALID]
-0xb0000041		0x0b000001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		[INVALID]
+0x80000041		0x08000001		0x00800001		[INVALID]		[INVALID]		[INVALID]		[INVALID]
+0x90000041		0x09000001		0x00900001		[INVALID]		[INVALID]		[INVALID]		[INVALID]
+0xa0000041		0x0a000001		0x00a00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]
+0xb0000041		0x0b000001		0x00b00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]
 0xc0000041		0x0c000001		[TID_2]			[INVALID]		[INVALID]		[INVALID]		[INVALID]
 0xd0000041		0x0d000001		[TID_3]			[INVALID]		[INVALID]		[INVALID]		[INVALID]
 0xe0000041		0x0e000001		0x00e00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]
@@ -336,10 +336,15 @@ build_mmu_tables:
 	move.l	#0x00600000+0x01,(a0)+
 	move.l	#0x00700000+0x01,(a0)+
 
-	clr.l	(a0)+																| Memory card (invalid).
-	clr.l	(a0)+
-	clr.l	(a0)+
-	clr.l	(a0)+
+|	clr.l	(a0)+																| Memory card (invalid).
+|	clr.l	(a0)+
+|	clr.l	(a0)+
+|	clr.l	(a0)+
+
+	move.l	#0x00800000+0x01,(a0)+												| Memory card (disabled so space is free for sprites, etc.).
+	move.l	#0x00900000+0x01,(a0)+
+	move.l	#0x00a00000+0x01,(a0)+
+	move.l	#0x00b00000+0x01,(a0)+
 
 	move.l	d0,(a0)
 	add.l	#16*4*4+32*4*2+0x2,(a0)+											| Reference to TID 2.
