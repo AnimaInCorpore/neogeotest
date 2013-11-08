@@ -396,43 +396,61 @@ draw_sprites:
 	move.l	#0xffff0000,a5
 	move.l	#0xffffffff,a6
 
-	clr		d0 | Index.
-	clr		d4 | Previous size.
-	clr		d5 | Previous X.
-	clr		d6 | Previous Y.
+	clr		d0 | Sprite index.
+	clr		d4 | Previous sprite height.
+	clr		d5 | Previous sprite X position.
+	clr		d6 | Previous sprite Y position.
 1:
-	move	(a0,d0.w*2),d2 | Y + Sticky + Size.
+	move	(a0,d0.w*2),d1 | Sprite Y position + sticky bit + height.
 
-	btst	#6,d2 | Sticky bit.
+	btst	#6,d1 | Check sticky bit.
 	jeq		3f
 
-	move	d4,d3 | Use previous size.
-	move	d5,d1 | Use previous X.
-	move	d6,d2 | use previous Y.
+	move	d4,d3 | Use previous height.
+	add		#16,d5
+	move	d5,d1 | Use previous X position + 16.
+	move	d6,d2 | use previous Y position.
 
 	jra		4f
 3:
-	move	d2,d3
-	and		#0x3f,d3 | Sprite size.
+	move	d1,d3
+	and		#0x3f,d3 | Sprite height.
 	jeq		2f
 
-	move	d3,d4
+	move	d3,d4 | Save sprite height.
 
-	lsr		#7,d2
-	move	#496,d1
-	sub		d2,d1
-	exg		d1,d2
-	move	d2,d6
-
-	move	(a1,d0.w*2),d1 | X.
 	lsr		#7,d1
-	move	d1,d5
+	move	#496,d2
+	sub		d1,d2
+	move	d2,d6 | Save Y position.
+
+	move	(a1,d0.w*2),d1 | Sprite X position.
+	lsr		#7,d1
+	move	d1,d5 | Save X position.
+4:
+	| Check sprite X position boundaries.
+
+	ext.l	d1
+
+	cmp		#320,d1 | Right screen border.
+	jle		6f
+
+	sub		#512,d1
+
+	cmp		#-16,d1 | Left screen border.
+	jle		2f
+6:
+	| Calculate sprite screen address.
+
+	cmp		#256,d2
+	jlt		4f
+
+	sub		#256,d2
 4:
 	swap	d2
 	clr		d2
-	lsr.l	#7,d2
-	add		d1,d2
-
+	asr.l	#7,d2
+	add.l	d1,d2
 	lea		(a2,d2.l*2),a3
 
 	subq	#1,d3
@@ -443,7 +461,7 @@ draw_sprites:
 	sub.l	#512*2*256,a3
 4:
 	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
-	jge		4f
+	jgt		4f
 
 	add.l	#512*2*16,a3
 	jra		5f
