@@ -56,7 +56,7 @@ emulator:
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
 
-	| Clear the caches.
+	| Clear CPU caches.
 
 	movec	cacr,d0
 	bset	#11,d0
@@ -118,7 +118,7 @@ emulator_exit:
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
 
-	| Clear the caches.
+	| Clear CPU caches.
 
 	movec	cacr,d0
 	bset	#11,d0
@@ -428,10 +428,6 @@ draw_dummy_sprites:
 	lea		VRAM_ADDRESS+0x8400*2,a1
 	lea		SCREEN_ADDRESS,a2
 
-	move.l	#0x0000ffff,a4
-	move.l	#0xffff0000,a5
-	move.l	#0xffffffff,a6
-
 	clr		d0 | Sprite index.
 	clr		d4 | Previous sprite height.
 	clr		d5 | Previous sprite X position.
@@ -452,9 +448,8 @@ draw_dummy_sprites:
 3:
 	move	d1,d3
 	and		#0x3f,d3 | Sprite height.
-	jeq		2f
-
 	move	d3,d4 | Save sprite height.
+	jeq		2f
 
 	lsr		#7,d1
 	move	#496,d2
@@ -511,6 +506,7 @@ draw_dummy_sprites:
 4:
 	movem.l	d0-a0,-(sp)
 
+	add		d3,d0
 	lsl		#3,d0
 	move.l	#512*2,a0
 
@@ -604,9 +600,8 @@ build_sprite_infos:
 3:
 	move	d1,d3
 	and		#0x3f,d3 															| Sprite height.
-	jeq		2f
-
 	move	d3,d4 																| Save sprite height.
+	jeq		2f
 
 	lsr		#7,d1
 	move	#496,d2
