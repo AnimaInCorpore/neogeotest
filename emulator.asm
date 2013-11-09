@@ -4,6 +4,9 @@
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
 .equ	SCREEN_ADDRESS,0x600000
 .equ	VRAM_ADDRESS,0x580000
+.equ	SPRITE_INFOS_ADDRESS,VRAM_ADDRESS+0x20000
+.equ	PALETTES_ADDRESS,SPRITE_INFOS_ADDRESS+0x2000
+.equ	COMPILED_SPRITES_ADDRESS,PALETTES_ADDRESS+0x4000
 
 .text
 
@@ -52,6 +55,13 @@ emulator:
 
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
+
+	| Clear the caches.
+
+	movec	cacr,d0
+	bset	#11,d0
+	bset	#3,d0
+	movec	d0,cacr
 
 	| Clear screen memory.
 
@@ -108,6 +118,13 @@ emulator_exit:
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
 
+	| Clear the caches.
+
+	movec	cacr,d0
+	bset	#11,d0
+	bset	#3,d0
+	movec	d0,cacr
+
 	move.l	old_sp(pc),sp														| Restore the Atari stack pointer.
 
 	rts
@@ -126,6 +143,7 @@ mmu_data:
 
 bus_error_handler:
 	move	#0x2700,sr
+	move.l	#0x000000ff,0x9800.w
 
 	movem.l	d0-a6,-(sp)
 
@@ -176,6 +194,8 @@ bus_error_handler:
 
 	btst	#6,d1																| Read access?
 	jne		1f
+
+	move.l	#0x00ff0000,0x9800.w
 
 	lea		vram_address(pc),a0
 	move	(a0),d0
@@ -235,12 +255,15 @@ bus_error_handler:
 	cmp.b	#0x01,0xfc02.w
 	jeq		emulator_exit
 
+	cmp.b	#0x39,0xfc02.w
+	jeq		1f
+
 	lea		sprite_draw_counter(pc),a0
 	move	(a0),d0
 	and		#0x7,d0
 	jne		1f
 
-	jbsr	draw_sprites
+	jbsr	draw_dummy_sprites
 	addq	#1,(a0)
 1:
 	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
@@ -334,6 +357,8 @@ bus_error_handler:
 2:
 	| Write unhandled access addresses on screen.
 
+	move.l	#0xff000000,0x9800.w
+
 	jra		3f
 
 	move	#0b0000011111100000,d2												| Red access = green color.
@@ -371,6 +396,8 @@ bus_error_handler:
 |	or		#0x8000,(sp)														| Reenable tracing.
 	bclr	#8,0xa(sp)															| Data fault processed.
 
+	clr.l	0x9800.w
+
 	rte
 
 vram_address:
@@ -390,11 +417,11 @@ sprite_draw_counter:
 
 |-------------------------------------------------------------------------------
 |
-|	Draw sprites.
+|	Draw dummy sprites.
 |
 |-------------------------------------------------------------------------------
 
-draw_sprites:
+draw_dummy_sprites:
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
@@ -482,62 +509,160 @@ draw_sprites:
 	add.l	#512*2*16,a3
 	jra		5f
 4:
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
+	movem.l	d0-a0,-(sp)
 
-	lea		(512-16)*2(a3),a3
+	lsl		#3,d0
+	move.l	#512*2,a0
 
-	move.l	a4,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a5,(a3)+
-
-	lea		(512-16)*2(a3),a3
-
-.rept 12
-	move.l	a4,(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	move.l	a5,(a3)+
-
-	lea		(512-16)*2(a3),a3
+.rept 16
+	move	d0,(a3)+
 .endr
 
-	move.l	a4,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a6,(a3)+
-	move.l	a5,(a3)+
+	lea		-16*2(a3),a3
+	movem.l	(a3),d0-d7
+	add.l	a0,a3
 
-	lea		(512-16)*2(a3),a3
+.rept 16-1
+	movem.l	d0-d7,(a3)
+	add.l	a0,a3
+.endr
 
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
-	clr.l	(a3)+
+	movem.l	(sp)+,d0-a0
+5:
+	dbf		d3,3b
+2:
+	addq	#1,d0
+	cmp		#448,d0
+	jne		1b
 
-	lea		(512-16)*2(a3),a3
+	movem.l	(sp)+,d0-a6
+
+	rts
+
+|-------------------------------------------------------------------------------
+|
+|	Draw sprites.
+|
+|-------------------------------------------------------------------------------
+
+draw_sprites:
+	lea		SPRITE_INFOS_ADDRESS,a1
+1:
+	move.l	(a1)+,d0															| Palette address.
+	jeq		2f
+
+	move.l	d0,a2
+	move.l	(a1)+,a6															| Screen address.
+	move.l	(a1)+,d0															| Sprite drawing code address.
+	lea		3f(pc),a0															| Return address.
+	movem.l	d0/a0-a1,-(sp)
+	movem.l	(a2),d0-a5															| Load palette colors.
+	rts																			| Jump to sprite drawing code.
+3:
+	move.l	(sp)+,a1
+	jbra	1b
+2:
+
+|-------------------------------------------------------------------------------
+|
+|	Build sprite infos.
+|
+|	Each entry consists of the palette address, the screen address and the drawing address.
+|
+|-------------------------------------------------------------------------------
+
+build_sprite_infos:
+	movem.l	d0-a6,-(sp)
+
+	lea		VRAM_ADDRESS+0x8200*2,a0											| Sprite Y positions + sticky bit + height.
+	lea		VRAM_ADDRESS+0x8400*2,a1											| Sprite X positions.
+	lea		VRAM_ADDRESS,a2														| Sprite tilemaps.
+
+	lea		SPRITE_INFOS_ADDRESS,a3												| Converted sprite infos.
+	lea		COMPILED_SPRITES_ADDRESS,a4											| Compiled sprites.
+	lea		SCREEN_ADDRESS,a5													| Screen address.
+	lea		PALETTES_ADDRESS,a6													| Palettes address.
+
+	clr		d0 																	| Sprite counter.
+	clr		d4 																	| Previous sprite height.
+	clr		d5 																	| Previous sprite X position.
+	clr		d6 																	| Previous sprite Y position.
+1:
+	move	(a0)+,d1 															| Sprite Y position + sticky bit + height.
+	move	(a1)+,d7 															| Sprite X position.
+
+	btst	#6,d1 																| Check sticky bit.
+	jeq		3f
+
+	add		#16,d5
+	move	d5,d1 																| Use previous X position + 16.
+	move	d6,d2 																| use previous Y position.
+	move	d4,d3 																| Use previous height.
+	jeq		2f 																	| Avoid having 0 as the height.
+
+	jra		4f
+3:
+	move	d1,d3
+	and		#0x3f,d3 															| Sprite height.
+	jeq		2f
+
+	move	d3,d4 																| Save sprite height.
+
+	lsr		#7,d1
+	move	#496,d2
+	sub		d1,d2
+	move	d2,d6 																| Save Y position.
+
+	lsr		#7,d7
+	move	d7,d5 																| Save X position.
+4:
+	| Check sprite X position boundaries.
+
+	ext.l	d1
+
+	cmp		#320,d1 															| Right screen border.
+	jle		6f
+
+	sub		#512,d1
+
+	cmp		#-16,d1 															| Left screen border.
+	jle		2f
+6:
+	| Calculate sprite screen address.
+
+	cmp		#256,d2
+	jlt		4f
+
+	sub		#256,d2
+4:
+	swap	d2
+	clr		d2
+	asr.l	#7,d2
+	add.l	d1,d2
+	lea		(a2,d2.l*2),a3
+
+	subq	#1,d3
+3:
+	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
+	jlt		4f
+
+	sub.l	#512*2*256,a3
+4:
+	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
+	jgt		4f
+
+	add.l	#512*2*16,a3
+	jra		5f
+4:
+	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
+	jlt		4f
+
+	add.l	#512*2*16,a3
+	jra		5f
+4:
+
+
+
 5:
 	dbf		d3,3b
 2:
@@ -653,13 +778,13 @@ vbl_handler:
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
-	move.l	#0xff000000,0x9800.w
+|	move.l	#0xff000000,0x9800.w
 |	add.l	#0x04000000,0x9800.w
 |	and.l	#0xff000000,0x9800.w												| Flashing red screen frame.
 
 	jmp		0xc00438															| Jump to the BIOS VBL routine.
 1:
-	move.l	#0x00ff0000,0x9800.w
+|	move.l	#0x00ff0000,0x9800.w
 |	add.l	#0x00040000,0x9800.w
 |	and.l	#0x00ff0000,0x9800.w												| Flashing Green screen frame.
 
