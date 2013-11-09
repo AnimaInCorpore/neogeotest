@@ -462,10 +462,8 @@ draw_dummy_sprites:
 4:
 	| Check sprite X position boundaries.
 
-	ext.l	d1
-
 	cmp		#320,d1 | Right screen border.
-	jle		6f
+	jlt		6f
 
 	sub		#512,d1
 
@@ -474,14 +472,10 @@ draw_dummy_sprites:
 6:
 	| Calculate sprite screen address.
 
-	cmp		#256,d2
-	jlt		4f
-
-	sub		#256,d2
-4:
 	swap	d2
 	clr		d2
-	asr.l	#7,d2
+	lsr.l	#7,d2
+	ext.l	d1
 	add.l	d1,d2
 	lea		(a2,d2.l*2),a3
 
@@ -490,7 +484,7 @@ draw_dummy_sprites:
 	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
 	jlt		4f
 
-	sub.l	#512*2*256,a3
+	sub.l	#512*2*512,a3
 4:
 	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
 	jgt		4f
@@ -613,10 +607,9 @@ build_sprite_infos:
 4:
 	| Check sprite X position boundaries.
 
-	ext.l	d1
 
 	cmp		#320,d1 															| Right screen border.
-	jle		6f
+	jlt		6f
 
 	sub		#512,d1
 
@@ -625,14 +618,10 @@ build_sprite_infos:
 6:
 	| Calculate sprite screen address.
 
-	cmp		#256,d2
-	jlt		4f
-
-	sub		#256,d2
-4:
 	swap	d2
 	clr		d2
-	asr.l	#7,d2
+	lsr.l	#7,d2
+	ext.l	d1
 	add.l	d1,d2
 	lea		(a2,d2.l*2),a3
 
@@ -641,7 +630,7 @@ build_sprite_infos:
 	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
 	jlt		4f
 
-	sub.l	#512*2*256,a3
+	sub.l	#512*2*512,a3
 4:
 	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
 	jgt		4f
@@ -658,9 +647,18 @@ build_sprite_infos:
 
 
 
+	movem.l	d0-d2/a0,-(sp)
+
+	movem.l	(sp)+,d0-d2/a0
+
+
+
+
 5:
 	dbf		d3,3b
 2:
+	lea		32*2*2(a2),a2
+
 	addq	#1,d0
 	cmp		#448,d0
 	jne		1b
@@ -668,6 +666,9 @@ build_sprite_infos:
 	movem.l	(sp)+,d0-a6
 
 	rts
+
+highest_tilemap:
+	ds.l	1
 
 |-------------------------------------------------------------------------------
 |
