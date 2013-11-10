@@ -161,6 +161,8 @@ load_roms:
 
 	Fclose	d7
 
+	Cconws	reordering_program_rom_text
+
 	move.l	neogeo_memory_pages_start,a0
 	move.l	a0,a1
 	add.l	#0x100000,a1
@@ -240,6 +242,8 @@ load_roms:
 
 	Fclose	d7
 
+	Cconws	reordering_sprite_roms_text
+
 	lea		0x500000,a0
 	lea		0xa00000,a1
 	lea		0x700000,a2
@@ -276,11 +280,17 @@ sprite4_rom_file_name:
 loading_program_rom_text:
 	.asciz	"Loading program ROM...\r\n"
 
+reordering_program_rom_text:
+	.asciz	"Reordering program ROM...\r\n"
+
 loading_bios_rom_text:
 	.asciz	"Loading BIOS ROM...\r\n"
 
 loading_sprite_roms_text:
 	.asciz	"Loading sprite ROMs...\r\n"
+
+reordering_sprite_roms_text:
+	.asciz	"Reordering sprite ROMs...\r\n"
 
 .even
 

@@ -2,7 +2,7 @@
 .global emulator_end
 
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
-.equ	SCREEN_ADDRESS,0x600000
+.equ	SCREEN_ADDRESS,0x600000+512*2*16
 .equ	VRAM_ADDRESS,0x580000
 .equ	SPRITE_INFOS_ADDRESS,VRAM_ADDRESS+0x20000
 .equ	PALETTES_ADDRESS,SPRITE_INFOS_ADDRESS+0x2000
@@ -497,7 +497,7 @@ draw_dummy_sprites:
 4:
 	movem.l	d0-a0,-(sp)
 
-	lea		SCREEN_ADDRESS,a2
+|	lea		SCREEN_ADDRESS,a2
 
 	add		d3,d0
 	lsl		#3,d0
