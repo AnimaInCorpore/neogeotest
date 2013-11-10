@@ -96,7 +96,8 @@ emulator:
 	| Start the emulation.
 
 |	lea		0x10F300,sp															| Set the initial NeoGeo stack pointer.
-	lea		0x600000,sp															| The NeoGeo stack pointer is not usable because the BIOS RAM check fails while the trace and bus error exceptions are active.
+	lea		emulator_end(pc),sp
+	add.l	#0x4000*4,sp														| The NeoGeo stack pointer is not usable because the BIOS RAM check fails while the trace and bus error exceptions are active.
 	jbra	0xc00402															| Call NeoGeo BIOS init routine.
 
 |-------------------------------------------------------------------------------
@@ -143,7 +144,7 @@ mmu_data:
 
 bus_error_handler:
 	move	#0x2700,sr
-	move.l	#0x000000ff,0x9800.w
+|	move.l	#0x000000ff,0x9800.w
 
 	movem.l	d0-a6,-(sp)
 
@@ -195,7 +196,7 @@ bus_error_handler:
 	btst	#6,d1																| Read access?
 	jne		1f
 
-	move.l	#0x00ff0000,0x9800.w
+|	move.l	#0x00ff0000,0x9800.w
 
 	lea		vram_address(pc),a0
 	move	(a0),d0
@@ -357,7 +358,7 @@ bus_error_handler:
 2:
 	| Write unhandled access addresses on screen.
 
-	move.l	#0xff000000,0x9800.w
+|	move.l	#0xff000000,0x9800.w
 
 	jra		3f
 
@@ -396,7 +397,7 @@ bus_error_handler:
 |	or		#0x8000,(sp)														| Reenable tracing.
 	bclr	#8,0xa(sp)															| Data fault processed.
 
-	clr.l	0x9800.w
+|	clr.l	0x9800.w
 
 	rte
 
@@ -425,24 +426,27 @@ draw_dummy_sprites:
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
-	lea		SCREEN_ADDRESS,a2
+	lea		SCREEN_ADDRESS,a1
 
-	clr		d0 | Sprite index.
 	clr		d4 | Previous sprite height.
 	clr		d5 | Previous sprite X position.
 	clr		d6 | Previous sprite Y position.
+
+	move	#448-1,d7
 1:
-	move	0x200*2(a0),d7 | Sprite X position.
+	move	0x200*2(a0),d0 | Sprite X position.
 	move	(a0)+,d1 | Sprite Y position + sticky bit + height.
 
 	btst	#6,d1 | Check sticky bit.
 	jeq		3f
 
-	add		#16,d5
-	move	d5,d7 | Use previous X position + 16.
-	move	d6,d2 | use previous Y position.
 	move	d4,d3 | Use previous height.
 	jeq		2f | Avoid having 0 as the height.
+
+	add		#16,d5
+	move	d5,d0 | Use previous X position + 16.
+
+	move	d6,d2 | use previous Y position.
 
 	jra		4f
 3:
@@ -456,17 +460,17 @@ draw_dummy_sprites:
 	sub		d1,d2
 	move	d2,d6 | Save Y position.
 
-	lsr		#7,d7
-	move	d7,d5 | Save X position.
+	lsr		#7,d0
+	move	d0,d5 | Save X position.
 4:
 	| Check sprite X position boundaries.
 
-	cmp		#320,d7 | Right screen border.
+	cmp		#320,d0 | Right screen border.
 	jlt		6f
 
-	sub		#512,d7
+	sub		#512,d0
 
-	cmp		#-16,d7 | Left screen border.
+	cmp		#-16,d0 | Left screen border.
 	jle		2f
 6:
 	| Calculate sprite screen address.
@@ -474,55 +478,49 @@ draw_dummy_sprites:
 	swap	d2
 	clr		d2
 	lsr.l	#7,d2
-	ext.l	d7
-	add.l	d7,d2
-	lea		(a2,d2.l*2),a3
+	ext.l	d0
+	add.l	d0,d2
+	lea		(a1,d2.l*2),a2
 
 	subq	#1,d3
 3:
-	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
+	cmp.l	#SCREEN_ADDRESS+512*2*224,a2
 	jlt		4f
 
-	sub.l	#512*2*512,a3
-4:
-	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
+	sub.l	#512*2*512,a2
+
+	cmp.l	#SCREEN_ADDRESS-512*2*16,a2
 	jgt		4f
 
-	add.l	#512*2*16,a3
-	jra		5f
-4:
-	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
-	jlt		4f
-
-	add.l	#512*2*16,a3
+	add.l	#512*2*16,a2
 	jra		5f
 4:
 	movem.l	d0-a0,-(sp)
+
+	lea		SCREEN_ADDRESS,a2
 
 	add		d3,d0
 	lsl		#3,d0
 	move.l	#512*2,a0
 
 .rept 16
-	move	d0,(a3)+
+	move	d0,(a2)+
 .endr
 
-	lea		-16*2(a3),a3
-	movem.l	(a3),d0-d7
-	add.l	a0,a3
+	lea		-16*2(a2),a2
+	movem.l	(a2),d0-d7
+	add.l	a0,a2
 
 .rept 16-1
-	movem.l	d0-d7,(a3)
-	add.l	a0,a3
+	movem.l	d0-d7,(a2)
+	add.l	a0,a2
 .endr
 
 	movem.l	(sp)+,d0-a0
 5:
 	dbf		d3,3b
 2:
-	addq	#1,d0
-	cmp		#448,d0
-	jne		1b
+	dbf		d7,1b
 
 	movem.l	(sp)+,d0-a6
 
@@ -753,6 +751,10 @@ trace_handler:
 |-------------------------------------------------------------------------------
 
 hbl_handler:
+|	not.l	0x9800.w
+
+	or		#0x0300,(sp)														| Disable HBL interrupts.
+
 	rte
 
 |-------------------------------------------------------------------------------
@@ -772,16 +774,8 @@ vbl_handler:
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
 
-|	move.l	#0xff000000,0x9800.w
-|	add.l	#0x04000000,0x9800.w
-|	and.l	#0xff000000,0x9800.w												| Flashing red screen frame.
-
 	jmp		0xc00438															| Jump to the BIOS VBL routine.
 1:
-|	move.l	#0x00ff0000,0x9800.w
-|	add.l	#0x00040000,0x9800.w
-|	and.l	#0x00ff0000,0x9800.w												| Flashing Green screen frame.
-
 	move.l	0x64.w,-(sp)														| Jump to the cartridge VBL routine.
 
 	rts
