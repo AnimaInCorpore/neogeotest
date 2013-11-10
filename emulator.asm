@@ -248,6 +248,15 @@ bus_error_handler:
 
 	jra		3f
 2:
+	| REG_LSPCMODE.
+
+	cmp.l	#0x3c0006,d0
+	jne		2f
+
+	move	#0x0000,15*4+0x2c+0x2(sp)											| Read (word sized) data from REG_LSPCMODE.
+
+	jra		3f
+2:
 	| REG_DIPSW (write = kick watchdog).
 
 	cmp.l	#0x300001,d0
@@ -356,19 +365,17 @@ bus_error_handler:
 
 	jra		3f
 2:
-	| Write unhandled access addresses on screen.
+	| Unhandled hardware addresse accesses.
 
 |	move.l	#0xff000000,0x9800.w
 
-	jra		3f
-
-	move	#0b0000011111100000,d2												| Red access = green color.
+	move	#0b1111100000000000,d2												| Write access = red color.
 
 	btst	#6,d1																| Read access?
-	jne		1f
+	jeq		3f
 
-	move	#0b1111100000000000,d2												| Write access = red color.
-1:
+	move	#0b0000011111100000,d2												| Read access = green color.
+
 	move.l	15*4+0x2(sp),d0
 	jbsr	write_long_data
 
@@ -384,13 +391,6 @@ bus_error_handler:
 
 	jbsr	write_space
 	jbsr	write_new_line
-
-	and		#0xf000,d1
-	jeq		3f
-1:
-	cmp.b	#0x01,0xfc02.w
-	jne		1b
-	jbra	emulator_exit
 3:
 	movem.l	(sp)+,d0-a6
 
