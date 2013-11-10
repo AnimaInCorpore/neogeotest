@@ -288,11 +288,16 @@ bus_error_handler:
 	btst	#6,d1																| Read access?
 	jne		1f
 
-|	move	15*4+0x18+0x2(sp),(a0)												| Write (byte sized) data to REG_SOUND.
+	lea		sound_command(pc),a0
+	move.b	15*4+0x18+0x3(sp),(a0)												| Write (byte sized) data to REG_SOUND.
 
 	jra		3f
 1:
-	move.b	#0x01,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_SOUND.
+	cmp.b	#0x01,sound_command(pc)
+	seq		d0
+	and		#0x01,d0
+
+	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_SOUND.
 
 	jra		3f
 2:
@@ -301,7 +306,34 @@ bus_error_handler:
 	cmp.l	#0x300000,d0
 	jne		2f
 
-	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_P1CNT.
+	move	#0xff,d0
+
+	cmp.b	#0x2a,0xfc02.w														| Left SHIFT.
+	jne		1f
+
+	and		#0xef,d0
+1:
+	cmp.b	#0x4b,0xfc02.w														| Arrow left.
+	jne		1f
+
+	and		#0xfb,d0
+1:
+	cmp.b	#0x4d,0xfc02.w														| Arrow right.
+	jne		1f
+
+	and		#0xf7,d0
+1:
+	cmp.b	#0x48,0xfc02.w														| Arrow up.
+	jne		1f
+
+	and		#0xfe,d0
+1:
+	cmp.b	#0x50,0xfc02.w														| Arrow down.
+	jne		1f
+
+	and		#0xfd,d0
+1:
+	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_P1CNT.
 
 	jra		3f
 2:
@@ -323,7 +355,14 @@ bus_error_handler:
 	eor		#0x0040,(a0)
 |	move.b	#0x3d,0x10fee4
 
-	move.b	1(a0),15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
+	move	(a0),d0
+
+	cmp.b	#0x06,0xfc02.w
+	jne		1f
+
+	and		#0xfe,d0
+1:
+	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
 
 	jra		3f
 2:
@@ -332,7 +371,14 @@ bus_error_handler:
 	cmp.l	#0x380000,d0
 	jne		2f
 
-	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_B.
+	move	#0xff,d0
+
+	cmp.b	#0x02,0xfc02.w
+	jne		1f
+
+	and		#0xfe,d0
+1:
+	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_B.
 
 	jra		3f
 2:
@@ -405,6 +451,9 @@ vram_address:
 	ds.w	1
 
 vram_increment:
+	ds.w	1
+
+sound_command:
 	ds.w	1
 
 use_cartridge_vector_table:

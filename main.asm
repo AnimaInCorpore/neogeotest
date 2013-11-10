@@ -167,9 +167,10 @@ load_roms:
 	move.l	a0,a1
 	add.l	#0x100000,a1
 1:
-	move	(a0),d0
-	ror		#8,d0
-	move	d0,(a0)+
+	move.b	(a0),d0
+	move.b	1(a0),d1
+	move.b	d1,(a0)+
+	move.b	d0,(a0)+
 
 	cmp.l	a1,a0
 	jlt		1b
@@ -179,9 +180,10 @@ load_roms:
 	move.l	a0,a1
 	add.l	#0x100000,a1
 1:
-	move	(a0),d0
-	ror		#8,d0
-	move	d0,(a0)+
+	move.b	(a0),d0
+	move.b	1(a0),d1
+	move.b	d1,(a0)+
+	move.b	d0,(a0)+
 
 	cmp.l	a1,a0
 	jlt		1b
@@ -502,8 +504,5 @@ neogeo_memory_pages:
 	ds.b	0x00010000															| Backup RAM (64 kiB).
 
 	ds.b	0x00008000															| Padding bytes (32 kiB).
-
-	ds.l	2000
-my_stack:
 
 .end
