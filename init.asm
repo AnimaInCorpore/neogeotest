@@ -5,8 +5,8 @@
 .global f030_init
 .global f030_deinit
 
-.equ SCREEN_WIDTH, 320
-.equ SCREEN_HEIGHT, 240
+.equ SCREEN_WIDTH, 304
+.equ SCREEN_HEIGHT, 224
 
 .text
 
@@ -203,6 +203,19 @@ screen_rgb_tv_320_224:
 	dc.w	0x100
 	dc.w	0x0
 	dc.w	0x140
+
+screen_rgb_tv_304_224:
+	dc.l	0xfe00c9
+	dc.l	0x270037
+	dc.l	0x8800d9
+	dc.l	0x20d0201
+	dc.l	0x170035
+	dc.l	0x1f50207
+	dc.w	0x200
+	dc.w	0x181
+	dc.w	0x100
+	dc.w	0x0
+	dc.w	0x130
 
 screen_rgb_tv_256_240:
 	dc.l	0xfe00cb

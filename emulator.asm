@@ -83,7 +83,7 @@ emulator:
 
 	| Set screen memory.
 
-	move.l	#SCREEN_ADDRESS,d0
+	move.l	#SCREEN_ADDRESS+8*2,d0
 |	move.l	#VRAM_ADDRESS,d0
 	swap	d0
 	move.b	d0,0x8201.w
