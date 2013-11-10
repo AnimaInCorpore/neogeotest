@@ -426,7 +426,7 @@ draw_dummy_sprites:
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
-	lea		SCREEN_ADDRESS,a1
+	lea		SCREEN_ADDRESS-512*2*16,a1
 
 	clr		d4 | Previous sprite height.
 	clr		d5 | Previous sprite X position.
@@ -456,7 +456,7 @@ draw_dummy_sprites:
 	jeq		2f
 
 	lsr		#7,d1
-	move	#496,d2
+	move	#512,d2
 	sub		d1,d2
 	move	d2,d6 | Save Y position.
 
@@ -492,12 +492,11 @@ draw_dummy_sprites:
 	sub.l	#512*2*512,a3
 
 	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
-	jgt		4f
-
-	jra		5f
+	jle		5f
 4:
 	movem.l	d0-a0,-(sp)
 
+	move	d7,d0
 	add		d3,d0
 	lsl		#3,d0
 	move.l	#512*2,a0
@@ -517,7 +516,7 @@ draw_dummy_sprites:
 
 	movem.l	(sp)+,d0-a0
 5:
-	lea		512*2*16(a2),a2
+	add.l	#512*2*16,a2
 
 	dbf		d3,3b
 2:
