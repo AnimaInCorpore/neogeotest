@@ -484,40 +484,41 @@ draw_dummy_sprites:
 
 	subq	#1,d3
 3:
-	cmp.l	#SCREEN_ADDRESS+512*2*224,a2
+	move.l	a2,a3
+
+	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
 	jlt		4f
 
-	sub.l	#512*2*512,a2
+	sub.l	#512*2*512,a3
 
-	cmp.l	#SCREEN_ADDRESS-512*2*16,a2
+	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
 	jgt		4f
 
-	add.l	#512*2*16,a2
 	jra		5f
 4:
 	movem.l	d0-a0,-(sp)
-
-|	lea		SCREEN_ADDRESS,a2
 
 	add		d3,d0
 	lsl		#3,d0
 	move.l	#512*2,a0
 
 .rept 16
-	move	d0,(a2)+
+	move	d0,(a3)+
 .endr
 
-	lea		-16*2(a2),a2
-	movem.l	(a2),d0-d7
-	add.l	a0,a2
+	lea		-16*2(a3),a3
+	movem.l	(a3),d0-d7
+	add.l	a0,a3
 
 .rept 16-1
-	movem.l	d0-d7,(a2)
-	add.l	a0,a2
+	movem.l	d0-d7,(a3)
+	add.l	a0,a3
 .endr
 
 	movem.l	(sp)+,d0-a0
 5:
+	lea		512*2*16(a2),a2
+
 	dbf		d3,3b
 2:
 	dbf		d7,1b
