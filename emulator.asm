@@ -425,7 +425,6 @@ draw_dummy_sprites:
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
-	lea		VRAM_ADDRESS+0x8400*2,a1
 	lea		SCREEN_ADDRESS,a2
 
 	clr		d0 | Sprite index.
@@ -433,13 +432,14 @@ draw_dummy_sprites:
 	clr		d5 | Previous sprite X position.
 	clr		d6 | Previous sprite Y position.
 1:
-	move	(a0,d0.w*2),d1 | Sprite Y position + sticky bit + height.
+	move	0x200*2(a0),d7 | Sprite X position.
+	move	(a0)+,d1 | Sprite Y position + sticky bit + height.
 
 	btst	#6,d1 | Check sticky bit.
 	jeq		3f
 
 	add		#16,d5
-	move	d5,d1 | Use previous X position + 16.
+	move	d5,d7 | Use previous X position + 16.
 	move	d6,d2 | use previous Y position.
 	move	d4,d3 | Use previous height.
 	jeq		2f | Avoid having 0 as the height.
@@ -456,18 +456,17 @@ draw_dummy_sprites:
 	sub		d1,d2
 	move	d2,d6 | Save Y position.
 
-	move	(a1,d0.w*2),d1 | Sprite X position.
-	lsr		#7,d1
-	move	d1,d5 | Save X position.
+	lsr		#7,d7
+	move	d7,d5 | Save X position.
 4:
 	| Check sprite X position boundaries.
 
-	cmp		#320,d1 | Right screen border.
+	cmp		#320,d7 | Right screen border.
 	jlt		6f
 
-	sub		#512,d1
+	sub		#512,d7
 
-	cmp		#-16,d1 | Left screen border.
+	cmp		#-16,d7 | Left screen border.
 	jle		2f
 6:
 	| Calculate sprite screen address.
@@ -475,8 +474,8 @@ draw_dummy_sprites:
 	swap	d2
 	clr		d2
 	lsr.l	#7,d2
-	ext.l	d1
-	add.l	d1,d2
+	ext.l	d7
+	add.l	d7,d2
 	lea		(a2,d2.l*2),a3
 
 	subq	#1,d3
@@ -565,7 +564,6 @@ build_sprite_infos:
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0											| Sprite Y positions + sticky bit + height.
-	lea		VRAM_ADDRESS+0x8400*2,a1											| Sprite X positions.
 	lea		VRAM_ADDRESS,a2														| Sprite tilemaps.
 
 	lea		SPRITE_INFOS_ADDRESS,a3												| Converted sprite infos.
@@ -578,14 +576,14 @@ build_sprite_infos:
 	clr		d5 																	| Previous sprite X position.
 	clr		d6 																	| Previous sprite Y position.
 1:
+	move	0x200*2(a0),d7 														| Sprite X position.
 	move	(a0)+,d1 															| Sprite Y position + sticky bit + height.
-	move	(a1)+,d7 															| Sprite X position.
 
 	btst	#6,d1 																| Check sticky bit.
 	jeq		3f
 
 	add		#16,d5
-	move	d5,d1 																| Use previous X position + 16.
+	move	d5,d7 																| Use previous X position + 16.
 	move	d6,d2 																| use previous Y position.
 	move	d4,d3 																| Use previous height.
 	jeq		2f 																	| Avoid having 0 as the height.
@@ -608,12 +606,12 @@ build_sprite_infos:
 	| Check sprite X position boundaries.
 
 
-	cmp		#320,d1 															| Right screen border.
+	cmp		#320,d7 															| Right screen border.
 	jlt		6f
 
-	sub		#512,d1
+	sub		#512,d7
 
-	cmp		#-16,d1 															| Left screen border.
+	cmp		#-16,d7 															| Left screen border.
 	jle		2f
 6:
 	| Calculate sprite screen address.
@@ -621,8 +619,8 @@ build_sprite_infos:
 	swap	d2
 	clr		d2
 	lsr.l	#7,d2
-	ext.l	d1
-	add.l	d1,d2
+	ext.l	d7
+	add.l	d7,d2
 	lea		(a2,d2.l*2),a3
 
 	subq	#1,d3
