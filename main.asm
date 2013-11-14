@@ -117,11 +117,10 @@ TIA			TIBs		TIC
 .equ	BACKUP_RAM_OFFSET,		BIOS_ROM_OFFSET+BIOS_ROM_SIZE
 .equ	BACKUP_RAM_SIZE,		0x00010000
 */
+
 .equ	PROGRAM_ROM_1_OFFSET,	0x00000000
 .equ	PROGRAM_ROM_1_SIZE,		0x00100000
-.equ	WORK_RAM_OFFSET,		PROGRAM_ROM_1_OFFSET+PROGRAM_ROM_1_SIZE
-.equ	WORK_RAM_SIZE,			0x00008000
-.equ	PROGRAM_ROM_2_OFFSET,	WORK_RAM_OFFSET+WORK_RAM_SIZE
+.equ	PROGRAM_ROM_2_OFFSET,	PROGRAM_ROM_1_OFFSET+PROGRAM_ROM_1_SIZE
 .equ	PROGRAM_ROM_2_SIZE,		0x00100000
 .equ	PALETTE_RAM_OFFSET,		PROGRAM_ROM_2_OFFSET+PROGRAM_ROM_2_SIZE
 .equ	PALETTE_RAM_SIZE,		0x00008000
@@ -129,6 +128,8 @@ TIA			TIBs		TIC
 .equ	BIOS_ROM_SIZE,			0x00020000
 .equ	BACKUP_RAM_OFFSET,		BIOS_ROM_OFFSET+BIOS_ROM_SIZE
 .equ	BACKUP_RAM_SIZE,		0x00010000
+.equ	WORK_RAM_OFFSET,		BACKUP_RAM_OFFSET+BACKUP_RAM_SIZE
+.equ	WORK_RAM_SIZE,			0x00008000
 
 |-------------------------------------------------------------------------------
 
@@ -411,23 +412,23 @@ build_mmu_tables:
 	move.l	#0xfe000000+0x41,(a0)+
 
 	move.l	d0,(a0)
-	add.l	#16*4*3+0x2,(a0)+													| Reference to TIC 0 (again).
+	add.l	#16*4*3+0x02,(a0)+													| Reference to TIC 0 (again).
 
 	| TIC 0.
 
 	move.l	d1,(a0)
-	add.l	#PROGRAM_ROM_1_OFFSET+0x5,(a0)+										| Program ROM 1.
+	add.l	#PROGRAM_ROM_1_OFFSET+0x05,(a0)+										| Program ROM 1.
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+0x2,(a0)+													| Reference to TID 0.
+	add.l	#16*4*4+0x02,(a0)+													| Reference to TID 0.
 
 	move.l	d1,(a0)
-	add.l	#PROGRAM_ROM_2_OFFSET+0x5,(a0)+										| Program ROM 2.
+	add.l	#PROGRAM_ROM_2_OFFSET+0x05,(a0)+										| Program ROM 2.
 
 	clr.l	(a0)+
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+32*4+0x2,(a0)+												| Reference to TID 1.
+	add.l	#16*4*4+32*4+0x02,(a0)+												| Reference to TID 1.
 
 	move.l	#0x00500000+0x01,(a0)+												| Emulator program(?).
 	move.l	#0x00600000+0x01,(a0)+
@@ -444,10 +445,10 @@ build_mmu_tables:
 	move.l	#0x00b00000+0x01,(a0)+
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+32*4*2+0x2,(a0)+											| Reference to TID 2.
+	add.l	#16*4*4+32*4*2+0x02,(a0)+											| Reference to TID 2.
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+32*4*3+0x2,(a0)+											| Reference to TID 3.
+	add.l	#16*4*4+32*4*3+0x02,(a0)+											| Reference to TID 3.
 
 	move.l	#0x00e00000+0x01,(a0)+												| TOS.
 	move.l	#0x00f00000+0x41,(a0)+												| Atari hardware registers.
@@ -455,10 +456,10 @@ build_mmu_tables:
 	| TID 0.
 
 	move.l	d1,(a0)
-	add.l	#WORK_RAM_OFFSET+0x1,(a0)+											| Work RAM.
+	add.l	#WORK_RAM_OFFSET+0x01,(a0)+											| Work RAM.
 
 	move.l	d1,(a0)
-	add.l	#WORK_RAM_OFFSET+0x8000+0x1,(a0)+									| Work RAM + 32k.
+	add.l	#WORK_RAM_OFFSET+0x8000+0x01,(a0)+									| Work RAM + 32k.
 
 .rept 32-2
 	clr.l	(a0)+
@@ -467,7 +468,7 @@ build_mmu_tables:
 	| TID 1.
 
 	move.l	d1,(a0)
-	add.l	#PALETTE_RAM_OFFSET+0x1,(a0)+										| Palette RAM.
+	add.l	#PALETTE_RAM_OFFSET+0x01,(a0)+										| Palette RAM.
 
 .rept 32-1
 	clr.l	(a0)+
@@ -476,16 +477,16 @@ build_mmu_tables:
 	| TID 2.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x5,(a0)+											| BIOS ROM.
+	add.l	#BIOS_ROM_OFFSET+0x05,(a0)+											| BIOS ROM.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x8000+0x5,(a0)+									| BIOS ROM + 32k.
+	add.l	#BIOS_ROM_OFFSET+0x8000+0x05,(a0)+									| BIOS ROM + 32k.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x8000*2+0x5,(a0)+									| BIOS ROM + 64k.
+	add.l	#BIOS_ROM_OFFSET+0x8000*2+0x05,(a0)+								| BIOS ROM + 64k.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x8000*3+0x5,(a0)+									| BIOS ROM + 96k.
+	add.l	#BIOS_ROM_OFFSET+0x8000*3+0x05,(a0)+								| BIOS ROM + 96k.
 
 .rept 32-4
 	clr.l	(a0)+
@@ -494,10 +495,10 @@ build_mmu_tables:
 	| TID 3.
 
 	move.l	d1,(a0)
-	add.l	#BACKUP_RAM_OFFSET+0x1,(a0)+										| Backup RAM.
+	add.l	#BACKUP_RAM_OFFSET+0x01,(a0)+										| Backup RAM.
 
 	move.l	d1,(a0)
-	add.l	#BACKUP_RAM_OFFSET+0x8000+0x1,(a0)+									| Backup RAM + 32k.
+	add.l	#BACKUP_RAM_OFFSET+0x8000+0x01,(a0)+								| Backup RAM + 32k.
 
 .rept 32-2
 	clr.l	(a0)+
