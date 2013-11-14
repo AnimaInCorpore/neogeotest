@@ -103,6 +103,19 @@ TIA			TIBs		TIC
 .include "../xbios.asm"
 .include "../gemdos.asm"
 
+.equ	PROGRAM_ROM_1_OFFSET,	0x00000000
+.equ	PROGRAM_ROM_1_SIZE,		0x00100000
+.equ	WORK_RAM_OFFSET,		PROGRAM_ROM_1_OFFSET+PROGRAM_ROM_1_SIZE
+.equ	WORK_RAM_SIZE,			0x00008000
+.equ	PROGRAM_ROM_2_OFFSET,	WORK_RAM_OFFSET+WORK_RAM_SIZE
+.equ	PROGRAM_ROM_2_SIZE,		0x00100000
+.equ	PALETTE_RAM_OFFSET,		PROGRAM_ROM_2_OFFSET+PROGRAM_ROM_2_SIZE
+.equ	PALETTE_RAM_SIZE,		0x00008000
+.equ	BIOS_ROM_OFFSET,		PALETTE_RAM_OFFSET+PALETTE_RAM_SIZE
+.equ	BIOS_ROM_SIZE,			0x00020000
+.equ	BACKUP_RAM_OFFSET,		BIOS_ROM_OFFSET+BIOS_ROM_SIZE
+.equ	BACKUP_RAM_SIZE,		0x00010000
+
 |-------------------------------------------------------------------------------
 
 .text
@@ -385,13 +398,13 @@ build_mmu_tables:
 	| TIC 0.
 
 	move.l	d1,(a0)
-	add.l	#0x5,(a0)+															| Program ROM 1.
+	add.l	#PROGRAM_ROM_1_OFFSET+0x5,(a0)+										| Program ROM 1.
 
 	move.l	d0,(a0)
 	add.l	#16*4*4+0x2,(a0)+													| Reference to TID 0.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x5,(a0)+											| Program ROM 2.
+	add.l	#PROGRAM_ROM_2_OFFSET+0x5,(a0)+										| Program ROM 2.
 
 	clr.l	(a0)+
 
@@ -424,10 +437,10 @@ build_mmu_tables:
 	| TID 0.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x1,(a0)+													| Work RAM.
+	add.l	#WORK_RAM_OFFSET+0x1,(a0)+											| Work RAM.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x1,(a0)+											| Work RAM.
+	add.l	#WORK_RAM_OFFSET+0x8000+0x1,(a0)+									| Work RAM + 32k.
 
 .rept 32-2
 	clr.l	(a0)+
@@ -436,7 +449,7 @@ build_mmu_tables:
 	| TID 1.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x100000+0x1,(a0)+									| Palette RAM.
+	add.l	#PALETTE_RAM_OFFSET+0x1,(a0)+										| Palette RAM.
 
 .rept 32-1
 	clr.l	(a0)+
@@ -445,16 +458,16 @@ build_mmu_tables:
 	| TID 2.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x100000+0x8000+0x5,(a0)+							| BIOS ROM.
+	add.l	#BIOS_ROM_OFFSET+0x5,(a0)+											| BIOS ROM.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x100000+0x8000+0x8000+0x5,(a0)+					| BIOS ROM.
+	add.l	#BIOS_ROM_OFFSET+0x8000+0x5,(a0)+									| BIOS ROM + 32k.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x100000+0x8000+0x8000*2+0x5,(a0)+					| BIOS ROM.
+	add.l	#BIOS_ROM_OFFSET+0x8000*2+0x5,(a0)+									| BIOS ROM + 64k.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x100000+0x8000+0x8000*3+0x5,(a0)+					| BIOS ROM.
+	add.l	#BIOS_ROM_OFFSET+0x8000*3+0x5,(a0)+									| BIOS ROM + 96k.
 
 .rept 32-4
 	clr.l	(a0)+
@@ -463,10 +476,10 @@ build_mmu_tables:
 	| TID 3.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x100000+0x8000+0x20000+0x1,(a0)+					| Backup RAM.
+	add.l	#BACKUP_RAM_OFFSET+0x1,(a0)+										| Backup RAM.
 
 	move.l	d1,(a0)
-	add.l	#0x100000+0x8000+0x100000+0x8000+0x20000+0x8000+0x1,(a0)+			| Backup RAM.
+	add.l	#BACKUP_RAM_OFFSET+0x8000+0x1,(a0)+									| Backup RAM + 32k.
 
 .rept 32-2
 	clr.l	(a0)+
@@ -496,12 +509,12 @@ neogeo_memory_pages_start:
 	ds.l	1
 
 neogeo_memory_pages:
-	ds.b	0x00100000															| Program ROM 1 (1 MiB).
-	ds.b	0x00008000															| Work RAM (32 kiB).
-	ds.b	0x00100000															| Program ROM 2 (1 MiB).
-	ds.b	0x00008000															| Palette RAM (32 kiB).
-	ds.b	0x00020000															| BIOS ROM (128 kiB).
-	ds.b	0x00010000															| Backup RAM (64 kiB).
+	ds.b	PROGRAM_ROM_1_SIZE													| Program ROM 1 (1 MiB).
+	ds.b	WORK_RAM_SIZE														| Work RAM (32 kiB).
+	ds.b	PROGRAM_ROM_2_SIZE													| Program ROM 2 (1 MiB).
+	ds.b	PALETTE_RAM_SIZE													| Palette RAM (32 kiB).
+	ds.b	BIOS_ROM_SIZE														| BIOS ROM (128 kiB).
+	ds.b	BACKUP_RAM_SIZE														| Backup RAM (64 kiB).
 
 	ds.b	0x00008000															| Padding bytes (32 kiB).
 
