@@ -103,6 +103,20 @@ TIA			TIBs		TIC
 .include "../xbios.asm"
 .include "../gemdos.asm"
 
+/*
+.equ	PROGRAM_ROM_1_OFFSET,	0x00000000
+.equ	PROGRAM_ROM_1_SIZE,		0x00100000
+.equ	WORK_RAM_OFFSET,		PROGRAM_ROM_1_OFFSET+PROGRAM_ROM_1_SIZE
+.equ	WORK_RAM_SIZE,			0x00008000
+.equ	PROGRAM_ROM_2_OFFSET,	WORK_RAM_OFFSET+WORK_RAM_SIZE
+.equ	PROGRAM_ROM_2_SIZE,		0x00100000
+.equ	PALETTE_RAM_OFFSET,		PROGRAM_ROM_2_OFFSET+PROGRAM_ROM_2_SIZE
+.equ	PALETTE_RAM_SIZE,		0x00008000
+.equ	BIOS_ROM_OFFSET,		PALETTE_RAM_OFFSET+PALETTE_RAM_SIZE
+.equ	BIOS_ROM_SIZE,			0x00020000
+.equ	BACKUP_RAM_OFFSET,		BIOS_ROM_OFFSET+BIOS_ROM_SIZE
+.equ	BACKUP_RAM_SIZE,		0x00010000
+*/
 .equ	PROGRAM_ROM_1_OFFSET,	0x00000000
 .equ	PROGRAM_ROM_1_SIZE,		0x00100000
 .equ	WORK_RAM_OFFSET,		PROGRAM_ROM_1_OFFSET+PROGRAM_ROM_1_SIZE
@@ -166,19 +180,21 @@ load_roms:
 	move	d0,d7
 
 	move.l	neogeo_memory_pages_start,a0
-	add.l	#0x100000+0x8000,a0
-	Fread	d7,#0x100000,(a0)
+	add.l	#PROGRAM_ROM_2_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_2_SIZE,(a0)
 
 	move.l	neogeo_memory_pages_start,a0
-	Fread	d7,#0x100000,(a0)
+	add.l	#PROGRAM_ROM_1_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_1_SIZE,(a0)
 
 	Fclose	d7
 
 	Cconws	reordering_program_rom_text
 
 	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET,a0
 	move.l	a0,a1
-	add.l	#0x100000,a1
+	add.l	#PROGRAM_ROM_1_SIZE,a1
 1:
 	move.b	(a0),d0
 	move.b	1(a0),d1
@@ -189,9 +205,9 @@ load_roms:
 	jlt		1b
 
 	move.l	neogeo_memory_pages_start,a0
-	add.l	#0x100000+0x8000,a0
+	add.l	#PROGRAM_ROM_2_OFFSET,a0
 	move.l	a0,a1
-	add.l	#0x100000,a1
+	add.l	#PROGRAM_ROM_2_SIZE,a1
 1:
 	move.b	(a0),d0
 	move.b	1(a0),d1
@@ -209,15 +225,15 @@ load_roms:
 	move	d0,d7
 
 	move.l	neogeo_memory_pages_start,a0
-	add.l	#0x100000+0x8000+0x100000+0x8000,a0
-	Fread	d7,#0x20000,(a0)
+	add.l	#BIOS_ROM_OFFSET,a0
+	Fread	d7,#BIOS_ROM_SIZE,(a0)
 
 	Fclose	d7
 
 	move.l	neogeo_memory_pages_start,a0
-	add.l	#0x100000+0x8000+0x100000+0x8000,a0
+	add.l	#BIOS_ROM_OFFSET,a0
 	move.l	a0,a1
-	add.l	#0x20000,a1
+	add.l	#BIOS_ROM_SIZE,a1
 1:
 	move	(a0),d0
 	ror		#8,d0
@@ -230,14 +246,16 @@ load_roms:
 
 	move.l	neogeo_memory_pages_start,a0
 
-	move.l	#0x100000+0x8000+0x100000+0x8000+0x11c14,d0
+	move.l	#BIOS_ROM_OFFSET+0x11c14,d0
 	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the calendar check.
 
-	move.l	#0x100000+0x8000+0x100000+0x8000+0x11c1c,d0
+	move.l	#BIOS_ROM_OFFSET+0x11c1c,d0
 	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the calendar check.
 
-	move.l	#0x100000+0x8000+0x100000+0x8000+0x11c62,d0
+	move.l	#BIOS_ROM_OFFSET+0x11c62,d0
 	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the checksum result check.
+
+	rts
 
 	| Load sprite ROMs (only the first 4 MiB of 16 MiB).
 
@@ -509,12 +527,7 @@ neogeo_memory_pages_start:
 	ds.l	1
 
 neogeo_memory_pages:
-	ds.b	PROGRAM_ROM_1_SIZE													| Program ROM 1 (1 MiB).
-	ds.b	WORK_RAM_SIZE														| Work RAM (32 kiB).
-	ds.b	PROGRAM_ROM_2_SIZE													| Program ROM 2 (1 MiB).
-	ds.b	PALETTE_RAM_SIZE													| Palette RAM (32 kiB).
-	ds.b	BIOS_ROM_SIZE														| BIOS ROM (128 kiB).
-	ds.b	BACKUP_RAM_SIZE														| Backup RAM (64 kiB).
+	ds.b	PROGRAM_ROM_1_SIZE+WORK_RAM_SIZE+PROGRAM_ROM_2_SIZE+PALETTE_RAM_SIZE+BIOS_ROM_SIZE+BACKUP_RAM_SIZE
 
 	ds.b	0x00008000															| Padding bytes (32 kiB).
 
