@@ -44,10 +44,18 @@ emulator:
 
 	| Enable the NeoGeo mode.
 
+	lea		old_tt0(pc),a0
+	pmove	tt0,(a0)															| Save old transparent translation #0.
+
+	lea		old_tt1(pc),a0
+	pmove	tt1,(a0)															| Save old transparent translation #1.
+
 	lea		mmu_data(pc),a0
 
 	clr.l	(a0)
 	pmove	(a0),tc																| Disable address translation.
+	pmove	(a0),tt0															| Disable transparent translation #0.
+	pmove	(a0),tt1															| Disable transparent translation #1.
 
 	move.l	#0x80000002,(a0)
 	move.l	d0,4(a0)
@@ -116,6 +124,13 @@ emulator_exit:
 	move.l	#0x00000700,4(a0)
 	pmove	(a0),crp															| Restore the Atari MMU table address.
 
+	lea		old_tt0(pc),a0
+	pmove	(a0),tt0															| Restore old transparent translation #0.
+
+	lea		old_tt1(pc),a0
+	pmove	(a0),tt1															| Restore old transparent translation #1.
+
+	lea		mmu_data(pc),a0
 	move.l	#0x80f04445,(a0)
 	pmove	(a0),tc																| Enable address translation.
 
@@ -131,6 +146,12 @@ emulator_exit:
 	rts
 
 old_sp:
+	ds.l	1
+
+old_tt0:
+	ds.l	1
+
+old_tt1:
 	ds.l	1
 
 mmu_data:
