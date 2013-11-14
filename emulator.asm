@@ -165,21 +165,11 @@ bus_error_handler:
 	and		#0x0030,d1															| Check for long data size write access.
 	jne		4f
 
-|	move	#0b0000000000011111,d2
-|	jbsr	write_long_data
-|	jbsr	write_space
-|	jbsr	write_new_line
-
 	swap	d0
 	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
 
 	jra		5f
 4:
-|	move	#0b0000000000011111,d2
-|	jbsr	write_word_data
-|	jbsr	write_space
-|	jbsr	write_new_line
-
 	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
 
 	jra		3f
@@ -206,18 +196,9 @@ bus_error_handler:
 	move	d0,d1
 	move	15*4+0x18+0x2(sp),(a1,d1.l*2)										| Write (word sized) data to REG_VRAMRW.
 
-|	move	#0xffff,d2
-|	jbsr	write_word_data
-|	jbsr	write_space
-
 	lea		vram_increment(pc),a1
 	add		(a1),d0
 	move	d0,(a0)
-
-|	move	15*4+0x18+0x2(sp),d0
-|	jbsr	write_word_data
-|	jbsr	write_space
-|	jbsr	write_new_line
 
 	jra		3f
 1:
@@ -415,12 +396,12 @@ bus_error_handler:
 
 |	move.l	#0xff000000,0x9800.w
 
-	move	#0b1111100000000000,d2												| Write access = red color.
+	move	#0b1111100000000000,d2												| Write access = red text color.
 
 	btst	#6,d1																| Read access?
 	jeq		3f
 
-	move	#0b0000011111100000,d2												| Read access = green color.
+	move	#0b0000011111100000,d2												| Read access = green text color.
 
 	move.l	15*4+0x2(sp),d0
 	jbsr	write_long_data
@@ -481,7 +462,7 @@ draw_dummy_sprites:
 	clr		d5 | Previous sprite X position.
 	clr		d6 | Previous sprite Y position.
 
-	move	#448-1,d7
+	move	#381-1,d7
 1:
 	move	0x200*2(a0),d0 | Sprite X position.
 	move	(a0)+,d1 | Sprite Y position + sticky bit + height.
