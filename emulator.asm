@@ -315,6 +315,11 @@ bus_error_handler:
 
 	and		#0xef,d0
 1:
+	cmp.b	#0x1d,0xfc02.w														| CONTROL.
+	jne		1f
+
+	and		#0xdf,d0
+1:
 	cmp.b	#0x4b,0xfc02.w														| Arrow left.
 	jne		1f
 
@@ -479,49 +484,49 @@ draw_dummy_sprites:
 	lea		VRAM_ADDRESS+0x8200*2,a0
 	lea		SCREEN_ADDRESS-512*2*16,a1
 
-	clr		d4 | Previous sprite height.
-	clr		d5 | Previous sprite X position.
-	clr		d6 | Previous sprite Y position.
+	clr		d4 																	| Previous sprite height.
+	clr		d5 																	| Previous sprite X position.
+	clr		d6 																	| Previous sprite Y position.
 
 	move	#381-1,d7
 1:
-	move	0x200*2(a0),d0 | Sprite X position.
-	move	(a0)+,d1 | Sprite Y position + sticky bit + height.
+	move	0x200*2(a0),d0 														| Sprite X position.
+	move	(a0)+,d1 															| Sprite Y position + sticky bit + height.
 
-	btst	#6,d1 | Check sticky bit.
+	btst	#6,d1 																| Check sticky bit.
 	jeq		3f
 
-	move	d4,d3 | Use previous height.
-	jeq		2f | Avoid having 0 as the height.
+	move	d4,d3 																| Use previous height.
+	jeq		2f 																	| Avoid having 0 as the height.
 
 	add		#16,d5
-	move	d5,d0 | Use previous X position + 16.
+	move	d5,d0 																| Use previous X position + 16.
 
-	move	d6,d2 | use previous Y position.
+	move	d6,d2 																| use previous Y position.
 
 	jra		4f
 3:
 	move	d1,d3
-	and		#0x3f,d3 | Sprite height.
-	move	d3,d4 | Save sprite height.
+	and		#0x3f,d3 															| Sprite height.
+	move	d3,d4 																| Save sprite height.
 	jeq		2f
 
 	lsr		#7,d1
 	move	#512,d2
 	sub		d1,d2
-	move	d2,d6 | Save Y position.
+	move	d2,d6 																| Save Y position.
 
 	lsr		#7,d0
-	move	d0,d5 | Save X position.
+	move	d0,d5 																| Save X position.
 4:
 	| Check sprite X position boundaries.
 
-	cmp		#320,d0 | Right screen border.
+	cmp		#320,d0 															| Right screen border.
 	jlt		6f
 
 	sub		#512,d0
 
-	cmp		#-16,d0 | Left screen border.
+	cmp		#-16,d0 															| Left screen border.
 	jle		2f
 6:
 	| Calculate sprite screen address.
@@ -605,7 +610,8 @@ draw_sprites:
 |
 |	Build sprite infos.
 |
-|	Each entry consists of the palette address, the screen address and the drawing address.
+|	Each entry consists of the palette address, the screen address and the
+|	drawing address.
 |
 |-------------------------------------------------------------------------------
 
