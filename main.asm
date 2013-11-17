@@ -147,7 +147,7 @@ start:
 
 	jbsr	f030_init
 
-	jbsr	show_sprites
+|	jbsr	show_sprites
 
 	| Copy emulator program to 0x500000.
 
@@ -193,16 +193,13 @@ show_sprites:
 	move.b	d0,0x8203.w
 	move.b	d1,0x820d.w
 
+	| Show sprites.
 
-
-
-
-
-	lea		0x700000,a0 | Sprites.
-	lea		0x600000+16*2,a1 | Screen.
+	lea		0x700000,a0															| Sprites.
+	lea		0x600000+16*2,a1													| Screen.
 	lea		dummy_palette,a2
 1:
-	move	#20-1,d7
+	move	#19-1,d7
 2:
 	| Block #1.
 
@@ -330,7 +327,7 @@ show_sprites:
 
 	dbf		d7,2b
 
-	add.l	#512*2*16-20*16*2,a1
+	add.l	#512*2*16-19*16*2,a1
 	cmp.l	#0x600000+512*2*224,a1
 	jlt		1b
 2:
@@ -338,15 +335,8 @@ show_sprites:
 	jne		2b
 
 	lea		0x600000+16*2,a1
-	cmp.l	#0x800000,a0
+	cmp.l	#0x700000+0x400000,a0
 	jlt		1b
-
-
-
-
-
-
-
 
 	rts
 
@@ -367,9 +357,6 @@ dummy_palette:
 	dc.w	0b1101011010011010
 	dc.w	0b1110011100011100
 	dc.w	0b1111011110011110
-
-sprite_data:
-	ds.b	16*16
 
 |-------------------------------------------------------------------------------
 |

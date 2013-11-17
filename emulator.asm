@@ -2,7 +2,8 @@
 .global emulator_end
 
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
-.equ	SCREEN_ADDRESS,0x600000+512*2*16
+.equ	SCREEN_ADDRESS,0x600000
+.equ	SPRITES_ADDRESS,0x700000
 .equ	VRAM_ADDRESS,0x580000
 .equ	SPRITE_INFOS_ADDRESS,VRAM_ADDRESS+0x20000
 .equ	PALETTES_ADDRESS,SPRITE_INFOS_ADDRESS+0x2000
@@ -77,7 +78,7 @@ emulator:
 1:
 	clr.l	(a0)+
 
-	cmp.l	#SCREEN_ADDRESS+512*2*224,a0
+	cmp.l	#SCREEN_ADDRESS+512*2*(224+16+16),a0
 	jlt		1b
 
 	| Clear VRAM memory.
@@ -91,7 +92,7 @@ emulator:
 
 	| Set screen memory.
 
-	move.l	#SCREEN_ADDRESS+8*2,d0
+	move.l	#SCREEN_ADDRESS++512*2*16+8*2,d0
 |	move.l	#VRAM_ADDRESS,d0
 	swap	d0
 	move.b	d0,0x8201.w
@@ -275,7 +276,7 @@ bus_error_handler:
 	and		#0x7,d0
 	jne		1f
 
-	jbsr	draw_dummy_sprites
+	jbsr	draw_dummy_sprites2
 	addq	#1,(a0)
 1:
 	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
@@ -482,7 +483,7 @@ draw_dummy_sprites:
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
-	lea		SCREEN_ADDRESS-512*2*16,a1
+	lea		SCREEN_ADDRESS,a1
 
 	clr		d4 																	| Previous sprite height.
 	clr		d5 																	| Previous sprite X position.
@@ -581,6 +582,254 @@ draw_dummy_sprites:
 	movem.l	(sp)+,d0-a6
 
 	rts
+
+|-------------------------------------------------------------------------------
+|
+|	Draw dummy sprites 2.
+|
+|-------------------------------------------------------------------------------
+
+draw_dummy_sprites2:
+	movem.l	d0-a6,-(sp)
+
+	lea		VRAM_ADDRESS+0x8200*2,a0
+	lea		VRAM_ADDRESS,a1														| Sprite tile maps.
+	lea		SCREEN_ADDRESS,a2
+	lea		dummy_palette(pc),a5
+	lea		SPRITES_ADDRESS,a6
+
+	clr		d4 																	| Previous sprite height.
+	clr		d5 																	| Previous sprite X position.
+	clr		d6 																	| Previous sprite Y position.
+
+	move	#381-1,d7
+1:
+	move	0x200*2(a0),d0 														| Sprite X position.
+	move	(a0)+,d1 															| Sprite Y position + sticky bit + height.
+
+	btst	#6,d1 																| Check sticky bit.
+	jeq		3f
+
+	move	d4,d3 																| Use previous height.
+	jeq		2f 																	| Avoid having 0 as the height.
+
+	add		#16,d5
+	move	d5,d0 																| Use previous X position + 16.
+
+	move	d6,d2 																| use previous Y position.
+
+	jra		4f
+3:
+	move	d1,d3
+	and		#0x3f,d3 															| Sprite height.
+	move	d3,d4 																| Save sprite height.
+	jeq		2f
+
+	lsr		#7,d1
+	move	#512,d2
+	sub		d1,d2
+	move	d2,d6 																| Save Y position.
+
+	lsr		#7,d0
+	move	d0,d5 																| Save X position.
+4:
+	| Check sprite X position boundaries.
+
+	cmp		#320,d0 															| Right screen border.
+	jlt		6f
+
+	sub		#512,d0
+
+	cmp		#-16,d0 															| Left screen border.
+	jle		2f
+6:
+	| Calculate sprite screen address.
+
+	swap	d2
+	clr		d2
+	lsr.l	#7,d2
+	ext.l	d0
+	add.l	d0,d2
+	lea		(a2,d2.l*2),a3
+
+	move.l	a1,a4
+
+	subq	#1,d3
+3:
+	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
+	jlt		4f
+
+	sub.l	#512*2*512,a3
+
+	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
+	jle		5f
+4:
+	| Sprite decoding and drawing.
+
+	movem.l	d0-a6,-(sp)
+
+	clr.l	d0
+	move	(a4),d0
+	and		#0x7fff,d0
+	lsl.l	#7,d0
+	add.l	d0,a6
+
+	lea		16(a3),a3
+
+	| Block #1.
+
+	move	#8-1,d6
+7:
+	move.b	(a6)+,d3
+	move.b	(a6)+,d2
+	move.b	(a6)+,d1
+	move.b	(a6)+,d0
+
+	move	#8-1,d5
+8:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a5,d4.w*2),-(a3)
+
+	dbf		d5,8b
+
+	lea		512*2+8*2(a3),a3
+
+	dbf		d6,7b
+
+	| Block #2.
+
+	move	#8-1,d6
+7:
+	move.b	(a6)+,d3
+	move.b	(a6)+,d2
+	move.b	(a6)+,d1
+	move.b	(a6)+,d0
+
+	move	#8-1,d5
+8:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a5,d4.w*2),-(a3)
+
+	dbf		d5,8b
+
+	lea		512*2+8*2(a3),a3
+
+	dbf		d6,7b
+
+	sub.l	#512*2*16+8*2,a3
+
+	| Block #3.
+
+	move	#8-1,d6
+7:
+	move.b	(a6)+,d3
+	move.b	(a6)+,d2
+	move.b	(a6)+,d1
+	move.b	(a6)+,d0
+
+	move	#8-1,d5
+8:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a5,d4.w*2),-(a3)
+
+	dbf		d5,8b
+
+	lea		512*2+8*2(a3),a3
+
+	dbf		d6,7b
+
+	| Block #4.
+
+	move	#8-1,d6
+7:
+	move.b	(a6)+,d3
+	move.b	(a6)+,d2
+	move.b	(a6)+,d1
+	move.b	(a6)+,d0
+
+	move	#8-1,d5
+8:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a5,d4.w*2),-(a3)
+
+	dbf		d5,8b
+
+	lea		512*2+8*2(a3),a3
+
+	dbf		d6,7b
+
+	movem.l	(sp)+,d0-a6
+5:
+	addq.l	#4,a4
+	add.l	#512*2*16,a3
+
+	dbf		d3,3b
+2:
+	lea		32*4(a1),a1
+
+	dbf		d7,1b
+
+	movem.l	(sp)+,d0-a6
+
+	rts
+
+dummy_palette:
+	dc.w	0b0000000000000000
+	dc.w	0b0001000010000010
+	dc.w	0b0010000100000100
+	dc.w	0b0011000110000110
+	dc.w	0b0100001000001000
+	dc.w	0b0101001010001010
+	dc.w	0b0110001100001100
+	dc.w	0b0111001110001110
+	dc.w	0b1000010000010000
+	dc.w	0b1001010010010010
+	dc.w	0b1010010100010100
+	dc.w	0b1011010110010110
+	dc.w	0b1100011000011000
+	dc.w	0b1101011010011010
+	dc.w	0b1110011100011100
+	dc.w	0b1111011110011110
 
 |-------------------------------------------------------------------------------
 |
