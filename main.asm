@@ -147,6 +147,8 @@ start:
 
 	jbsr	f030_init
 
+	jbsr	show_sprites
+
 	| Copy emulator program to 0x500000.
 
 	lea		emulator,a0
@@ -165,6 +167,209 @@ start:
 	jbsr	f030_deinit
 
 	Pterm0
+
+|-------------------------------------------------------------------------------
+|
+|	Show sprites.
+|
+|-------------------------------------------------------------------------------
+
+show_sprites:
+	| Clear screen memory.
+
+	lea		0x600000,a0
+1:
+	clr.l	(a0)+
+
+	cmp.l	#0x600000+512*2*224,a0
+	jlt		1b
+
+	move.l	#0x600000,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
+
+
+
+
+
+
+	lea		0x700000,a0 | Sprites.
+	lea		0x600000+16*2,a1 | Screen.
+	lea		dummy_palette,a2
+1:
+	move	#20-1,d7
+2:
+	| Block #1.
+
+	move	#8-1,d6
+3:
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
+
+	move	#8-1,d5
+4:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a2,d4.w*2),-(a1)
+
+	dbf		d5,4b
+
+	lea		512*2+8*2(a1),a1
+
+	dbf		d6,3b
+
+	| Block #2.
+
+	move	#8-1,d6
+3:
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
+
+	move	#8-1,d5
+4:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a2,d4.w*2),-(a1)
+
+	dbf		d5,4b
+
+	lea		512*2+8*2(a1),a1
+
+	dbf		d6,3b
+
+	sub.l	#512*2*16+8*2,a1
+
+	| Block #3.
+
+	move	#8-1,d6
+3:
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
+
+	move	#8-1,d5
+4:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a2,d4.w*2),-(a1)
+
+	dbf		d5,4b
+
+	lea		512*2+8*2(a1),a1
+
+	dbf		d6,3b
+
+	| Block #4.
+
+	move	#8-1,d6
+3:
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
+
+	move	#8-1,d5
+4:
+	clr		d4
+
+	add.b	d0,d0
+	addx	d4,d4
+	add.b	d1,d1
+	addx	d4,d4
+	add.b	d2,d2
+	addx	d4,d4
+	add.b	d3,d3
+	addx	d4,d4
+
+	move	(a2,d4.w*2),-(a1)
+
+	dbf		d5,4b
+
+	lea		512*2+8*2(a1),a1
+
+	dbf		d6,3b
+
+	sub.l	#512*2*16-8*2-16*2,a1
+
+	dbf		d7,2b
+
+	add.l	#512*2*16-20*16*2,a1
+	cmp.l	#0x600000+512*2*224,a1
+	jlt		1b
+2:
+	cmp.b	#0x39,0xfc02.w
+	jne		2b
+
+	lea		0x600000+16*2,a1
+	cmp.l	#0x800000,a0
+	jlt		1b
+
+
+
+
+
+
+
+
+	rts
+
+dummy_palette:
+	dc.w	0b0000000000000000
+	dc.w	0b0001000010000010
+	dc.w	0b0010000100000100
+	dc.w	0b0011000110000110
+	dc.w	0b0100001000001000
+	dc.w	0b0101001010001010
+	dc.w	0b0110001100001100
+	dc.w	0b0111001110001110
+	dc.w	0b1000010000010000
+	dc.w	0b1001010010010010
+	dc.w	0b1010010100010100
+	dc.w	0b1011010110010110
+	dc.w	0b1100011000011000
+	dc.w	0b1101011010011010
+	dc.w	0b1110011100011100
+	dc.w	0b1111011110011110
+
+sprite_data:
+	ds.b	16*16
 
 |-------------------------------------------------------------------------------
 |
@@ -255,8 +460,6 @@ load_roms:
 
 	move.l	#BIOS_ROM_OFFSET+0x11c62,d0
 	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the checksum result check.
-
-	rts
 
 	| Load sprite ROMs (only the first 4 MiB of 16 MiB).
 
