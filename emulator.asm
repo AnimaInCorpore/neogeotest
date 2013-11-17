@@ -273,7 +273,7 @@ bus_error_handler:
 
 	lea		sprite_draw_counter(pc),a0
 	move	(a0),d0
-	and		#0x7,d0
+	and		#0x1f,d0
 	jne		1f
 
 	jbsr	draw_dummy_sprites2
@@ -687,6 +687,8 @@ draw_dummy_sprites2:
 
 	move	#8-1,d5
 8:
+	subq.l	#2,a3
+
 	clr		d4
 
 	add.b	d0,d0
@@ -698,8 +700,11 @@ draw_dummy_sprites2:
 	add.b	d3,d3
 	addx	d4,d4
 
-	move	(a5,d4.w*2),-(a3)
+	tst		d4
+	jeq		9f
 
+	move	(a5,d4.w*2),(a3)
+9:
 	dbf		d5,8b
 
 	lea		512*2+8*2(a3),a3
@@ -717,6 +722,8 @@ draw_dummy_sprites2:
 
 	move	#8-1,d5
 8:
+	subq.l	#2,a3
+
 	clr		d4
 
 	add.b	d0,d0
@@ -728,8 +735,11 @@ draw_dummy_sprites2:
 	add.b	d3,d3
 	addx	d4,d4
 
-	move	(a5,d4.w*2),-(a3)
+	tst		d4
+	jeq		9f
 
+	move	(a5,d4.w*2),(a3)
+9:
 	dbf		d5,8b
 
 	lea		512*2+8*2(a3),a3
@@ -749,6 +759,8 @@ draw_dummy_sprites2:
 
 	move	#8-1,d5
 8:
+	subq.l	#2,a3
+
 	clr		d4
 
 	add.b	d0,d0
@@ -760,8 +772,11 @@ draw_dummy_sprites2:
 	add.b	d3,d3
 	addx	d4,d4
 
-	move	(a5,d4.w*2),-(a3)
+	tst		d4
+	jeq		9f
 
+	move	(a5,d4.w*2),(a3)
+9:
 	dbf		d5,8b
 
 	lea		512*2+8*2(a3),a3
@@ -779,6 +794,8 @@ draw_dummy_sprites2:
 
 	move	#8-1,d5
 8:
+	subq.l	#2,a3
+
 	clr		d4
 
 	add.b	d0,d0
@@ -790,8 +807,11 @@ draw_dummy_sprites2:
 	add.b	d3,d3
 	addx	d4,d4
 
-	move	(a5,d4.w*2),-(a3)
+	tst		d4
+	jeq		9f
 
+	move	(a5,d4.w*2),(a3)
+9:
 	dbf		d5,8b
 
 	lea		512*2+8*2(a3),a3
