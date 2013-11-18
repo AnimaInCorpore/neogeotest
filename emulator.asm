@@ -5,6 +5,9 @@
 
 .equ	SCREEN_ADDRESS,0x600000
 .equ	SCREEN_ADDRESS_2,SCREEN_ADDRESS+512*2*(224+16+16)
+.equ	PALETTE_DECODER_TABLE,SCREEN_ADDRESS_2+512*2*(224+16+16)
+
+.equ	PALETTE_RAM,0x400000
 
 .equ	SPRITES_ADDRESS,0x700000
 .equ	VRAM_ADDRESS,0x580000
@@ -75,6 +78,46 @@ emulator:
 	bset	#11,d0
 	bset	#3,d0
 	movec	d0,cacr
+
+	| Prepare palette decoder table.
+
+	lea		PALETTE_DECODER_TABLE,a0
+
+	clr		d0
+1:
+	move	d0,d1
+	and		#0b0000000000001111,d1
+	lsl		#1,d1
+
+	move	d0,d4
+	and		#0b0001000000000000,d4
+	rol		#4,d4
+	or		d4,d1
+
+	move	d0,d2
+	and		#0b0000000011110000,d2
+	lsl		#3,d2
+
+	move	d0,d4
+	and		#0b0010000000000000,d4
+	lsr		#6,d4
+	or		d4,d2
+
+	move	d0,d3
+	and		#0b0000111100000000,d3
+	lsl		#4,d3
+
+	move	d0,d4
+	and		#0b0100000000000000,d4
+	lsr		#3,d4
+	or		d4,d3
+
+	or		d2,d1
+	or		d3,d1
+	move	d1,(a0)+
+
+	addq	#1,d0
+	jne		1b
 
 	| Clear screen memory.
 
@@ -276,7 +319,7 @@ bus_error_handler:
 
 	lea		sprite_draw_counter(pc),a0
 	move	(a0),d0
-	and		#0x1f,d0
+	and		#0xf,d0
 	jne		1f
 
 	jbsr	draw_dummy_sprites2
@@ -427,6 +470,26 @@ bus_error_handler:
 
 	jra		3f
 2:
+	| REG_PALBANK1.
+
+	cmp.l	#0x3c000f,d0
+	jne		2f
+
+	lea		palette_bank_offset(pc),a0
+	move	#0x2000,(a0)
+
+	jra		3f
+2:
+	| REG_PALBANK0.
+
+	cmp.l	#0x3c001f,d0
+	jne		2f
+
+	lea		palette_bank_offset(pc),a0
+	clr		(a0)
+
+	jra		3f
+2:
 	| Unhandled hardware addresse accesses.
 
 |	move.l	#0xff000000,0x9800.w
@@ -473,6 +536,9 @@ sound_command:
 	ds.w	1
 
 use_cartridge_vector_table:
+	ds.w	1
+
+palette_bank_offset:
 	ds.w	1
 
 reg_status_a_counter:
@@ -683,14 +749,22 @@ draw_dummy_sprites2:
 
 	movem.l	d0-a6,-(sp)
 
-	lea		dummy_palette(pc),a5
 	lea		SPRITES_ADDRESS,a0
+	lea		PALETTE_DECODER_TABLE,a1
+
+	lea		PALETTE_RAM,a5
+	lea		palette_bank_offset(pc),a2
+	add		(a2),a5
 
 	clr.l	d0
-	move	(a4),d0
+	move	(a4)+,d0
 	and		#0x7fff,d0
 	lsl.l	#7,d0
 	add.l	d0,a0
+
+	move	(a4),d0
+	lsr		#8-5,d0
+	add		d0,a5
 
 	lea		16(a6),a6
 
@@ -699,15 +773,15 @@ draw_dummy_sprites2:
 	move	#8-1,d6
 7:
 	move.b	(a0)+,d3
-	move.b	(a0)+,d2
 	move.b	(a0)+,d1
+	move.b	(a0)+,d2
 	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
 	subq.l	#2,a6
 
-	clr		d4
+	clr.l	d4
 
 	add.b	d0,d0
 	addx	d4,d4
@@ -721,7 +795,8 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a6)
+	move	(a5,d4.l*2),d4
+	move	(a1,d4.l*2),(a6)
 9:
 	dbf		d5,8b
 
@@ -734,15 +809,15 @@ draw_dummy_sprites2:
 	move	#8-1,d6
 7:
 	move.b	(a0)+,d3
-	move.b	(a0)+,d2
 	move.b	(a0)+,d1
+	move.b	(a0)+,d2
 	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
 	subq.l	#2,a6
 
-	clr		d4
+	clr.l	d4
 
 	add.b	d0,d0
 	addx	d4,d4
@@ -756,7 +831,8 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a6)
+	move	(a5,d4.l*2),d4
+	move	(a1,d4.l*2),(a6)
 9:
 	dbf		d5,8b
 
@@ -771,15 +847,15 @@ draw_dummy_sprites2:
 	move	#8-1,d6
 7:
 	move.b	(a0)+,d3
-	move.b	(a0)+,d2
 	move.b	(a0)+,d1
+	move.b	(a0)+,d2
 	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
 	subq.l	#2,a6
 
-	clr		d4
+	clr.l	d4
 
 	add.b	d0,d0
 	addx	d4,d4
@@ -793,7 +869,8 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a6)
+	move	(a5,d4.l*2),d4
+	move	(a1,d4.l*2),(a6)
 9:
 	dbf		d5,8b
 
@@ -806,15 +883,15 @@ draw_dummy_sprites2:
 	move	#8-1,d6
 7:
 	move.b	(a0)+,d3
-	move.b	(a0)+,d2
 	move.b	(a0)+,d1
+	move.b	(a0)+,d2
 	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
 	subq.l	#2,a6
 
-	clr		d4
+	clr.l	d4
 
 	add.b	d0,d0
 	addx	d4,d4
@@ -828,7 +905,8 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a6)
+	move	(a5,d4.l*2),d4
+	move	(a1,d4.l*2),(a6)
 9:
 	dbf		d5,8b
 
@@ -850,24 +928,6 @@ draw_dummy_sprites2:
 	movem.l	(sp)+,d0-a6
 
 	rts
-
-dummy_palette:
-	dc.w	0b0000000000000000
-	dc.w	0b0001000010000010
-	dc.w	0b0010000100000100
-	dc.w	0b0011000110000110
-	dc.w	0b0100001000001000
-	dc.w	0b0101001010001010
-	dc.w	0b0110001100001100
-	dc.w	0b0111001110001110
-	dc.w	0b1000010000010000
-	dc.w	0b1001010010010010
-	dc.w	0b1010010100010100
-	dc.w	0b1011010110010110
-	dc.w	0b1100011000011000
-	dc.w	0b1101011010011010
-	dc.w	0b1110011100011100
-	dc.w	0b1111011110011110
 
 |-------------------------------------------------------------------------------
 |
