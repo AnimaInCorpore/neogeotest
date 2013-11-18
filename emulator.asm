@@ -723,10 +723,7 @@ draw_dummy_sprites2:
 
 	sub.l	#512*2*512,a6
 
-	move.l	a2,a5
-	add.l	#512*2*16,a5
-
-	cmp.l	a5,a6
+	cmp.l	a2,a6
 	jle		5f
 4:
 	| Sprite decoding and drawing.
