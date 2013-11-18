@@ -5,14 +5,14 @@
 
 .equ	SCREEN_ADDRESS,0x600000
 .equ	SCREEN_ADDRESS_2,SCREEN_ADDRESS+512*2*(224+16+16)
-.equ	PALETTE_DECODER_TABLE,SCREEN_ADDRESS_2+512*2*(224+16+16)
 
 .equ	PALETTE_RAM,0x400000
 
 .equ	SPRITES_ADDRESS,0x700000
 .equ	VRAM_ADDRESS,0x580000
 
-.equ	SPRITE_INFOS_ADDRESS,VRAM_ADDRESS+0x20000
+.equ	PALETTE_DECODER_TABLE,VRAM_ADDRESS+0x20000
+.equ	SPRITE_INFOS_ADDRESS,PALETTE_DECODER_TABLE+0x20000
 .equ	PALETTES_ADDRESS,SPRITE_INFOS_ADDRESS+0x2000
 .equ	COMPILED_SPRITES_ADDRESS,PALETTES_ADDRESS+0x4000
 
@@ -314,22 +314,6 @@ bus_error_handler:
 	cmp.b	#0x01,0xfc02.w
 	jeq		emulator_exit
 
-	cmp.b	#0x39,0xfc02.w
-	jeq		1f
-
-	lea		sprite_draw_counter(pc),a0
-	move	(a0),d0
-	and		#0xf,d0
-	jne		1f
-
-	jbsr	draw_dummy_sprites2
-
-	lea		display_screen_address(pc),a0
-	lea		work_screen_address(pc),a1
-	move.l	(a0),d0
-	move.l	(a1),(a0)
-	move.l	d0,(a1)
-1:
 	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
 
 	jra		3f
@@ -1168,7 +1152,7 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
-	movem.l	d0-d1/a0,-(sp)
+	movem.l	d0-d1/a0-a1,-(sp)
 
 	lea		display_screen_address(pc),a0
 	move.l	(a0),d0
@@ -1182,9 +1166,20 @@ vbl_handler:
 	move.b	d1,0x820d.w
 
 	lea		sprite_draw_counter(pc),a0
+	move	(a0),d0
 	addq	#1,(a0)
+	and		#0xf,d0
+	jne		1f
 
-	movem.l	(sp)+,d0-d1/a0
+	jbsr	draw_dummy_sprites2
+
+	lea		display_screen_address(pc),a0
+	lea		work_screen_address(pc),a1
+	move.l	(a0),d0
+	move.l	(a1),(a0)
+	move.l	d0,(a1)
+1:
+	movem.l	(sp)+,d0-d1/a0-a1
 
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
