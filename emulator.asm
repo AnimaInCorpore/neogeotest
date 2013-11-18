@@ -744,6 +744,7 @@ draw_dummy_sprites2:
 	add.l	d0,a0
 
 	move	(a4),d0
+	clr.b	d0
 	lsr		#8-5,d0
 	add		d0,a5
 
