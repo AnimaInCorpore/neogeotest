@@ -2,9 +2,13 @@
 .global emulator_end
 
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
+
 .equ	SCREEN_ADDRESS,0x600000
+.equ	SCREEN_ADDRESS_2,SCREEN_ADDRESS+512*2*(224+16+16)
+
 .equ	SPRITES_ADDRESS,0x700000
 .equ	VRAM_ADDRESS,0x580000
+
 .equ	SPRITE_INFOS_ADDRESS,VRAM_ADDRESS+0x20000
 .equ	PALETTES_ADDRESS,SPRITE_INFOS_ADDRESS+0x2000
 .equ	COMPILED_SPRITES_ADDRESS,PALETTES_ADDRESS+0x4000
@@ -78,7 +82,7 @@ emulator:
 1:
 	clr.l	(a0)+
 
-	cmp.l	#SCREEN_ADDRESS+512*2*(224+16+16),a0
+	cmp.l	#SCREEN_ADDRESS_2+512*2*(224+16+16),a0
 	jlt		1b
 
 	| Clear VRAM memory.
@@ -92,8 +96,7 @@ emulator:
 
 	| Set screen memory.
 
-	move.l	#SCREEN_ADDRESS++512*2*16+8*2,d0
-|	move.l	#VRAM_ADDRESS,d0
+	move.l	#SCREEN_ADDRESS_2+512*2*16+8*2,d0
 	swap	d0
 	move.b	d0,0x8201.w
 	swap	d0
@@ -277,7 +280,12 @@ bus_error_handler:
 	jne		1f
 
 	jbsr	draw_dummy_sprites2
-	addq	#1,(a0)
+
+	lea		display_screen_address(pc),a0
+	lea		work_screen_address(pc),a1
+	move.l	(a0),d0
+	move.l	(a1),(a0)
+	move.l	d0,(a1)
 1:
 	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
 
@@ -471,7 +479,7 @@ reg_status_a_counter:
 	dc.w	0x007f
 
 sprite_draw_counter:
-	ds.w	1
+	dc.w	1
 
 |-------------------------------------------------------------------------------
 |
@@ -594,9 +602,8 @@ draw_dummy_sprites2:
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
 	lea		VRAM_ADDRESS,a1														| Sprite tile maps.
-	lea		SCREEN_ADDRESS,a2
-	lea		dummy_palette(pc),a5
-	lea		SPRITES_ADDRESS,a6
+	lea		work_screen_address(pc),a2
+	move.l	(a2),a2
 
 	clr		d4 																	| Previous sprite height.
 	clr		d5 																	| Previous sprite X position.
@@ -656,38 +663,49 @@ draw_dummy_sprites2:
 
 	subq	#1,d3
 3:
-	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
+	move.l	a3,a6
+
+	move.l	a2,a5
+	add.l	#512*2*(224+16),a5
+
+	cmp.l	a5,a6
 	jlt		4f
 
-	sub.l	#512*2*512,a3
+	sub.l	#512*2*512,a6
 
-	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
+	move.l	a2,a5
+	add.l	#512*2*16,a5
+
+	cmp.l	a5,a6
 	jle		5f
 4:
 	| Sprite decoding and drawing.
 
 	movem.l	d0-a6,-(sp)
 
+	lea		dummy_palette(pc),a5
+	lea		SPRITES_ADDRESS,a0
+
 	clr.l	d0
 	move	(a4),d0
 	and		#0x7fff,d0
 	lsl.l	#7,d0
-	add.l	d0,a6
+	add.l	d0,a0
 
-	lea		16(a3),a3
+	lea		16(a6),a6
 
 	| Block #1.
 
 	move	#8-1,d6
 7:
-	move.b	(a6)+,d3
-	move.b	(a6)+,d2
-	move.b	(a6)+,d1
-	move.b	(a6)+,d0
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
-	subq.l	#2,a3
+	subq.l	#2,a6
 
 	clr		d4
 
@@ -703,11 +721,11 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a3)
+	move	(a5,d4.w*2),(a6)
 9:
 	dbf		d5,8b
 
-	lea		512*2+8*2(a3),a3
+	lea		512*2+8*2(a6),a6
 
 	dbf		d6,7b
 
@@ -715,14 +733,14 @@ draw_dummy_sprites2:
 
 	move	#8-1,d6
 7:
-	move.b	(a6)+,d3
-	move.b	(a6)+,d2
-	move.b	(a6)+,d1
-	move.b	(a6)+,d0
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
-	subq.l	#2,a3
+	subq.l	#2,a6
 
 	clr		d4
 
@@ -738,28 +756,28 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a3)
+	move	(a5,d4.w*2),(a6)
 9:
 	dbf		d5,8b
 
-	lea		512*2+8*2(a3),a3
+	lea		512*2+8*2(a6),a6
 
 	dbf		d6,7b
 
-	sub.l	#512*2*16+8*2,a3
+	sub.l	#512*2*16+8*2,a6
 
 	| Block #3.
 
 	move	#8-1,d6
 7:
-	move.b	(a6)+,d3
-	move.b	(a6)+,d2
-	move.b	(a6)+,d1
-	move.b	(a6)+,d0
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
-	subq.l	#2,a3
+	subq.l	#2,a6
 
 	clr		d4
 
@@ -775,11 +793,11 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a3)
+	move	(a5,d4.w*2),(a6)
 9:
 	dbf		d5,8b
 
-	lea		512*2+8*2(a3),a3
+	lea		512*2+8*2(a6),a6
 
 	dbf		d6,7b
 
@@ -787,14 +805,14 @@ draw_dummy_sprites2:
 
 	move	#8-1,d6
 7:
-	move.b	(a6)+,d3
-	move.b	(a6)+,d2
-	move.b	(a6)+,d1
-	move.b	(a6)+,d0
+	move.b	(a0)+,d3
+	move.b	(a0)+,d2
+	move.b	(a0)+,d1
+	move.b	(a0)+,d0
 
 	move	#8-1,d5
 8:
-	subq.l	#2,a3
+	subq.l	#2,a6
 
 	clr		d4
 
@@ -810,11 +828,11 @@ draw_dummy_sprites2:
 	tst		d4
 	jeq		9f
 
-	move	(a5,d4.w*2),(a3)
+	move	(a5,d4.w*2),(a6)
 9:
 	dbf		d5,8b
 
-	lea		512*2+8*2(a3),a3
+	lea		512*2+8*2(a6),a6
 
 	dbf		d6,7b
 
@@ -1090,12 +1108,23 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
-	move.l	a0,-(sp)
+	movem.l	d0-d1/a0,-(sp)
+
+	lea		display_screen_address(pc),a0
+	move.l	(a0),d0
+	add.l	#512*2*16+8*2,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
 
 	lea		sprite_draw_counter(pc),a0
 	addq	#1,(a0)
 
-	move.l	(sp)+,a0
+	movem.l	(sp)+,d0-d1/a0
 
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
@@ -1105,6 +1134,12 @@ vbl_handler:
 	move.l	0x64.w,-(sp)														| Jump to the cartridge VBL routine.
 
 	rts
+
+display_screen_address:
+	dc.l	SCREEN_ADDRESS_2
+
+work_screen_address:
+	dc.l	SCREEN_ADDRESS
 
 |-------------------------------------------------------------------------------
 |
