@@ -16,6 +16,11 @@
 .equ	PALETTES_ADDRESS,SPRITE_INFOS_ADDRESS+0x2000
 .equ	COMPILED_SPRITES_ADDRESS,PALETTES_ADDRESS+0x4000
 
+.equ	SSW_OFFSET,0xa
+.equ	ACCESS_ADDRESS_OFFSET,0x10
+.equ	DATA_TO_BE_WRITTEN_OFFSET,0x18
+.equ	DATA_TO_BE_READ_OFFSET,0x2c
+
 .text
 
 |-------------------------------------------------------------------------------
@@ -211,303 +216,346 @@ mmu_data:
 |-------------------------------------------------------------------------------
 
 bus_error_handler:
+|	not.l	0x9800.w
+
 	move	#0x2700,sr
-|	move.l	#0x000000ff,0x9800.w
 
-	movem.l	d0-a6,-(sp)
+	bclr	#8,SSW_OFFSET(sp)													| Data fault processed.
+|	or		#0x8000,(sp)														| Reenable tracing.
 
-	move.l	15*4+0x10(sp),d0													| Access address.
-	move	15*4+0xa(sp),d1														| "Special Status Word".
+	| REG_VRAMADDR, REG_VRAMRW, REG_VRAMMOD, REG_LSPCMODE, REG_TIMERHIGH, REG_TIMERLOW, REG_IRQACK, REG_TIMERSTOP.
+
+	cmp		#0x003c,ACCESS_ADDRESS_OFFSET(sp)
+	jne		1f
 
 	| REG_VRAMADDR.
 
-	cmp.l	#0x3c0000,d0
+	tst		ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	btst	#6,d1																| Read access?
-	jne		1f
+	movem.l	d0-d1/a0-a1,-(sp)
+
+	move	4*4+SSW_OFFSET(sp),d0												| "Special Status Word".
 
 	lea		vram_address(pc),a0
-	move.l	15*4+0x18(sp),d0
 
-	and		#0x0030,d1															| Check for long data size write access.
+	btst	#6,d0																| Read access?
+	jne		3f
+
+	move.l	4*4+DATA_TO_BE_WRITTEN_OFFSET(sp),d1
+
+	and		#0x0030,d0															| Check for long data size write access.
 	jne		4f
 
-	swap	d0
-	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
+	lea		VRAM_ADDRESS,a1
+	clr.l	d0
+	swap	d1
+	move	d1,d0
+	swap	d1
+	move	d1,(a1,d0.l*2)														| Write (word sized) data to REG_VRAMRW.
+	swap	d1
 
-	jra		5f
+	lea		vram_increment(pc),a1
+	add		(a1),d1
 4:
-	move	d0,(a0)																| Write (word sized) data to REG_VRAMADDR.
+	move	d1,(a0)																| Write (word sized) data to REG_VRAMADDR.
 
-	jra		3f
-1:
-	move	vram_address(pc),15*4+0x2c+0x2(sp)									| Read (word sized) data from REG_VRAMADDR.
+	movem.l	(sp)+,d0-d1/a0-a1
 
-	jra		3f
+	rte
+3:
+	move	(a0),4*4+DATA_TO_BE_READ_OFFSET+2(sp)								| Read (word sized) data from REG_VRAMADDR.
+
+	movem.l	(sp)+,d0-d1/a0-a1
+
+	rte
 2:
 	| REG_VRAMRW.
 
-	cmp.l	#0x3c0002,d0
+	cmp		#0x0002,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	btst	#6,d1																| Read access?
-	jne		1f
-
-|	move.l	#0x00ff0000,0x9800.w
+	movem.l	d0-d1/a0-a1,-(sp)
 
 	lea		vram_address(pc),a0
-	move	(a0),d0
-5:
+	move	(a0),d1
+
 	lea		VRAM_ADDRESS,a1
-	clr.l	d1
-	move	d0,d1
-	move	15*4+0x18+0x2(sp),(a1,d1.l*2)										| Write (word sized) data to REG_VRAMRW.
+
+	btst	#6,4*4+SSW_OFFSET+1(sp)												| Read access?
+	jne		3f
+
+	clr.l	d0
+	move	d1,d0
+	move	4*4+DATA_TO_BE_WRITTEN_OFFSET+2(sp),(a1,d0.l*2)						| Write (word sized) data to REG_VRAMRW.
 
 	lea		vram_increment(pc),a1
-	add		(a1),d0
-	move	d0,(a0)
+	add		(a1),d1
+	move	d1,(a0)
 
-	jra		3f
-1:
-	lea		vram_address(pc),a0
-	move	(a0),d0
+	movem.l	(sp)+,d0-d1/a0-a1
 
-	lea		VRAM_ADDRESS,a1
-	clr.l	d1
-	move	d0,d1
-	move	(a1,d1.l*2),15*4+0x2c+0x2(sp)										| Read (word sized) data from REG_VRAMRW.
+	rte
+3:
+	clr.l	d0
+	move	d1,d0
+	move	(a1,d0.l*2),4*4+DATA_TO_BE_READ_OFFSET+2(sp)						| Read (word sized) data from REG_VRAMRW.
 
-	jra		3f
+	movem.l	(sp)+,d0-d1/a0-a1
+
+	rte
 2:
 	| REG_VRAMMOD.
 
-	cmp.l	#0x3c0004,d0
+	cmp		#0x0004,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	btst	#6,d1																| Read access?
-	jne		1f
+	btst	#6,SSW_OFFSET+1(sp)													| Read access?
+	jne		3f
+
+	move.l	a0,-(sp)
 
 	lea		vram_increment(pc),a0
-	move	15*4+0x18+0x2(sp),(a0)												| Write (word sized) data to REG_VRAMMOD.
+	move	1*4+DATA_TO_BE_WRITTEN_OFFSET+2(sp),(a0)							| Write (word sized) data to REG_VRAMMOD.
 
-	jra		3f
-1:
-	move	vram_increment(pc),15*4+0x2c+0x2(sp)								| Read (word sized) data from REG_VRAMMOD.
+	move.l	(sp)+,a0
 
-	jra		3f
+	rte
+3:
+	move	vram_increment(pc),DATA_TO_BE_READ_OFFSET+2(sp)						| Read (word sized) data from REG_VRAMMOD.
+
+	rte
 2:
 	| REG_LSPCMODE.
 
-	cmp.l	#0x3c0006,d0
+	cmp		#0x0006,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	move	#0x0000,15*4+0x2c+0x2(sp)											| Read (word sized) data from REG_LSPCMODE.
+	clr		DATA_TO_BE_READ_OFFSET+2(sp)										| Read (word sized) data from REG_LSPCMODE.
 
-	jra		3f
+	rte
+2:
+	rte
+1:
+	| REG_P1CNT, REG_DIPSW, REG_300081.
+
+	cmp		#0x0030,ACCESS_ADDRESS_OFFSET(sp)
+	jne		1f
+
+	| REG_P1CNT.
+
+	tst		ACCESS_ADDRESS_OFFSET+2(sp)
+	jne		2f
+
+	move.l	d0,-(sp)
+
+	move	#0xff,d0
+
+	cmp.b	#0x2a,0xfc02.w														| Left SHIFT.
+	jne		3f
+
+	and		#0xef,d0
+3:
+	cmp.b	#0x1d,0xfc02.w														| CONTROL.
+	jne		3f
+
+	and		#0xdf,d0
+3:
+	cmp.b	#0x4b,0xfc02.w														| Arrow left.
+	jne		3f
+
+	and		#0xfb,d0
+3:
+	cmp.b	#0x4d,0xfc02.w														| Arrow right.
+	jne		3f
+
+	and		#0xf7,d0
+3:
+	cmp.b	#0x48,0xfc02.w														| Arrow up.
+	jne		3f
+
+	and		#0xfe,d0
+3:
+	cmp.b	#0x50,0xfc02.w														| Arrow down.
+	jne		3f
+
+	and		#0xfd,d0
+3:
+	move.b	d0,1*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_P1CNT.
+
+	move.l	(sp)+,d0
+
+	rte
 2:
 	| REG_DIPSW (write = kick watchdog).
 
-	cmp.l	#0x300001,d0
+	cmp		#0x0001,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
 	cmp.b	#0x01,0xfc02.w
 	jeq		emulator_exit
 
-	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_DIPSW.
+	move.b	#0xff,DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_DIPSW.
 
-	jra		3f
+	rte
 2:
-	| REG_SOUND.
+	| REG_300081.
 
-	cmp.l	#0x320000,d0
+	cmp		#0x0081,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	btst	#6,d1																| Read access?
+	move.b	#0x80,DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_300081.
+
+	rte
+2:
+	rte
+1:
+	| REG_SOUND, REG_STATUS_A.
+
+	cmp		#0x0032,ACCESS_ADDRESS_OFFSET(sp)
 	jne		1f
 
-	lea		sound_command(pc),a0
-	move.b	15*4+0x18+0x3(sp),(a0)												| Write (byte sized) data to REG_SOUND.
+	| REG_SOUND.
 
-	jra		3f
-1:
+	tst		ACCESS_ADDRESS_OFFSET+2(sp)
+	jne		2f
+
+	btst	#6,SSW_OFFSET+1(sp)													| Read access?
+	jne		3f
+
+	move.l	a0,-(sp)
+
+	lea		sound_command(pc),a0
+	move.b	1*4+DATA_TO_BE_WRITTEN_OFFSET+3(sp),(a0)							| Write (byte sized) data to REG_SOUND.
+
+	move.l	(sp)+,a0
+
+	rte
+3:
+	move.l	d0,-(sp)
+
 	cmp.b	#0x01,sound_command(pc)
 	seq		d0
 	and		#0x01,d0
 
-	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_SOUND.
+	move.b	d0,1*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_SOUND.
 
-	jra		3f
-2:
-	| REG_P1CNT.
+	move.l	(sp)+,d0
 
-	cmp.l	#0x300000,d0
-	jne		2f
-
-	move	#0xff,d0
-
-	cmp.b	#0x2a,0xfc02.w														| Left SHIFT.
-	jne		1f
-
-	and		#0xef,d0
-1:
-	cmp.b	#0x1d,0xfc02.w														| CONTROL.
-	jne		1f
-
-	and		#0xdf,d0
-1:
-	cmp.b	#0x4b,0xfc02.w														| Arrow left.
-	jne		1f
-
-	and		#0xfb,d0
-1:
-	cmp.b	#0x4d,0xfc02.w														| Arrow right.
-	jne		1f
-
-	and		#0xf7,d0
-1:
-	cmp.b	#0x48,0xfc02.w														| Arrow up.
-	jne		1f
-
-	and		#0xfe,d0
-1:
-	cmp.b	#0x50,0xfc02.w														| Arrow down.
-	jne		1f
-
-	and		#0xfd,d0
-1:
-	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_P1CNT.
-
-	jra		3f
-2:
-	| REG_P2CNT.
-
-	cmp.l	#0x340000,d0
-	jne		2f
-
-	move.b	#0xff,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_P2CNT.
-
-	jra		3f
+	rte
 2:
 	| REG_STATUS_A.
 
-	cmp.l	#0x320001,d0
+	cmp		#0x0001,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
+
+	movem.l	d0/a0,-(sp)
 
 	lea		reg_status_a_counter(pc),a0
 	eor		#0x0040,(a0)
-|	move.b	#0x3d,0x10fee4
-
 	move	(a0),d0
 
 	cmp.b	#0x06,0xfc02.w
-	jne		1f
+	jne		3f
 
 	and		#0xfe,d0
-1:
-	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_A.
+3:
+	move.b	d0,2*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_A.
 
-	jra		3f
+	movem.l	(sp)+,d0/a0
+
+	rte
 2:
+	rte
+1:
+	| REG_STATUS_B, REG_POUTPUT, REG_CRDBANK, REG_SLOT, REG_LEDLATCHES,
+	| REG_LEDDATA, REG_RTCCTRL.
+
+	cmp		#0x0038,ACCESS_ADDRESS_OFFSET(sp)
+	jne		1f
+
 	| REG_STATUS_B.
 
-	cmp.l	#0x380000,d0
+	tst		ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	move	#0xff,d0
+	move.b	#0xff,DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
 
 	cmp.b	#0x02,0xfc02.w
+	jne		3f
+
+	move.b	#0xfe,DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
+3:
+	rte
+2:
+	rte
+1:
+	| REG_NOSHADOW, REG_SHADOW, REG_SWPBIOS, REG_SWPROM, REG_CRDUNLOCK1,
+	| REG_CRDLOCK1, REG_CRDLOCK2, REG_CRDUNLOCK2, REG_CRDREGSEL, REG_CRDNORMAL,
+	| REG_BRDFIX, REG_CRTFIX, REG_SRAMLOCK, REG_SRAMULOCK, REG_PALBANK1,
+	| REG_PALBANK0.
+
+	cmp		#0x003a,ACCESS_ADDRESS_OFFSET(sp)
 	jne		1f
 
-	and		#0xfe,d0
-1:
-	move.b	d0,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_STATUS_B.
-
-	jra		3f
-2:
 	| REG_SWPBIOS.
 
-	cmp.l	#0x3a0003,d0
+	cmp		#0x0003,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
+
+	move.l	a0,-(sp)
 
 	lea		use_cartridge_vector_table(pc),a0
 	clr		(a0)
 
-	jra		3f
+	move.l	(sp)+,a0
+
+	rte
 2:
 	| REG_SWPROM.
 
-	cmp.l	#0x3a0013,d0
+	cmp		#0x0013,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
+
+	move.l	a0,-(sp)
 
 	lea		use_cartridge_vector_table(pc),a0
 	move	#-1,(a0)
 
-	jra		3f
-2:
-	| REG_300081.
+	move.l	(sp)+,a0
 
-	cmp.l	#0x300081,d0
-	jne		2f
-
-	move.b	#0x80,15*4+0x2c+0x3(sp)												| Read (byte sized) data from REG_300081.
-
-	jra		3f
+	rte
 2:
 	| REG_PALBANK1.
 
-	cmp.l	#0x3c000f,d0
+	cmp		#0x000f,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	lea		palette_bank_offset(pc),a0
-	move	#0x2000,(a0)
+	move.l	a0,-(sp)
 
-	jra		3f
+	lea		palette_bank_offset(pc),a0
+|	move	#0x2000,(a0)														| Fixme: palette!
+
+	move.l	(sp)+,a0
+
+	rte
 2:
 	| REG_PALBANK0.
 
-	cmp.l	#0x3c001f,d0
+	cmp		#0x001f,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
+	move.l	a0,-(sp)
+
 	lea		palette_bank_offset(pc),a0
-	clr		(a0)
+|	clr		(a0)																| Fixme: palette!
 
-	jra		3f
+	move.l	(sp)+,a0
+
+	rte
 2:
-	| Unhandled hardware addresse accesses.
-
-|	move.l	#0xff000000,0x9800.w
-
-	move	#0b1111100000000000,d2												| Write access = red text color.
-
-	btst	#6,d1																| Read access?
-	jeq		3f
-
-	move	#0b0000011111100000,d2												| Read access = green text color.
-
-	move.l	15*4+0x2(sp),d0
-	jbsr	write_long_data
-
-	jbsr	write_space
-
-	move.l	15*4+0x10(sp),d0
-	jbsr	write_long_data
-
-	jbsr	write_space
-
-	move	15*4+0xa(sp),d0
-	jbsr	write_word_data
-
-	jbsr	write_space
-	jbsr	write_new_line
-3:
-	movem.l	(sp)+,d0-a6
-
-|	or		#0x8000,(sp)														| Reenable tracing.
-	bclr	#8,0xa(sp)															| Data fault processed.
-
-|	clr.l	0x9800.w
-
+	rte
+1:
 	rte
 
 vram_address:
@@ -1119,6 +1167,15 @@ trace_handler:
 	dbf		d7,2b
 
 	jbsr	write_home
+
+	move.l	#SCREEN_ADDRESS,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
 
 	movem.l	(sp)+,d0-a6
 1:
