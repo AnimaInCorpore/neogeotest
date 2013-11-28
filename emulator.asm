@@ -657,6 +657,39 @@ draw_dummy_sprites:
 
 	movem.l	d0-a6,-(sp)
 
+
+
+
+
+	lea		0x1000000,a1
+
+	clr.l	d0
+	move	(a4),d0
+	lsl.l	#2,d0
+
+	clr.l	d1
+	move	2(a4),d1
+	move.l	d1,d2
+	and		#0x3,d1
+	or		d1,d0
+
+	and		#0x00f0,d2
+	swap	d2
+	lsr.l	#2,d2
+	or.l	d2,d0
+
+	lea		(a1,d0.l*4),a1
+	move.l	(a1),d0																| Sprite drawing code address.
+	jeq		8f
+
+	lea		8f(pc),a0															| Return address.
+	movem.l	d0/a0,-(sp)
+	movem.l	dummy_palette(pc),d0-a5												| Load palette colors.
+	rts																			| Jump to sprite drawing code.
+8:
+
+
+/*
 	lea		TILES_USAGE_BITMAP,a0
 
 	clr.l	d0
@@ -681,7 +714,8 @@ draw_dummy_sprites:
 
 	lsr.l	#3,d0
 	or.b	d2,(a0,d0.l)
-
+*/
+/*
 	clr.l	(a6)+
 	clr.l	(a6)+
 	add		#512*2-8,a6
@@ -693,6 +727,7 @@ draw_dummy_sprites:
 	add		#512*2-8,a6
 	clr.l	(a6)+
 	clr.l	(a6)+
+*/
 /*
 	lea		SPRITES_ADDRESS,a0
 	lea		PALETTE_DECODER_TABLE,a1
@@ -874,6 +909,50 @@ draw_dummy_sprites:
 	movem.l	(sp)+,d0-a6
 
 	rts
+
+dummy_palette:
+	dc.w	0b0001000010000010													| d0.
+	dc.w	0b0001000010000010
+
+	dc.w	0b0010000100000100													| d1.
+	dc.w	0b0010000100000100
+
+	dc.w	0b0011000110000110													| d2.
+	dc.w	0b0011000110000110
+
+	dc.w	0b0100001000001000													| d3.
+	dc.w	0b0100001000001000
+
+	dc.w	0b0101001010001010													| d4.
+	dc.w	0b0101001010001010
+
+	dc.w	0b0110001100001100													| d5.
+	dc.w	0b0110001100001100
+
+	dc.w	0b0111001110001110													| d6.
+	dc.w	0b0111001110001110
+
+	dc.w	0b1000010000010000													| d7.
+
+	dc.w	0b1001010010010010													| d7.
+
+	dc.w	0b1010010100010100													| a0.
+	dc.w	0b1010010100010100
+
+	dc.w	0b1011010110010110													| a1.
+	dc.w	0b1011010110010110
+
+	dc.w	0b1100011000011000													| a2.
+	dc.w	0b1100011000011000
+
+	dc.w	0b1101011010011010													| a3.
+	dc.w	0b1101011010011010
+
+	dc.w	0b1110011100011100													| a4.
+	dc.w	0b1110011100011100
+
+	dc.w	0b1111011110011110													| a5.
+	dc.w	0b1111011110011110
 
 |-------------------------------------------------------------------------------
 |

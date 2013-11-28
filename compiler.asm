@@ -318,7 +318,7 @@ compile_tiles:
 	| Compile tile.
 
 	move.l	a1,(a0)
-	add.l	#0x900000,(a0)+														| The real compiled tiles address is at 0x1000000+. Todo: better description.
+	add.l	#0x900000,(a0)+														| The real compiled tiles address starts at 0x1000000+. Todo: better description.
 
 	movem.l	d0/a0,-(sp)
 
@@ -358,29 +358,37 @@ compile_tiles:
 6:
 	clr		d1
 
-	cmp		#14,d0
+	cmp		#8,d0
 	seq		d4
-	cmp		#15,d0
+	cmp		#9,d0
 	seq		d5
-	cmp.b	d4,d5																| Color #14 or #15?
+	cmp.b	d4,d5																| Color #8 or #9?
 	jeq		7f
 
-	cmp.b	d5,d2																| Was the last color in d0 the same like the current one?
+	cmp.b	d5,d2																| Was the last color in d7 the same like the current one?
 	jeq		7f
 
-	move	#0x4840,(a1)+														| "swap d0".
+	move	#0x4847,(a1)+														| "swap d7".
 	move.b	d5,d2
 7:
-	cmp		#14,d0																| Use word moves only for d0 (color #14 and #15).
-	jlt		6f
+	cmp		#8,d0
+	jeq		7f
 
-	move	#0x3cc0,(a1)+														| "move.w d0,(a6)+".
+	cmp		#9,d0																| Use word moves only for d7 (color #8 and #9).
+	jne		6f
+7:
+	move	#0x3cc7,(a1)+														| "move.w d7,(a6)+".
 
 	jra		8f
 6:
 	move	#0x3cc0-1,d4														| "move.w dx,(a6)+".
 	add		d0,d4																| "x".
 
+	cmp		#8,d0
+	jlt		6f
+
+	subq	#1,d4
+6:
 	cmp		-2(a1),d4															| Is the last opcode also "move.w dx,(a6)+"? This is legit because the value can never be written by the "add" above!
 	jne		6f
 
