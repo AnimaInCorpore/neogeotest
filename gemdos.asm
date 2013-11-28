@@ -96,6 +96,15 @@
 	lea		12(sp),sp
 .endm
 
+.macro	Fseek offset, handle, seekmode
+	move	\seekmode,-(sp)
+	move	\handle,-(sp)
+	move.l	\offset,-(sp)
+	move	#66,-(sp)
+	trap	#1
+	lea		10(sp),sp
+.endm
+
 .macro	Mxalloc amount, mode
 	move	\mode,-(sp)
 	move.l	\amount,-(sp)

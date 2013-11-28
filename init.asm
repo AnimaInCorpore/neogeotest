@@ -173,7 +173,7 @@ f030_deinit_copy_palette_loop:
 
 	move	#0x2300,sr
 
-	Pterm0
+	rts
 
 .data
 

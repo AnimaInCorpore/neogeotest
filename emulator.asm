@@ -1,20 +1,9 @@
+.include "../defines.asm"
+
 .global emulator
 .global emulator_end
 
 .equ	BREAKPOINT_ADDRESS,0xc11fb0
-
-.equ	SCREEN_ADDRESS,0x600000
-.equ	SCREEN_ADDRESS_2,SCREEN_ADDRESS+512*2*(224+16+16)
-
-.equ	PALETTE_RAM,0x400000
-
-.equ	SPRITES_ADDRESS,0x700000
-.equ	VRAM_ADDRESS,0x580000
-
-.equ	PALETTE_DECODER_TABLE,VRAM_ADDRESS+0x20000
-.equ	SPRITE_INFOS_ADDRESS,PALETTE_DECODER_TABLE+0x20000
-.equ	PALETTES_ADDRESS,SPRITE_INFOS_ADDRESS+0x2000
-.equ	COMPILED_SPRITES_ADDRESS,PALETTES_ADDRESS+0x4000
 
 .equ	SSW_OFFSET,0xa
 .equ	ACCESS_ADDRESS_OFFSET,0x10
@@ -158,7 +147,7 @@ emulator:
 |	lea		0x10F300,sp															| Set the initial NeoGeo stack pointer.
 	lea		emulator_end(pc),sp
 	add.l	#0x4000*4,sp														| The NeoGeo stack pointer is not usable because the BIOS RAM check fails while the trace and bus error exceptions are active.
-	jbra	0xc00402															| Call NeoGeo BIOS init routine.
+	jra		0xc00402															| Call NeoGeo BIOS init routine.
 
 |-------------------------------------------------------------------------------
 
@@ -589,116 +578,6 @@ draw_dummy_sprites:
 	movem.l	d0-a6,-(sp)
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
-	lea		SCREEN_ADDRESS,a1
-
-	clr		d4 																	| Previous sprite height.
-	clr		d5 																	| Previous sprite X position.
-	clr		d6 																	| Previous sprite Y position.
-
-	move	#381-1,d7
-1:
-	move	0x200*2(a0),d0 														| Sprite X position.
-	move	(a0)+,d1 															| Sprite Y position + sticky bit + height.
-
-	btst	#6,d1 																| Check sticky bit.
-	jeq		3f
-
-	move	d4,d3 																| Use previous height.
-	jeq		2f 																	| Avoid having 0 as the height.
-
-	add		#16,d5
-	move	d5,d0 																| Use previous X position + 16.
-
-	move	d6,d2 																| use previous Y position.
-
-	jra		4f
-3:
-	move	d1,d3
-	and		#0x3f,d3 															| Sprite height.
-	move	d3,d4 																| Save sprite height.
-	jeq		2f
-
-	lsr		#7,d1
-	move	#512,d2
-	sub		d1,d2
-	move	d2,d6 																| Save Y position.
-
-	lsr		#7,d0
-	move	d0,d5 																| Save X position.
-4:
-	| Check sprite X position boundaries.
-
-	cmp		#320,d0 															| Right screen border.
-	jlt		6f
-
-	sub		#512,d0
-
-	cmp		#-16,d0 															| Left screen border.
-	jle		2f
-6:
-	| Calculate sprite screen address.
-
-	swap	d2
-	clr		d2
-	lsr.l	#7,d2
-	ext.l	d0
-	add.l	d0,d2
-	lea		(a1,d2.l*2),a2
-
-	subq	#1,d3
-3:
-	move.l	a2,a3
-
-	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
-	jlt		4f
-
-	sub.l	#512*2*512,a3
-
-	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
-	jle		5f
-4:
-	movem.l	d0-a0,-(sp)
-
-	move	d7,d0
-	add		d3,d0
-	lsl		#3,d0
-	move.l	#512*2,a0
-
-.rept 16
-	move	d0,(a3)+
-.endr
-
-	lea		-16*2(a3),a3
-	movem.l	(a3),d0-d7
-	add.l	a0,a3
-
-.rept 16-1
-	movem.l	d0-d7,(a3)
-	add.l	a0,a3
-.endr
-
-	movem.l	(sp)+,d0-a0
-5:
-	add.l	#512*2*16,a2
-
-	dbf		d3,3b
-2:
-	dbf		d7,1b
-
-	movem.l	(sp)+,d0-a6
-
-	rts
-
-|-------------------------------------------------------------------------------
-|
-|	Draw dummy sprites 2.
-|
-|-------------------------------------------------------------------------------
-
-draw_dummy_sprites2:
-	movem.l	d0-a6,-(sp)
-
-	lea		VRAM_ADDRESS+0x8200*2,a0
 	lea		VRAM_ADDRESS,a1														| Sprite tile maps.
 	lea		work_screen_address(pc),a2
 	move.l	(a2),a2
@@ -778,6 +657,31 @@ draw_dummy_sprites2:
 
 	movem.l	d0-a6,-(sp)
 
+	lea		TILES_USAGE_BITMAP,a0
+
+	clr.l	d0
+	move	(a4),d0
+	lsl.l	#2,d0
+
+	clr.l	d1
+	move	2(a4),d1
+	move.l	d1,d2
+	and		#0x3,d1
+	or		d1,d0
+
+	and		#0x00f0,d2
+	swap	d2
+	lsr.l	#2,d2
+	or.l	d2,d0
+
+	move	d0,d1
+	and		#0x7,d1
+	move	#0x80,d2
+	lsr		d1,d2
+
+	lsr.l	#3,d0
+	or.b	d2,(a0,d0.l)
+/*
 	lea		SPRITES_ADDRESS,a0
 	lea		PALETTE_DECODER_TABLE,a1
 
@@ -796,7 +700,7 @@ draw_dummy_sprites2:
 	lsr		#8-5,d0
 	add		d0,a5
 
-	lea		16(a6),a6
+	lea		16*2(a6),a6
 
 	| Block #1.
 
@@ -943,7 +847,7 @@ draw_dummy_sprites2:
 	lea		512*2+8*2(a6),a6
 
 	dbf		d6,7b
-
+*/
 	movem.l	(sp)+,d0-a6
 5:
 	addq.l	#4,a4
@@ -974,13 +878,15 @@ draw_sprites:
 	move.l	d0,a2
 	move.l	(a1)+,a6															| Screen address.
 	move.l	(a1)+,d0															| Sprite drawing code address.
+	jeq		1b
+
 	lea		3f(pc),a0															| Return address.
 	movem.l	d0/a0-a1,-(sp)
 	movem.l	(a2),d0-a5															| Load palette colors.
 	rts																			| Jump to sprite drawing code.
 3:
 	move.l	(sp)+,a1
-	jbra	1b
+	jra		1b
 2:
 
 |-------------------------------------------------------------------------------
@@ -999,7 +905,7 @@ build_sprite_infos:
 	lea		VRAM_ADDRESS,a2														| Sprite tilemaps.
 
 	lea		SPRITE_INFOS_ADDRESS,a3												| Converted sprite infos.
-	lea		COMPILED_SPRITES_ADDRESS,a4											| Compiled sprites.
+	lea		COMPILED_TILES_ADDRESS,a4											| Compiled sprites.
 	lea		SCREEN_ADDRESS,a5													| Screen address.
 	lea		PALETTES_ADDRESS,a6													| Palettes address.
 
@@ -1212,6 +1118,7 @@ vbl_handler:
 	lea		display_screen_address(pc),a0
 	move.l	(a0),d0
 	add.l	#512*2*16+8*2,d0
+|	move.l	#0x400000,d0														| Fixme: test.
 	swap	d0
 	move.b	d0,0x8201.w
 	swap	d0
@@ -1226,7 +1133,7 @@ vbl_handler:
 	and		#0xf,d0
 	jne		1f
 
-	jbsr	draw_dummy_sprites2
+	jbsr	draw_dummy_sprites
 
 	lea		display_screen_address(pc),a0
 	lea		work_screen_address(pc),a1

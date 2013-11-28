@@ -103,6 +103,8 @@ TIA			TIBs		TIC
 .include "../xbios.asm"
 .include "../gemdos.asm"
 
+.include "../defines.asm"
+
 /*
 .equ	PROGRAM_ROM_1_OFFSET,	0x00000000
 .equ	PROGRAM_ROM_1_SIZE,		0x00100000
@@ -142,12 +144,12 @@ TIA			TIBs		TIC
 |-------------------------------------------------------------------------------
 
 start:
+	jbsr	load_tiles_usage_bitmap
+	jbsr	compile_tiles
 	jbsr	build_mmu_tables
 	jbsr	load_roms
 
 	jbsr	f030_init
-
-|	jbsr	show_sprites
 
 	| Copy emulator program to 0x500000.
 
@@ -155,6 +157,7 @@ start:
 	lea		0x500000,a1
 1:
 	move.l	(a0)+,(a1)+
+
 	cmp.l	#emulator_end,a0
 	jlt		1b
 
@@ -166,197 +169,9 @@ start:
 
 	jbsr	f030_deinit
 
+	jbsr	save_tiles_usage_bitmap
+
 	Pterm0
-
-|-------------------------------------------------------------------------------
-|
-|	Show sprites.
-|
-|-------------------------------------------------------------------------------
-
-show_sprites:
-	| Clear screen memory.
-
-	lea		0x600000,a0
-1:
-	clr.l	(a0)+
-
-	cmp.l	#0x600000+512*2*224,a0
-	jlt		1b
-
-	move.l	#0x600000,d0
-	swap	d0
-	move.b	d0,0x8201.w
-	swap	d0
-	move	d0,d1
-	ror		#8,d0
-	move.b	d0,0x8203.w
-	move.b	d1,0x820d.w
-
-	| Show sprites.
-
-	lea		0x700000,a0															| Sprites.
-	lea		0x600000+16*2,a1													| Screen.
-	lea		dummy_palette,a2
-1:
-	move	#19-1,d7
-2:
-	| Block #1.
-
-	move	#8-1,d6
-3:
-	move.b	(a0)+,d3
-	move.b	(a0)+,d2
-	move.b	(a0)+,d1
-	move.b	(a0)+,d0
-
-	move	#8-1,d5
-4:
-	clr		d4
-
-	add.b	d0,d0
-	addx	d4,d4
-	add.b	d1,d1
-	addx	d4,d4
-	add.b	d2,d2
-	addx	d4,d4
-	add.b	d3,d3
-	addx	d4,d4
-
-	move	(a2,d4.w*2),-(a1)
-
-	dbf		d5,4b
-
-	lea		512*2+8*2(a1),a1
-
-	dbf		d6,3b
-
-	| Block #2.
-
-	move	#8-1,d6
-3:
-	move.b	(a0)+,d3
-	move.b	(a0)+,d2
-	move.b	(a0)+,d1
-	move.b	(a0)+,d0
-
-	move	#8-1,d5
-4:
-	clr		d4
-
-	add.b	d0,d0
-	addx	d4,d4
-	add.b	d1,d1
-	addx	d4,d4
-	add.b	d2,d2
-	addx	d4,d4
-	add.b	d3,d3
-	addx	d4,d4
-
-	move	(a2,d4.w*2),-(a1)
-
-	dbf		d5,4b
-
-	lea		512*2+8*2(a1),a1
-
-	dbf		d6,3b
-
-	sub.l	#512*2*16+8*2,a1
-
-	| Block #3.
-
-	move	#8-1,d6
-3:
-	move.b	(a0)+,d3
-	move.b	(a0)+,d2
-	move.b	(a0)+,d1
-	move.b	(a0)+,d0
-
-	move	#8-1,d5
-4:
-	clr		d4
-
-	add.b	d0,d0
-	addx	d4,d4
-	add.b	d1,d1
-	addx	d4,d4
-	add.b	d2,d2
-	addx	d4,d4
-	add.b	d3,d3
-	addx	d4,d4
-
-	move	(a2,d4.w*2),-(a1)
-
-	dbf		d5,4b
-
-	lea		512*2+8*2(a1),a1
-
-	dbf		d6,3b
-
-	| Block #4.
-
-	move	#8-1,d6
-3:
-	move.b	(a0)+,d3
-	move.b	(a0)+,d2
-	move.b	(a0)+,d1
-	move.b	(a0)+,d0
-
-	move	#8-1,d5
-4:
-	clr		d4
-
-	add.b	d0,d0
-	addx	d4,d4
-	add.b	d1,d1
-	addx	d4,d4
-	add.b	d2,d2
-	addx	d4,d4
-	add.b	d3,d3
-	addx	d4,d4
-
-	move	(a2,d4.w*2),-(a1)
-
-	dbf		d5,4b
-
-	lea		512*2+8*2(a1),a1
-
-	dbf		d6,3b
-
-	sub.l	#512*2*16-8*2-16*2,a1
-
-	dbf		d7,2b
-
-	add.l	#512*2*16-19*16*2,a1
-	cmp.l	#0x600000+512*2*224,a1
-	jlt		1b
-2:
-	cmp.b	#0x39,0xfc02.w
-	jne		2b
-
-	lea		0x600000+16*2,a1
-	cmp.l	#0x700000+0x400000,a0
-	jlt		1b
-
-	rts
-
-dummy_palette:
-	dc.w	0b0000000000000000
-	dc.w	0b0001000010000010
-	dc.w	0b0010000100000100
-	dc.w	0b0011000110000110
-	dc.w	0b0100001000001000
-	dc.w	0b0101001010001010
-	dc.w	0b0110001100001100
-	dc.w	0b0111001110001110
-	dc.w	0b1000010000010000
-	dc.w	0b1001010010010010
-	dc.w	0b1010010100010100
-	dc.w	0b1011010110010110
-	dc.w	0b1100011000011000
-	dc.w	0b1101011010011010
-	dc.w	0b1110011100011100
-	dc.w	0b1111011110011110
 
 |-------------------------------------------------------------------------------
 |
@@ -447,40 +262,6 @@ load_roms:
 
 	move.l	#BIOS_ROM_OFFSET+0x11c62,d0
 	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the checksum result check.
-
-	| Load sprite ROMs (only the first 4 MiB of 16 MiB).
-
-	Cconws	loading_sprite_roms_text
-
-	Fopen	sprite1_rom_file_name,#0
-	move	d0,d7
-
-	Fread	d7,#0x200000,0x500000
-
-	Fclose	d7
-
-	Fopen	sprite2_rom_file_name,#0
-	move	d0,d7
-
-	Fread	d7,#0x200000,0xa00000
-
-	Fclose	d7
-
-	Cconws	reordering_sprite_roms_text
-
-	lea		0x500000,a0
-	lea		0xa00000,a1
-	lea		0x700000,a2
-	lea		0xb00000,a3
-1:
-.rept 16
-	move.b	(a0)+,(a2)+
-	move.b	(a1)+,(a2)+
-.endr
-
-	cmp.l	a3,a2
-	jlt		1b
-
 	rts
 
 program_rom_file_name:
@@ -488,18 +269,6 @@ program_rom_file_name:
 
 bios_rom_file_name:
 	.asciz	"sp-s2.sp1"
-
-sprite1_rom_file_name:
-	.asciz	"201-c1.c1"
-
-sprite2_rom_file_name:
-	.asciz	"201-c2.c2"
-
-sprite3_rom_file_name:
-	.asciz	"201-c3.c3"
-
-sprite4_rom_file_name:
-	.asciz	"201-c4.c4"
 
 loading_program_rom_text:
 	.asciz	"Loading program ROM...\r\n"
@@ -510,11 +279,66 @@ reordering_program_rom_text:
 loading_bios_rom_text:
 	.asciz	"Loading BIOS ROM...\r\n"
 
-loading_sprite_roms_text:
-	.asciz	"Loading sprite ROMs...\r\n"
+.even
 
-reordering_sprite_roms_text:
-	.asciz	"Reordering sprite ROMs...\r\n"
+|-------------------------------------------------------------------------------
+|
+|	Load tiles usage bitmap.
+|
+|-------------------------------------------------------------------------------
+
+load_tiles_usage_bitmap:
+	Cconws	loading_tiles_usage_bitmap_text
+
+	Fopen	tiles_usage_bitmap_file_name,#0
+	move	d0,d7
+	jmi		1f
+
+	Fread	d7,#0x10000,TILES_USAGE_BITMAP
+
+	Fclose	d7
+
+	rts
+1:
+	lea		TILES_USAGE_BITMAP,a0
+	move.l	a0,a1
+	add.l	#0x10000,a1
+1:
+	clr.l	(a0)+
+
+	cmp.l	a1,a0
+	jlt		1b
+
+	rts
+
+tiles_usage_bitmap_file_name:
+	.asciz	"tilesbmp.dat"
+
+loading_tiles_usage_bitmap_text:
+	.asciz	"Loading tiles usage bitmap...\r\n"
+
+.even
+
+|-------------------------------------------------------------------------------
+|
+|	Save tiles usage bitmap.
+|
+|-------------------------------------------------------------------------------
+
+save_tiles_usage_bitmap:
+	Cconws	saving_tiles_usage_bitmap_text
+
+	Fcreate	tiles_usage_bitmap_file_name,#0
+	move	d0,d7
+
+	Fwrite	d7,#0x10000,TILES_USAGE_BITMAP
+
+	Fclose	d7
+
+	rts
+
+saving_tiles_usage_bitmap_text:
+	.asciz	"Saving tiles usage bitmap...\r\n"
 
 .even
 
@@ -699,9 +523,6 @@ build_mmu_tables:
 |-------------------------------------------------------------------------------
 
 .data
-
-message_text:
-	.asciz "Yes!"
 
 |-------------------------------------------------------------------------------
 
