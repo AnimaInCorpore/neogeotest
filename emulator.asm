@@ -1130,7 +1130,7 @@ vbl_handler:
 	lea		sprite_draw_counter(pc),a0
 	move	(a0),d0
 	addq	#1,(a0)
-	and		#0xf,d0
+	and		#0x3,d0
 	jne		1f
 
 	jbsr	draw_dummy_sprites

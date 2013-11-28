@@ -60,7 +60,7 @@ compile_tiles:
 	clr.l	d0
 	lea		mslug_info+2*4,a0
 4:
-	move.l	d1,d2
+	move.l	d0,d2
 	add.l	(a0)+,d0
 	cmp.l	d0,d1
 	jlt		5f
@@ -78,13 +78,13 @@ compile_tiles:
 
 	Fopen	(a5),#0
 	move	d0,d7
-	Fseek	#0,d7,d6
+	Fseek	d6,d7,#0
 	Fread	d7,#0x8000,odd_tiles_rom_buffer
 	Fclose	d7
 
 	Fopen	(a6),#0
 	move	d0,d7
-	Fseek	#0,d7,d6
+	Fseek	d6,d7,#0
 	Fread	d7,#0x8000,even_tiles_rom_buffer
 	Fclose	d7
 
@@ -258,6 +258,61 @@ compile_tiles:
 
 	movem.l	(sp)+,d0/a0-a1
 
+	| Flip tile.
+
+	movem.l	d0/a0-a1,-(sp)
+
+	btst	#0,d0																| Horizontal flip?
+	jeq		4f
+
+	lea		tile_pixels_buffer,a0
+	lea		16(a0),a1
+
+	move	#16-1,d7
+5:
+	move	#8-1,d6
+6:
+	move.b	(a0),d1
+	move.b	-(a1),(a0)+
+	move.b	d1,(a1)
+
+	dbf		d6,6b
+
+	addq	#16-8,a0
+	add		#16+8,a1
+
+	dbf		d7,5b
+4:
+	btst	#1,d0																| Vertical flip?
+	jeq		4f
+
+	lea		tile_pixels_buffer,a0
+	lea		15*16(a0),a1
+
+	move	#8-1,d7
+5:
+	move.l	(a0),d1
+	move.l	(a1),(a0)+
+	move.l	d1,(a1)+
+
+	move.l	(a0),d1
+	move.l	(a1),(a0)+
+	move.l	d1,(a1)+
+
+	move.l	(a0),d1
+	move.l	(a1),(a0)+
+	move.l	d1,(a1)+
+
+	move.l	(a0),d1
+	move.l	(a1),(a0)+
+	move.l	d1,(a1)+
+
+	sub		#16*2,a1
+
+	dbf		d7,5b
+4:
+	movem.l	(sp)+,d0/a0-a1
+
 	| Compile tile.
 
 	move.l	a1,(a0)+
@@ -268,7 +323,7 @@ compile_tiles:
 
 	clr		d0																	| Pixel color value.
 	clr		d1																	| Offset counter.
-	clr		d2																	| Current color for d0.
+	clr		d2																	| Current color flag for d0.
 
 	move	#16-1,d7
 4:
@@ -281,7 +336,7 @@ compile_tiles:
 
 	jra		8f
 6:
-	tst		d1																	| Is the counter greater than 0?
+	tst		d1																	| Is the offset counter greater than 0?
 	jeq		6f
 
 	cmp		#8,d1																| Check if "addq" can be used.
@@ -300,11 +355,11 @@ compile_tiles:
 6:
 	clr		d1
 
-	cmp		#1,d0
+	cmp		#14,d0
 	seq		d4
 	cmp		#15,d0
 	seq		d5
-	cmp.b	d4,d5																| Color #1 or #15?
+	cmp.b	d4,d5																| Color #14 or #15?
 	jeq		7f
 
 	cmp.b	d5,d2																| Was the last color in d0 the same like the current one?
@@ -313,8 +368,8 @@ compile_tiles:
 	move	#0x4840,(a1)+														| "swap d0".
 	move.b	d5,d2
 7:
-	cmp		#15,d0																| Use d0 for color #15 as well as #1.
-	jne		6f
+	cmp		#14,d0																| Use word moves only for d0 (color #14 and #15).
+	jlt		6f
 
 	move	#0x3cc0,(a1)+														| "move.w d0,(a6)+".
 
@@ -322,9 +377,6 @@ compile_tiles:
 6:
 	move	#0x3cc0-1,d4														| "move.w dx,(a6)+".
 	add		d0,d4																| "x".
-
-	cmp		#2,d0
-	jle		6f
 
 	cmp		-2(a1),d4															| Is the last opcode also "move.w dx,(a6)+"? This is legit because the value can never be written by the "add" above!
 	jne		6f
@@ -336,7 +388,7 @@ compile_tiles:
 8:
 	dbf		d6,5b
 
-	add		#(512-16)*2,d1														| Set the offset to the next line.
+	add		#(512-16)*2,d1														| Increase the offset to the next line.
 
 	dbf		d7,4b
 
@@ -387,7 +439,7 @@ loading_compiled_tiles_text:
 	.asciz	"Loading compiled tiles...\r\n"
 
 compiling_tiles_text:
-	.asciz	"Compiled tiles not found. Compiling tiles...\r\n"
+	.asciz	"Compiled tiles file not found.\r\nCompiling tiles"
 
 progress_text:
 	.asciz	"."
