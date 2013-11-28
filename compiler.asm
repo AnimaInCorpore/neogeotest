@@ -48,13 +48,13 @@ compile_tiles:
 
 	move.l	d0,d1
 	lsl.l	#4+3-2,d1															| Work tile ROM offset = (Compiled tile index * 16 * 8 / 4) % 0x10000.
-	and.l	#0xffffff80,d1														| Mask out the bits for horizontal and vertical flip.
 	tst		d1
 	jne		2f
 
 	movem.l	d0/a0-a1,-(sp)
 
-	and.l	#0x00030000,d1
+	move.l	d1,d0
+	and.l	#0x00030000,d0
 	jne		5f
 
 	Cconws	progress_text
@@ -407,7 +407,7 @@ compile_tiles:
 
 	movem.l	(sp)+,d0/a0
 3:
-	addq.l	#4,d0
+	addq.l	#1,d0
 	cmp.l	max_compiled_tiles_index,d0
 	jlt		1b
 

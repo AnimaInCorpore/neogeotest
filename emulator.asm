@@ -688,7 +688,6 @@ draw_dummy_sprites:
 	rts																			| Jump to sprite drawing code.
 8:
 
-
 /*
 	lea		TILES_USAGE_BITMAP,a0
 
@@ -714,8 +713,8 @@ draw_dummy_sprites:
 
 	lsr.l	#3,d0
 	or.b	d2,(a0,d0.l)
-*/
-/*
+
+
 	clr.l	(a6)+
 	clr.l	(a6)+
 	add		#512*2-8,a6
