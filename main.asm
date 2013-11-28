@@ -55,6 +55,46 @@ TIA				TIBs			TICs			TIDs
 				0xfe000041						[INVALID]		[INVALID]		[INVALID]		[INVALID]
 				[TIC_0]
 
+NeoGeo emulator (alternative):
+
+MMU table (IS+TIA+TIB+TIC+TID+PS = 0+4+4+4+5+15 = 32)
+
+TIA				TIBs			TICs			TIDs
+
+[TIB_0]			[TIC_0]			[PRG_ROM1+WP]	[WORK_RAM]		[PAL_RAM]		[BIOS+WP]		[BAK_RAM]		0x00c20001		0x00d30001
+0x10000001		[TIC_1]			[TID_0]			[WORK_RAM+32k]	[INVALID]		[BIOS+WP+32k]	[BAK_RAM+32k]	0x00c28001		0x00d38001
+0x20000001		0x02000001		[PRG_ROM2+WP]	[INVALID]		[INVALID]		[BIOS+WP+64k]	[INVALID]		0x00c30001		0x00d40001
+0x30000001		0x03000001		[INVALID]		[INVALID]		[INVALID]		[BIOS+WP+96k]	[INVALID]		0x00c38001		0x00d48001
+0x40000001		0x04000001		[TID_1]			[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c40001		0x00d50001
+0x50000001		0x05000001		[EMU_RAM]		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c48001		0x00d58001
+0x60000001		0x06000001		0x00600001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c50001		0x00d60001
+0x70000001		0x07000001		0x00700001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c58001		0x00d68001
+0x80000041		0x08000001		0x00800001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c60001		0x00d70001
+0x90000041		0x09000001		0x00900001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c68001		0x00d78001
+0xa0000041		0x0a000001		0x00a00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c70001		0x00d80001
+0xb0000041		0x0b000001		0x00b00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c78001		0x00d88001
+0xc0000041		0x0c000001		[TID_2]			[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c80001		0x00d90001
+0xd0000041		0x0d000001		[TID_3]			[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c88001		0x00d98001
+0xe0000041		0x0e000001		0x00e00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c90001		0x00da0001
+[TIB_1]			0x0f000001		0x00f00041		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00c98001		0x00da8001
+												[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00ca0001		0x00db0001
+				0xf0000041		0x00700001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00ca8001		0x00db8001
+				0xf1000041		0x00800001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cb0001		0x00dc0001
+				0xf2000041		0x00900001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cb8001		0x00dc8001
+				0xf3000041		0x00a00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cc0001		0x00dd0001
+				0xf4000041		0x00b00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cc8001		0x00dd8001
+				0xf5000041		[TID_4]			[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cd0001		0x00de0001
+				0xf6000041		[TID_5]			[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cd8001		0x00de8001
+				0xf7000041		0x01700001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00ce0001		0x00df0001
+				0xf8000041		0x01800001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00ce8001		0x00df8001
+				0xf9000041		0x01900001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cf0001		[INVALID]
+				0xfa000041		0x01a00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00cf8001		[INVALID]
+				0xfb000041		0x01b00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00d10001		[INVALID]
+				0xfc000041		0x01c00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00d18001		[INVALID]
+				0xfd000041		0x01d00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00d20001		[INVALID]
+				0xfe000041		0x01e00001		[INVALID]		[INVALID]		[INVALID]		[INVALID]		0x00d28001		[INVALID]
+				[TIC_0]			0x01f00001
+
 Atari Falcon original:
 
 MMU table (IS+TIA+TIB+TIC+TID+PS = 0+4+4+4+5+15 = 32)
@@ -391,7 +431,9 @@ build_mmu_tables:
 	move.l	d0,(a0)
 	add.l	#16*4*3+0x2,(a0)+													| Reference to TIC 0.
 
-	move.l	#0x01000000+0x01,(a0)+
+	move.l	d0,(a0)
+	add.l	#16*4*4+0x2,(a0)+													| Reference to TIC 1.
+
 	move.l	#0x02000000+0x01,(a0)+
 	move.l	#0x03000000+0x01,(a0)+
 	move.l	#0x04000000+0x01,(a0)+
@@ -431,27 +473,22 @@ build_mmu_tables:
 	| TIC 0.
 
 	move.l	d1,(a0)
-	add.l	#PROGRAM_ROM_1_OFFSET+0x05,(a0)+										| Program ROM 1.
+	add.l	#PROGRAM_ROM_1_OFFSET+0x05,(a0)+									| Program ROM 1.
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+0x02,(a0)+													| Reference to TID 0.
+	add.l	#16*4*5+0x02,(a0)+													| Reference to TID 0.
 
 	move.l	d1,(a0)
-	add.l	#PROGRAM_ROM_2_OFFSET+0x05,(a0)+										| Program ROM 2.
+	add.l	#PROGRAM_ROM_2_OFFSET+0x05,(a0)+									| Program ROM 2.
 
 	clr.l	(a0)+
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+32*4+0x02,(a0)+												| Reference to TID 1.
+	add.l	#16*4*5+32*4+0x02,(a0)+												| Reference to TID 1.
 
 	move.l	#0x00500000+0x01,(a0)+												| Emulator program(?).
 	move.l	#0x00600000+0x01,(a0)+
 	move.l	#0x00700000+0x01,(a0)+
-
-|	clr.l	(a0)+																| Memory card (invalid).
-|	clr.l	(a0)+
-|	clr.l	(a0)+
-|	clr.l	(a0)+
 
 	move.l	#0x00800000+0x01,(a0)+												| Memory card (disabled so space is free for sprites, etc.).
 	move.l	#0x00900000+0x01,(a0)+
@@ -459,13 +496,37 @@ build_mmu_tables:
 	move.l	#0x00b00000+0x01,(a0)+
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+32*4*2+0x02,(a0)+											| Reference to TID 2.
+	add.l	#16*4*5+32*4*2+0x02,(a0)+											| Reference to TID 2.
 
 	move.l	d0,(a0)
-	add.l	#16*4*4+32*4*3+0x02,(a0)+											| Reference to TID 3.
+	add.l	#16*4*5+32*4*3+0x02,(a0)+											| Reference to TID 3.
 
 	move.l	#0x00e00000+0x01,(a0)+												| TOS.
 	move.l	#0x00f00000+0x41,(a0)+												| Atari hardware registers.
+
+	| TIC 1.
+
+	move.l	#0x00700000+0x01,(a0)+
+	move.l	#0x00800000+0x01,(a0)+
+	move.l	#0x00900000+0x01,(a0)+
+	move.l	#0x00a00000+0x01,(a0)+
+	move.l	#0x00b00000+0x01,(a0)+
+
+	move.l	d0,(a0)
+	add.l	#16*4*5+32*4*4+0x02,(a0)+											| Reference to TID 4.
+
+	move.l	d0,(a0)
+	add.l	#16*4*5+32*4*5+0x02,(a0)+											| Reference to TID 5.
+
+	move.l	#0x01700000+0x01,(a0)+
+	move.l	#0x01800000+0x01,(a0)+
+	move.l	#0x01900000+0x01,(a0)+
+	move.l	#0x01a00000+0x01,(a0)+
+	move.l	#0x01b00000+0x01,(a0)+
+	move.l	#0x01c00000+0x01,(a0)+
+	move.l	#0x01d00000+0x01,(a0)+
+	move.l	#0x01e00000+0x01,(a0)+
+	move.l	#0x01f00000+0x01,(a0)+
 
 	| TID 0.
 
@@ -518,6 +579,74 @@ build_mmu_tables:
 	clr.l	(a0)+
 .endr
 
+	| TID 4.
+
+	move.l	#0x00c20000+0x01,(a0)+
+	move.l	#0x00c28000+0x01,(a0)+
+	move.l	#0x00c30000+0x01,(a0)+
+	move.l	#0x00c38000+0x01,(a0)+
+	move.l	#0x00c40000+0x01,(a0)+
+	move.l	#0x00c48000+0x01,(a0)+
+	move.l	#0x00c50000+0x01,(a0)+
+	move.l	#0x00c58000+0x01,(a0)+
+	move.l	#0x00c60000+0x01,(a0)+
+	move.l	#0x00c68000+0x01,(a0)+
+	move.l	#0x00c70000+0x01,(a0)+
+	move.l	#0x00c78000+0x01,(a0)+
+	move.l	#0x00c80000+0x01,(a0)+
+	move.l	#0x00c88000+0x01,(a0)+
+	move.l	#0x00c90000+0x01,(a0)+
+	move.l	#0x00c98000+0x01,(a0)+
+	move.l	#0x00ca0000+0x01,(a0)+
+	move.l	#0x00ca8000+0x01,(a0)+
+	move.l	#0x00cb0000+0x01,(a0)+
+	move.l	#0x00cb8000+0x01,(a0)+
+	move.l	#0x00cc0000+0x01,(a0)+
+	move.l	#0x00cc8000+0x01,(a0)+
+	move.l	#0x00cd0000+0x01,(a0)+
+	move.l	#0x00cd8000+0x01,(a0)+
+	move.l	#0x00ce0000+0x01,(a0)+
+	move.l	#0x00ce8000+0x01,(a0)+
+	move.l	#0x00cf0000+0x01,(a0)+
+	move.l	#0x00cf8000+0x01,(a0)+
+	move.l	#0x00d10000+0x01,(a0)+
+	move.l	#0x00d18000+0x01,(a0)+
+	move.l	#0x00d20000+0x01,(a0)+
+	move.l	#0x00d28000+0x01,(a0)+
+
+	| TID 5.
+
+	move.l	#0x00d30000+0x01,(a0)+
+	move.l	#0x00d38000+0x01,(a0)+
+	move.l	#0x00d40000+0x01,(a0)+
+	move.l	#0x00d48000+0x01,(a0)+
+	move.l	#0x00d50000+0x01,(a0)+
+	move.l	#0x00d58000+0x01,(a0)+
+	move.l	#0x00d60000+0x01,(a0)+
+	move.l	#0x00d68000+0x01,(a0)+
+	move.l	#0x00d70000+0x01,(a0)+
+	move.l	#0x00d78000+0x01,(a0)+
+	move.l	#0x00d80000+0x01,(a0)+
+	move.l	#0x00d88000+0x01,(a0)+
+	move.l	#0x00d90000+0x01,(a0)+
+	move.l	#0x00d98000+0x01,(a0)+
+	move.l	#0x00da0000+0x01,(a0)+
+	move.l	#0x00da8000+0x01,(a0)+
+	move.l	#0x00db0000+0x01,(a0)+
+	move.l	#0x00db8000+0x01,(a0)+
+	move.l	#0x00dc0000+0x01,(a0)+
+	move.l	#0x00dc8000+0x01,(a0)+
+	move.l	#0x00dd0000+0x01,(a0)+
+	move.l	#0x00dd8000+0x01,(a0)+
+	move.l	#0x00de0000+0x01,(a0)+
+	move.l	#0x00de8000+0x01,(a0)+
+	move.l	#0x00df0000+0x01,(a0)+
+	move.l	#0x00df8000+0x01,(a0)+
+
+.rept 32-26
+	clr.l	(a0)+
+.endr
+
 	rts
 
 |-------------------------------------------------------------------------------
@@ -532,8 +661,8 @@ mmu_tables_start:
 	ds.l	1
 
 mmu_tables:
-	ds.l	16+16*2+16+32*4
-	ds.b	16																	| Padding bytes (16 B).
+	ds.l	16+16*2+16*2+32*6
+	ds.b	16																	| Padding (16 Bytes).
 
 neogeo_memory_pages_start:
 	ds.l	1
@@ -541,6 +670,6 @@ neogeo_memory_pages_start:
 neogeo_memory_pages:
 	ds.b	PROGRAM_ROM_1_SIZE+WORK_RAM_SIZE+PROGRAM_ROM_2_SIZE+PALETTE_RAM_SIZE+BIOS_ROM_SIZE+BACKUP_RAM_SIZE
 
-	ds.b	0x00008000															| Padding bytes (32 kiB).
+	ds.b	0x00008000															| Padding (32 kiB).
 
 .end

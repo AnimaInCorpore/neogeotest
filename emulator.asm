@@ -681,6 +681,18 @@ draw_dummy_sprites:
 
 	lsr.l	#3,d0
 	or.b	d2,(a0,d0.l)
+
+	clr.l	(a6)+
+	clr.l	(a6)+
+	add		#512*2-8,a6
+	move.l	#0x0000ffff,(a6)+
+	move.l	#0xffff0000,(a6)+
+	add		#512*2-8,a6
+	move.l	#0x0000ffff,(a6)+
+	move.l	#0xffff0000,(a6)+
+	add		#512*2-8,a6
+	clr.l	(a6)+
+	clr.l	(a6)+
 /*
 	lea		SPRITES_ADDRESS,a0
 	lea		PALETTE_DECODER_TABLE,a1
