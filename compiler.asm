@@ -23,6 +23,8 @@ compile_tiles:
 	jmi		1f
 
 	Fread	d7,#0x500000,COMPILED_TILES_ADDRESS
+	Fread	d7,#0x100000-0x20000,0xb00000+0x20000
+	Fread	d7,#0x100000-0x10000,0xc00000-0x10000
 	Fclose	d7
 
 	rts
@@ -315,7 +317,8 @@ compile_tiles:
 
 	| Compile tile.
 
-	move.l	a1,(a0)+
+	move.l	a1,(a0)
+	add.l	#0x900000,(a0)+														| The real compiled tiles address is at 0x1000000+. Todo: better description.
 
 	movem.l	d0/a0,-(sp)
 
@@ -395,10 +398,6 @@ compile_tiles:
 	move	#0x4e75,(a1)+														| "rts".
 
 	movem.l	(sp)+,d0/a0
-
-
-
-
 3:
 	addq.l	#4,d0
 	cmp.l	max_compiled_tiles_index,d0
