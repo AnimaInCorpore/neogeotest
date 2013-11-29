@@ -212,6 +212,9 @@ address_error_handler:
 
 	move	#0xffff,d2
 
+	jbsr	write_new_line
+	jbsr	write_new_line
+
 	move.l	15*4+0x2(sp),d0
 	jbsr	write_long_data
 
@@ -1083,6 +1086,8 @@ dummy_palette:
 |-------------------------------------------------------------------------------
 
 draw_tiles:
+	movem.l	d0-a6,-(sp)
+
 	lea		TILE_INFOS_ADDRESS,a1
 1:
 	move.l	(a1)+,d0															| Palette address.
@@ -1101,6 +1106,8 @@ draw_tiles:
 	move.l	(sp)+,a1
 	jra		1b
 2:
+	movem.l	(sp)+,d0-a6
+
 	rts
 
 |-------------------------------------------------------------------------------
