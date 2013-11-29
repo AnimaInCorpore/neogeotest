@@ -1078,12 +1078,12 @@ dummy_palette:
 
 |-------------------------------------------------------------------------------
 |
-|	Draw sprites.
+|	Draw tiles.
 |
 |-------------------------------------------------------------------------------
 
-draw_sprites:
-	lea		SPRITE_INFOS_ADDRESS,a1
+draw_tiles:
+	lea		TILE_INFOS_ADDRESS,a1
 1:
 	move.l	(a1)+,d0															| Palette address.
 	jeq		2f
@@ -1101,43 +1101,53 @@ draw_sprites:
 	move.l	(sp)+,a1
 	jra		1b
 2:
+	rts
 
 |-------------------------------------------------------------------------------
 |
-|	Build sprite infos.
+|	Build tile infos.
 |
 |	Each entry consists of the palette address, the screen address and the
 |	drawing address.
 |
+|	Two passes for cache usage efficiency.
+|
 |-------------------------------------------------------------------------------
 
-build_sprite_infos:
+build_tile_infos:
+|	move.l	#0x000000ff,0x9800.w
+
 	movem.l	d0-a6,-(sp)
 
-	lea		VRAM_ADDRESS+0x8200*2,a0											| Sprite Y positions + sticky bit + height.
-	lea		VRAM_ADDRESS,a2														| Sprite tilemaps.
+	| Pass 1: look which tiles are visible and store its temporary info.
 
-	lea		SPRITE_INFOS_ADDRESS,a3												| Converted sprite infos.
-	lea		COMPILED_TILES_ADDRESS,a4											| Compiled sprites.
-	lea		SCREEN_ADDRESS,a5													| Screen address.
-	lea		PALETTES_ADDRESS,a6													| Palettes address.
+	lea		VRAM_ADDRESS+0x8200*2,a0
+	lea		VRAM_ADDRESS,a1														| Tile maps.
 
-	clr		d0 																	| Sprite counter.
+	lea		work_screen_address(pc),a2
+	move.l	(a2),a2
+
+	lea.l	TILE_TEMP_INFOS_ADDRESS,a3
+
 	clr		d4 																	| Previous sprite height.
 	clr		d5 																	| Previous sprite X position.
 	clr		d6 																	| Previous sprite Y position.
+
+	move	#381-1,d7
 1:
-	move	0x200*2(a0),d7 														| Sprite X position.
+	move	0x200*2(a0),d0 														| Sprite X position.
 	move	(a0)+,d1 															| Sprite Y position + sticky bit + height.
 
 	btst	#6,d1 																| Check sticky bit.
 	jeq		3f
 
-	add		#16,d5
-	move	d5,d7 																| Use previous X position + 16.
-	move	d6,d2 																| use previous Y position.
 	move	d4,d3 																| Use previous height.
 	jeq		2f 																	| Avoid having 0 as the height.
+
+	add		#16,d5
+	move	d5,d0 																| Use previous X position + 16.
+
+	move	d6,d2 																| use previous Y position.
 
 	jra		4f
 3:
@@ -1147,77 +1157,205 @@ build_sprite_infos:
 	jeq		2f
 
 	lsr		#7,d1
-	move	#496,d2
+	move	#512,d2
 	sub		d1,d2
 	move	d2,d6 																| Save Y position.
 
-	lsr		#7,d7
-	move	d7,d5 																| Save X position.
+	lsr		#7,d0
+	move	d0,d5 																| Save X position.
 4:
 	| Check sprite X position boundaries.
 
-
-	cmp		#320,d7 															| Right screen border.
+	cmp		#320,d0 															| Right screen border.
 	jlt		6f
 
-	sub		#512,d7
+	sub		#512,d0
 
-	cmp		#-16,d7 															| Left screen border.
+	cmp		#-16,d0 															| Left screen border.
 	jle		2f
 6:
+	move.l	a1,-(sp)
+
 	| Calculate sprite screen address.
 
 	swap	d2
 	clr		d2
 	lsr.l	#7,d2
-	ext.l	d7
-	add.l	d7,d2
-	lea		(a2,d2.l*2),a3
+	ext.l	d0
+	add.l	d0,d2
+	lea		(a2,d2.l*2),a4
 
 	subq	#1,d3
 3:
-	cmp.l	#SCREEN_ADDRESS+512*2*256,a3
+	move.l	a4,a5
+
+	move.l	a2,a6
+	add.l	#512*2*(224+16),a6
+
+	cmp.l	a6,a5
 	jlt		4f
 
-	sub.l	#512*2*512,a3
+	sub.l	#512*2*512,a5
+
+	cmp.l	a2,a5
+	jle		5f
 4:
-	cmp.l	#SCREEN_ADDRESS-512*2*16,a3
-	jgt		4f
+	| Tile is visible so store all its temporary infos.
 
-	add.l	#512*2*16,a3
-	jra		5f
-4:
-	cmp.l	#SCREEN_ADDRESS+512*2*224,a3
-	jlt		4f
-
-	add.l	#512*2*16,a3
-	jra		5f
-4:
-
-
-
-	movem.l	d0-d2/a0,-(sp)
-
-	movem.l	(sp)+,d0-d2/a0
-
-
-
-
+	move.l	a5,(a3)+															| Screen address.
+	move.l	(a1),(a3)+															| Tile and palette index.
 5:
-	dbf		d3,3b
-2:
-	lea		32*2*2(a2),a2
+	addq.l	#4,a1
+	lea		512*2*16(a4),a4
 
-	addq	#1,d0
-	cmp		#448,d0
-	jne		1b
+	dbf		d3,3b
+
+	move.l	(sp)+,a1
+2:
+	lea		32*4(a1),a1
+
+	dbf		d7,1b
+
+	clr.l	(a3)																| End marker.
+
+|	move.l	#0xff000000,0x9800.w
+
+	| Pass 2: convert the temporary infos.
+
+	lea		TILE_TEMP_INFOS_ADDRESS,a0
+	lea		TILE_INFOS_ADDRESS,a1
+
+	lea		PALETTE_RAM,a2
+	lea		palette_bank_offset(pc),a3
+	add		(a3),a2
+
+	lea		PALETTES_ADDRESS,a3
+	lea		PALETTE_DECODER_TABLE,a4
+1:
+	move.l	(a0),d0
+	jeq		1f
+
+	| Palette address.
+
+	move	4+2(a0),d1
+	clr.b	d1
+	lsr		#8-5,d1
+	lea		2(a2,d1),a5															| We start at color #1 so we need a source offset of 2.
+	lea		(a3,d1.w*2),a6
+	move.l	a6,(a1)+
+
+	clr.l	d1
+
+	move	(a5)+,d1															| Color #1 (d0).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #2 (d1).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #3 (d2).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #4 (d3).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #5 (d4).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #6 (d5).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #7 (d6).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #8 (d7).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #9 (d7).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #10 (a0).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #11 (a1).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #12 (a2).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #13 (a3).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #14 (a4).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	move	(a5)+,d1															| Color #15 (a5).
+	move	(a4,d1.l*2),d2
+	move	d2,(a6)+
+	move	d2,(a6)+
+
+	| Screen address.
+
+	move.l	d0,(a1)+
+
+	| Tile address.
+
+	clr.l	d0
+	move	4(a0),d0
+	lsl.l	#2,d0
+
+	clr.l	d1
+	move	4+2(a0),d1
+	move.l	d1,d2
+	and		#0x3,d1
+	or		d1,d0
+
+	and		#0x00f0,d2
+	swap	d2
+	lsr.l	#2,d2
+	or.l	d2,d0
+
+	and.l	#0x7ffff,d0
+
+	lea		0x1000000,a5
+	lea		(a5,d0.l*4),a5
+	move.l	(a5),(a1)+
+
+	addq	#8,a0
+	jra		1b
+1:
+	clr.l	(a1)																| End marker.
 
 	movem.l	(sp)+,d0-a6
 
-	rts
+|	clr.l	0x9800.w
 
-highest_tilemap:
-	ds.l	1
+	rts
 
 |-------------------------------------------------------------------------------
 |
@@ -1350,7 +1488,10 @@ vbl_handler:
 
 	clr		(a0)
 
-	jbsr	draw_dummy_sprites
+|	jbsr	draw_dummy_sprites
+
+	jbsr	build_tile_infos
+	jbsr	draw_tiles
 
 	lea		display_screen_address(pc),a0
 	lea		work_screen_address(pc),a1
