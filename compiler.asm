@@ -381,14 +381,14 @@ compile_tiles:
 
 	jra		8f
 6:
-	move	#0x3cc0-1,d4														| "move.w dx,(a6)+".
-	add		d0,d4																| "x".
-
 	cmp		#8,d0
 	jlt		6f
 
-	subq	#1,d4
+	subq	#1,d0
 6:
+	move	#0x3cc0-1,d4														| "move.w dx,(a6)+".
+	add		d0,d4																| "x".
+
 	cmp		-2(a1),d4															| Is the last opcode also "move.w dx,(a6)+"? This is legit because the value can never be written by the "add" above!
 	jne		6f
 

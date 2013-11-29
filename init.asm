@@ -2,6 +2,8 @@
 .include "../xbios.asm"
 .include "../gemdos.asm"
 
+.include "../defines.asm"
+
 .global f030_init
 .global f030_deinit
 
@@ -32,6 +34,26 @@ f030_init:
 	move.b	0x8201.w,old_screen+1
 	move.b	0x8203.w,old_screen+2
 	move.b	0x820d.w,old_screen+3
+
+	| Clear screen memory.
+
+	lea		SCREEN_ADDRESS,a0
+1:
+	clr.l	(a0)+
+
+	cmp.l	#SCREEN_ADDRESS_2+512*2*(224+16+16),a0
+	jlt		1b
+
+	| Set screen memory.
+
+	move.l	#SCREEN_ADDRESS_2+512*2*16+8*2,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
 
 	move.l	0x820e.w,d0
 	move.l	0x8264.w,d1

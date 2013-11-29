@@ -116,15 +116,6 @@ emulator:
 	addq	#1,d0
 	jne		1b
 
-	| Clear screen memory.
-
-	lea		SCREEN_ADDRESS,a0
-1:
-	clr.l	(a0)+
-
-	cmp.l	#SCREEN_ADDRESS_2+512*2*(224+16+16),a0
-	jlt		1b
-
 	| Clear VRAM memory.
 
 	lea		VRAM_ADDRESS,a0
@@ -133,17 +124,6 @@ emulator:
 
 	cmp.l	#VRAM_ADDRESS+0x10000*2,a0
 	jlt		1b
-
-	| Set screen memory.
-
-	move.l	#SCREEN_ADDRESS_2+512*2*16+8*2,d0
-	swap	d0
-	move.b	d0,0x8201.w
-	swap	d0
-	move	d0,d1
-	ror		#8,d0
-	move.b	d0,0x8203.w
-	move.b	d1,0x820d.w
 
 	| Start the emulation.
 
@@ -226,13 +206,13 @@ address_error_handler:
 
 	jbsr	write_space
 
-	move.l	xxx(pc),d0
+	move.l	address_error_data(pc),d0
 	jbsr	write_long_data
 
 	jbsr	write_space
 
 |	move.l	15*4+0x5c+4(sp),d0
-	move.l	xxx+4(pc),d0
+	move.l	address_error_data+4(pc),d0
 	jbsr	write_long_data
 
 	jbsr	write_space
@@ -274,6 +254,9 @@ address_error_handler:
 	jne		1b
 
 	jra		emulator_exit
+
+address_error_data:
+	ds.l	2
 
 |-------------------------------------------------------------------------------
 |
@@ -1032,9 +1015,6 @@ draw_dummy_sprites:
 
 	rts
 
-xxx:
-	ds.l	2
-
 dummy_palette:
 	dc.w	0b0001000010000010													| d0.
 	dc.w	0b0001000010000010
@@ -1088,6 +1068,9 @@ dummy_palette:
 draw_tiles:
 	movem.l	d0-a6,-(sp)
 
+	cmp.b	#0x39,0xfc02.w
+	jeq		2f
+
 	lea		TILE_INFOS_ADDRESS,a1
 1:
 	move.l	(a1)+,d0															| Palette address.
@@ -1097,6 +1080,10 @@ draw_tiles:
 	move.l	(a1)+,a6															| Screen address.
 	move.l	(a1)+,d0															| Sprite drawing code address.
 	jeq		1b
+
+	lea		address_error_data(pc),a0
+	move.l	a6,(a0)
+	move.l	d0,4(a0)
 
 	lea		3f(pc),a0															| Return address.
 	movem.l	d0/a0-a1,-(sp)
@@ -1247,7 +1234,7 @@ build_tile_infos:
 	move	4+2(a0),d1
 	clr.b	d1
 	lsr		#8-5,d1
-	lea		2(a2,d1),a5															| We start at color #1 so we need a source offset of 2.
+	lea		2(a2,d1.w),a5														| We start at color #1 so we need a source offset of 2.
 	lea		(a3,d1.w*2),a6
 	move.l	a6,(a1)+
 
@@ -1289,12 +1276,10 @@ build_tile_infos:
 	move	d2,(a6)+
 
 	move	(a5)+,d1															| Color #8 (d7).
-	move	(a4,d1.l*2),d2
-	move	d2,(a6)+
+	move	(a4,d1.l*2),(a6)+
 
 	move	(a5)+,d1															| Color #9 (d7).
-	move	(a4,d1.l*2),d2
-	move	d2,(a6)+
+	move	(a4,d1.l*2),(a6)+
 
 	move	(a5)+,d1															| Color #10 (a0).
 	move	(a4,d1.l*2),d2
@@ -1350,8 +1335,7 @@ build_tile_infos:
 	and.l	#0x7ffff,d0
 
 	lea		0x1000000,a5
-	lea		(a5,d0.l*4),a5
-	move.l	(a5),(a1)+
+	move.l	(a5,d0.l*4),(a1)+
 
 	addq	#8,a0
 	jra		1b
