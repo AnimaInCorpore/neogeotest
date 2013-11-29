@@ -1337,6 +1337,18 @@ build_tile_infos:
 	lea		0x1000000,a5
 	move.l	(a5,d0.l*4),(a1)+
 
+	| Tile usage.
+
+	lea		TILES_USAGE_BITMAP,a5
+
+	move	d0,d1
+	and		#0x7,d1
+	move	#0x80,d2
+	lsr		d1,d2
+
+	lsr.l	#3,d0
+	or.b	d2,(a5,d0.l)
+
 	addq	#8,a0
 	jra		1b
 1:
