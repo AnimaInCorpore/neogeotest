@@ -824,6 +824,8 @@ draw_dummy_sprites:
 	lsr.l	#2,d2
 	or.l	d2,d0
 
+	and.l	#0x7ffff,d0
+
 	move	d0,d1
 	and		#0x7,d1
 	move	#0x80,d2
@@ -1340,10 +1342,13 @@ vbl_handler:
 	move.b	d1,0x820d.w
 
 	lea		sprite_draw_counter(pc),a0
-	move	(a0),d0
 	addq	#1,(a0)
-	and		#0x7,d0
-	jne		1f
+	move	(a0),d0
+
+	cmp		#10,d0
+	jlt		1f
+
+	clr		(a0)
 
 	jbsr	draw_dummy_sprites
 
