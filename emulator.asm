@@ -1216,6 +1216,17 @@ build_tile_infos:
 
 	| Pass 2: convert the temporary infos.
 
+	| Clear the palette converted flags.
+
+	lea		palette_converted_flags(pc),a0
+
+	move	#256/4/8-1,d7
+1:
+.rept 8
+	clr.l	(a0)+
+.endr
+	dbf		d7,1b
+
 	lea		TILE_TEMP_INFOS_ADDRESS,a0
 	lea		TILE_INFOS_ADDRESS,a1
 
@@ -1231,12 +1242,20 @@ build_tile_infos:
 
 	| Palette address.
 
-	move	4+2(a0),d1
-	clr.b	d1
-	lsr		#8-5,d1
-	lea		2(a2,d1.w),a5														| We start at color #1 so we need a source offset of 2.
-	lea		(a3,d1.w*2),a6
+	clr		d1
+	move.b	4+2(a0),d1
+	move	d1,d2
+	lsl		#5,d2
+	lea		(a3,d2.w*2),a6
 	move.l	a6,(a1)+
+
+	lea		palette_converted_flags(pc),a5
+	tst.b	(a5,d1.w)
+	jne		2f
+
+	not.b	(a5,d1.w)
+
+	lea		2(a2,d2.w),a5														| We start at color #1 so we need a source offset of 2.
 
 	clr.l	d1
 
@@ -1310,7 +1329,7 @@ build_tile_infos:
 	move	(a4,d1.l*2),d2
 	move	d2,(a6)+
 	move	d2,(a6)+
-
+2:
 	| Screen address.
 
 	move.l	d0,(a1)+
@@ -1338,7 +1357,7 @@ build_tile_infos:
 	move.l	(a5,d0.l*4),(a1)+
 
 	| Tile usage.
-
+/*
 	lea		TILES_USAGE_BITMAP,a5
 
 	move	d0,d1
@@ -1348,7 +1367,7 @@ build_tile_infos:
 
 	lsr.l	#3,d0
 	or.b	d2,(a5,d0.l)
-
+*/
 	addq	#8,a0
 	jra		1b
 1:
@@ -1359,6 +1378,9 @@ build_tile_infos:
 |	clr.l	0x9800.w
 
 	rts
+
+palette_converted_flags:
+	ds.b	256
 
 |-------------------------------------------------------------------------------
 |
