@@ -32,6 +32,9 @@ emulator:
 	lea		bus_error_handler(pc),a1
 	move.l	a1,0x8(a0)
 
+	lea		address_error_handler(pc),a1
+	move.l	a1,0xc(a0)
+
 	lea		trace_handler(pc),a1
 	move.l	a1,0x24(a0)
 
@@ -200,13 +203,82 @@ mmu_data:
 
 |-------------------------------------------------------------------------------
 |
+|	Address error handler.
+|
+|-------------------------------------------------------------------------------
+
+address_error_handler:
+	movem.l	d0-a6,-(sp)
+
+	move	#0xffff,d2
+
+	move.l	15*4+0x2(sp),d0
+	jbsr	write_long_data
+
+	jbsr	write_space
+
+	move.l	d0,a0
+	move	(a0),d0
+	jbsr	write_word_data
+
+	jbsr	write_space
+
+	move.l	xxx(pc),d0
+	jbsr	write_long_data
+
+	jbsr	write_space
+
+|	move.l	15*4+0x5c+4(sp),d0
+	move.l	xxx+4(pc),d0
+	jbsr	write_long_data
+
+	jbsr	write_space
+	jbsr	write_new_line
+
+	clr		d1
+
+	move	#4-1,d7
+2:
+	move	#4-1,d6
+3:
+	move.l	(sp,d1.w*4),d0
+	jbsr	write_long_data
+
+	jbsr	write_space
+
+	addq	#1,d1
+
+	dbf		d6,3b
+
+	jbsr	write_new_line
+
+	dbf		d7,2b
+
+	jbsr	write_home
+
+	move.l	#SCREEN_ADDRESS,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
+
+	movem.l	(sp)+,d0-a6
+1:
+	cmp.b	#0x39,0xfc02.w
+	jne		1b
+
+	jra		emulator_exit
+
+|-------------------------------------------------------------------------------
+|
 |	Bus error handler.
 |
 |-------------------------------------------------------------------------------
 
 bus_error_handler:
-|	not.l	0x9800.w
-
 	move	#0x2700,sr
 
 	bclr	#8,SSW_OFFSET(sp)													| Data fault processed.
@@ -545,6 +617,44 @@ bus_error_handler:
 2:
 	rte
 1:
+	| Unhandled addresses.
+/*
+	movem.l	d0-a6,-(sp)
+
+	move.l	#SCREEN_ADDRESS,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
+
+	move	#0b1111100000000000,d2												| Write access = red text color.
+
+	btst	#6,15*4+SSW_OFFSET+1(sp)											| Read access?
+	jne		1f
+
+	move	#0b0000011111100000,d2												| Read access = green text color.
+
+	move.l	15*4+0x2(sp),d0
+	jbsr	write_long_data
+
+	jbsr	write_space
+
+	move.l	15*4+0x10(sp),d0
+	jbsr	write_long_data
+
+	jbsr	write_space
+
+	move	15*4+0xa(sp),d0
+	jbsr	write_word_data
+
+	jbsr	write_space
+	jbsr	write_new_line
+1:
+	movem.l	(sp)+,d0-a6
+*/
 	rte
 
 vram_address:
@@ -678,9 +788,17 @@ draw_dummy_sprites:
 	lsr.l	#2,d2
 	or.l	d2,d0
 
+	and.l	#0x7ffff,d0
+
+|	lea		xxx(pc),a0
+|	move.l	d0,(a0)
+
 	lea		(a1,d0.l*4),a1
 	move.l	(a1),d0																| Sprite drawing code address.
 	jeq		8f
+
+|	lea		xxx+4(pc),a0
+|	move.l	d0,(a0)
 
 	lea		8f(pc),a0															| Return address.
 	movem.l	d0/a0,-(sp)
@@ -908,6 +1026,9 @@ draw_dummy_sprites:
 	movem.l	(sp)+,d0-a6
 
 	rts
+
+xxx:
+	ds.l	2
 
 dummy_palette:
 	dc.w	0b0001000010000010													| d0.
@@ -1208,7 +1329,8 @@ vbl_handler:
 	lea		display_screen_address(pc),a0
 	move.l	(a0),d0
 	add.l	#512*2*16+8*2,d0
-|	move.l	#0x400000,d0														| Fixme: test.
+|	move.l	#0x400000,d0														| Fixme: only for debugging.
+|	move.l	#SCREEN_ADDRESS,d0													| Fixme: only for debugging.
 	swap	d0
 	move.b	d0,0x8201.w
 	swap	d0
@@ -1220,7 +1342,7 @@ vbl_handler:
 	lea		sprite_draw_counter(pc),a0
 	move	(a0),d0
 	addq	#1,(a0)
-	and		#0x3,d0
+	and		#0x7,d0
 	jne		1f
 
 	jbsr	draw_dummy_sprites
