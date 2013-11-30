@@ -91,6 +91,8 @@ emulator:
 	rol		#4,d4
 	or		d4,d1
 
+	move	d1,d5
+
 	move	d0,d2
 	and		#0b0000000011110000,d2
 	lsl		#3,d2
@@ -99,6 +101,8 @@ emulator:
 	and		#0b0010000000000000,d4
 	lsr		#6,d4
 	or		d4,d2
+
+	move	d2,d6
 
 	move	d0,d3
 	and		#0b0000111100000000,d3
@@ -109,10 +113,36 @@ emulator:
 	lsr		#3,d4
 	or		d4,d3
 
+	move	d3,d7
+
+	btst	#15,d0
+	jne		2f
+
 	or		d2,d1
 	or		d3,d1
 	move	d1,(a0)+
 
+	jra		3f
+2:
+	tst		d5
+	jeq		2f
+
+	sub		#0b0000000000000001,d5
+2:
+	tst		d6
+	jeq		2f
+
+	sub		#0b0000000000100000,d6
+2:
+	tst		d7
+	jeq		2f
+
+	sub		#0b0000100000000000,d7
+2:
+	or		d6,d5
+	or		d7,d5
+	move	d1,(a0)+
+3:
 	addq	#1,d0
 	jne		1b
 
@@ -1495,7 +1525,7 @@ vbl_handler:
 	move.l	(a0),d0
 	add.l	#512*2*16+8*2,d0
 |	move.l	#0x400000,d0														| Fixme: only for debugging.
-|	move.l	#SCREEN_ADDRESS,d0													| Fixme: only for debugging.
+|	move.l	#PALETTES_ADDRESS,d0												| Fixme: only for debugging.
 	swap	d0
 	move.b	d0,0x8201.w
 	swap	d0
