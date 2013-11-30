@@ -1359,6 +1359,7 @@ build_tile_infos:
 	move	(a4,d1.l*2),d2
 	move	d2,(a6)+
 	move	d2,(a6)+
+
 2:
 	| Screen address.
 

@@ -326,7 +326,7 @@ compile_tiles:
 
 	clr		d0																	| Pixel color value.
 	clr		d1																	| Offset counter.
-	clr		d2																	| Current color flag for d0.
+	move	#0xff,d2															| Current color flag for d0.
 
 	move	#16-1,d7
 4:
@@ -363,19 +363,13 @@ compile_tiles:
 	cmp		#9,d0
 	seq		d5
 	cmp.b	d4,d5																| Color #8 or #9?
-	jeq		7f
+	jeq		6f
 
 	cmp.b	d5,d2																| Was the last color in d7 the same like the current one?
 	jeq		7f
 
 	move	#0x4847,(a1)+														| "swap d7".
 	move.b	d5,d2
-7:
-	cmp		#8,d0
-	jeq		7f
-
-	cmp		#9,d0																| Use word moves only for d7 (color #8 and #9).
-	jne		6f
 7:
 	move	#0x3cc7,(a1)+														| "move.w d7,(a6)+".
 
