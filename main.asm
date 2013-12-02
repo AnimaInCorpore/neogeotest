@@ -145,6 +145,9 @@ TIA			TIBs		TIC
 
 .include "../defines.asm"
 
+.equ	program_rom_file_name,	mslug_program_rom_file_name
+|.equ	program_rom_file_name,	mslug_program_rom_file_name
+
 /*
 .equ	PROGRAM_ROM_1_OFFSET,	0x00000000
 .equ	PROGRAM_ROM_1_SIZE,		0x00100000
@@ -304,8 +307,11 @@ load_roms:
 	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the checksum result check.
 	rts
 
-program_rom_file_name:
+mslug_program_rom_file_name:
 	.asciz	"201-p1.p1"
+
+neobombe_program_rom_file_name:
+	.asciz	"093-p1.p1"
 
 bios_rom_file_name:
 	.asciz	"sp-s2.sp1"

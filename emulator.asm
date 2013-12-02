@@ -1388,7 +1388,7 @@ build_tile_infos:
 	move.l	(a5,d0.l*4),(a1)+
 
 	| Tile usage.
-/*
+
 	lea		TILES_USAGE_BITMAP,a5
 
 	move	d0,d1
@@ -1398,7 +1398,7 @@ build_tile_infos:
 
 	lsr.l	#3,d0
 	or.b	d2,(a5,d0.l)
-*/
+
 	addq	#8,a0
 	jra		1b
 1:
