@@ -1,0 +1,448 @@
+.include "../defines.asm"
+
+.include "../gemdos.asm"
+
+.global load_roms
+.global load_tiles_usage_bitmap
+.global save_tiles_usage_bitmap
+
+.global game_info_pointer
+
+.text
+
+|-------------------------------------------------------------------------------
+|
+|	Load ROM data.
+|
+|-------------------------------------------------------------------------------
+
+load_roms:
+	| Load the program ROM.
+
+	Cconws	loading_program_roms_text
+
+	move.l	game_info_pointer,a0
+	move.l	3*4(a0),a0
+	jbsr	(a0)
+
+	| Reorder program ROMs.
+
+	Cconws	reordering_program_roms_text
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET,a0
+	move.l	a0,a1
+	add.l	#PROGRAM_ROM_1_SIZE,a1
+1:
+	move.b	(a0),d0
+	move.b	1(a0),d1
+	move.b	d1,(a0)+
+	move.b	d0,(a0)+
+
+	cmp.l	a1,a0
+	jlt		1b
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_2_OFFSET,a0
+	move.l	a0,a1
+	add.l	#PROGRAM_ROM_2_SIZE,a1
+1:
+	move.b	(a0),d0
+	move.b	1(a0),d1
+	move.b	d1,(a0)+
+	move.b	d0,(a0)+
+
+	cmp.l	a1,a0
+	jlt		1b
+
+	| Load the BIOS ROM.
+
+	Cconws	loading_bios_rom_text
+
+	Fopen	bios_rom_file_name,#0
+	move	d0,d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#BIOS_ROM_OFFSET,a0
+	Fread	d7,#BIOS_ROM_SIZE,(a0)
+
+	Fclose	d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#BIOS_ROM_OFFSET,a0
+	move.l	a0,a1
+	add.l	#BIOS_ROM_SIZE,a1
+1:
+	move	(a0),d0
+	ror		#8,d0
+	move	d0,(a0)+
+
+	cmp.l	a1,a0
+	jlt		1b
+
+	| Patch BIOS.
+
+	move.l	neogeo_memory_pages_start,a0
+
+	move.l	#BIOS_ROM_OFFSET+0x11c14,d0
+	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the calendar check.
+
+	move.l	#BIOS_ROM_OFFSET+0x11c1c,d0
+	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the calendar check.
+
+	move.l	#BIOS_ROM_OFFSET+0x11c62,d0
+	move.l	#0x4e714e71,(a0,d0.l)												| NOP out the checksum result check.
+
+	rts
+
+bios_rom_file_name:
+	.asciz	"sp-s2.sp1"
+
+loading_program_roms_text:
+	.asciz	"Loading program ROMs...\r\n"
+
+reordering_program_roms_text:
+	.asciz	"Reordering program ROMs...\r\n"
+
+loading_bios_rom_text:
+	.asciz	"Loading BIOS ROM...\r\n"
+
+.even
+
+|-------------------------------------------------------------------------------
+|
+|	Load program ROM.
+|
+|-------------------------------------------------------------------------------
+
+load_program_rom_1:
+	move.l	game_info_pointer,a0
+	move.l	4*4(a0),a0
+
+	Fopen	(a0),#0
+	move	d0,d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_1_SIZE,(a0)
+
+	Fclose	d7
+
+	rts
+
+load_program_rom_2:
+	move.l	game_info_pointer,a0
+	move.l	4*4(a0),a0
+
+	Fopen	(a0),#0
+	move	d0,d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_2_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_2_SIZE,(a0)
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_1_SIZE,(a0)
+
+	Fclose	d7
+
+	rts
+
+load_program_rom_3:
+	move.l	game_info_pointer,a0
+	move.l	4*4(a0),a0
+
+	Fopen	(a0),#0
+	move	d0,d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_1_SIZE,(a0)
+
+	Fclose	d7
+
+	move.l	game_info_pointer,a0
+	move.l	5*4(a0),a0
+
+	Fopen	(a0),#0
+	move	d0,d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_2_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_2_SIZE,(a0)
+
+	Fclose	d7
+
+	rts
+
+|-------------------------------------------------------------------------------
+|
+|	Load tiles usage bitmap.
+|
+|-------------------------------------------------------------------------------
+
+load_tiles_usage_bitmap:
+	Cconws	loading_tiles_usage_bitmap_text
+
+	move.l	game_info_pointer,a0
+	move.l	2*4(a0),a0
+
+	Fopen	(a0),#0
+	move	d0,d7
+	jmi		1f
+
+	Fread	d7,#0x20000,TILES_USAGE_BITMAP
+
+	Fclose	d7
+
+	rts
+1:
+	lea		TILES_USAGE_BITMAP,a0
+	move.l	a0,a1
+	add.l	#0x20000,a1
+1:
+	clr.l	(a0)+
+
+	cmp.l	a1,a0
+	jlt		1b
+
+	rts
+
+loading_tiles_usage_bitmap_text:
+	.asciz	"Loading tiles usage bitmap...\r\n"
+
+.even
+
+|-------------------------------------------------------------------------------
+|
+|	Save tiles usage bitmap.
+|
+|-------------------------------------------------------------------------------
+
+save_tiles_usage_bitmap:
+	Cconws	saving_tiles_usage_bitmap_text
+
+	move.l	game_info_pointer,a0
+	move.l	2*4(a0),a0
+
+	Fcreate	(a0),#0
+	move	d0,d7
+
+	Fwrite	d7,#0x20000,TILES_USAGE_BITMAP
+
+	Fclose	d7
+
+	rts
+
+saving_tiles_usage_bitmap_text:
+	.asciz	"Saving tiles usage bitmap...\r\n"
+
+.even
+
+|-------------------------------------------------------------------------------
+
+.data
+
+game_info_pointer:
+	dc.l	mslug_info
+
+mslug_info:
+	dc.l	mslug_game_name
+	dc.l	mslug_compiled_tiles_file_name,mslug_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,mslug_p1_rom_file_name,0
+	dc.l	0x1000000															| Total tiles ROM size.
+	dc.l	0x800000,mslug_c1_rom_file_name,mslug_c2_rom_file_name
+	dc.l	0x800000,mslug_c3_rom_file_name,mslug_c4_rom_file_name
+
+mslug_game_name:
+	.asciz	"Metal Slug"
+
+mslug_compiled_tiles_file_name:
+	.asciz	"mslug\\mslug.tls"
+
+mslug_tiles_usage_bitmap_file_name:
+	.asciz	"mslug\\mslug.ubm"
+
+mslug_p1_rom_file_name:
+	.asciz	"mslug\\201-p1.p1"
+
+mslug_c1_rom_file_name:
+	.asciz	"mslug\\201-c1.c1"
+
+mslug_c2_rom_file_name:
+	.asciz	"mslug\\201-c2.c2"
+
+mslug_c3_rom_file_name:
+	.asciz	"mslug\\201-c3.c3"
+
+mslug_c4_rom_file_name:
+	.asciz	"mslug\\201-c4.c4"
+
+.even
+
+neobombe_info:
+	dc.l	neobombe_game_name
+	dc.l	neobombe_compiled_tiles_file_name,neobombe_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,neobombe_p1_rom_file_name,0
+	dc.l	0x900000															| Total tiles ROM size.
+	dc.l	0x800000,neobombe_c1_rom_file_name,neobombe_c2_rom_file_name
+	dc.l	0x100000,neobombe_c3_rom_file_name,neobombe_c4_rom_file_name
+
+neobombe_game_name:
+	.asciz	"Neo Bomberman"
+
+neobombe_compiled_tiles_file_name:
+	.asciz	"neobombe\\neobombe.tls"
+
+neobombe_tiles_usage_bitmap_file_name:
+	.asciz	"neobombe\\neobombe.ubm"
+
+neobombe_p1_rom_file_name:
+	.asciz	"neobombe\\093-p1.p1"
+
+neobombe_c1_rom_file_name:
+	.asciz	"neobombe\\093-c1.c1"
+
+neobombe_c2_rom_file_name:
+	.asciz	"neobombe\\093-c2.c2"
+
+neobombe_c3_rom_file_name:
+	.asciz	"neobombe\\093-c3.c3"
+
+neobombe_c4_rom_file_name:
+	.asciz	"neobombe\\093-c4.c4"
+
+.even
+
+kof94_info:
+	dc.l	kof94_game_name
+	dc.l	kof94_compiled_tiles_file_name,kof94_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,kof94_p1_rom_file_name,0
+	dc.l	0x1000000															| Total tiles ROM size.
+	dc.l	0x400000,kof94_c1_rom_file_name,kof94_c2_rom_file_name
+	dc.l	0x400000,kof94_c3_rom_file_name,kof94_c4_rom_file_name
+	dc.l	0x400000,kof94_c5_rom_file_name,kof94_c6_rom_file_name
+	dc.l	0x400000,kof94_c7_rom_file_name,kof94_c8_rom_file_name
+
+kof94_game_name:
+	.asciz	"The King of Fighters '94"
+
+kof94_compiled_tiles_file_name:
+	.asciz	"kof94\\kof94.tls"
+
+kof94_tiles_usage_bitmap_file_name:
+	.asciz	"kof94\\kof94.ubm"
+
+kof94_p1_rom_file_name:
+	.asciz	"kof94\\055-p1.p1"
+
+kof94_c1_rom_file_name:
+	.asciz	"kof94\\055-c1.c1"
+
+kof94_c2_rom_file_name:
+	.asciz	"kof94\\055-c2.c2"
+
+kof94_c3_rom_file_name:
+	.asciz	"kof94\\055-c3.c3"
+
+kof94_c4_rom_file_name:
+	.asciz	"kof94\\055-c4.c4"
+
+kof94_c5_rom_file_name:
+	.asciz	"kof94\\055-c5.c5"
+
+kof94_c6_rom_file_name:
+	.asciz	"kof94\\055-c6.c6"
+
+kof94_c7_rom_file_name:
+	.asciz	"kof94\\055-c7.c7"
+
+kof94_c8_rom_file_name:
+	.asciz	"kof94\\055-c8.c8"
+
+.even
+
+pulstar_info:
+	dc.l	pulstar_game_name
+	dc.l	pulstar_compiled_tiles_file_name,pulstar_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_3,pulstar_p1_rom_file_name,pulstar_p2_rom_file_name
+	dc.l	0x1c00000															| Total tiles ROM size.
+	dc.l	0x800000,pulstar_c1_rom_file_name,pulstar_c2_rom_file_name
+	dc.l	0x800000,pulstar_c3_rom_file_name,pulstar_c4_rom_file_name
+	dc.l	0x800000,pulstar_c5_rom_file_name,pulstar_c6_rom_file_name
+	dc.l	0x400000,pulstar_c7_rom_file_name,pulstar_c8_rom_file_name
+
+pulstar_game_name:
+	.asciz	"Pulstar"
+
+pulstar_compiled_tiles_file_name:
+	.asciz	"pulstar\\pulstar.tls"
+
+pulstar_tiles_usage_bitmap_file_name:
+	.asciz	"pulstar\\pulstar.ubm"
+
+pulstar_p1_rom_file_name:
+	.asciz	"pulstar\\089-p1.p1"
+
+pulstar_p2_rom_file_name:
+	.asciz	"pulstar\\089-p2.sp2"
+
+pulstar_c1_rom_file_name:
+	.asciz	"pulstar\\089-c1.c1"
+
+pulstar_c2_rom_file_name:
+	.asciz	"pulstar\\089-c2.c2"
+
+pulstar_c3_rom_file_name:
+	.asciz	"pulstar\\089-c3.c3"
+
+pulstar_c4_rom_file_name:
+	.asciz	"pulstar\\089-c4.c4"
+
+pulstar_c5_rom_file_name:
+	.asciz	"pulstar\\089-c5.c5"
+
+pulstar_c6_rom_file_name:
+	.asciz	"pulstar\\089-c6.c6"
+
+pulstar_c7_rom_file_name:
+	.asciz	"pulstar\\089-c7.c7"
+
+pulstar_c8_rom_file_name:
+	.asciz	"pulstar\\089-c8.c8"
+
+.even
+
+viewpoin_info:
+	dc.l	viewpoin_game_name
+	dc.l	viewpoin_compiled_tiles_file_name,viewpoin_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,viewpoin_p1_rom_file_name,0
+	dc.l	0x400000															| Total tiles ROM size.
+	dc.l	0x400000,viewpoin_c1_rom_file_name,viewpoin_c2_rom_file_name
+
+viewpoin_game_name:
+	.asciz	"Viewpoint"
+
+viewpoin_compiled_tiles_file_name:
+	.asciz	"viewpoin\\viewpoin.tls"
+
+viewpoin_tiles_usage_bitmap_file_name:
+	.asciz	"viewpoin\\viewpoin.ubm"
+
+viewpoin_p1_rom_file_name:
+	.asciz	"viewpoin\\051-p1.p1"
+
+viewpoin_c1_rom_file_name:
+	.asciz	"viewpoin\\051-c1.c1"
+
+viewpoin_c2_rom_file_name:
+	.asciz	"viewpoin\\051-c2.c2"
+
+.even
+
+|-------------------------------------------------------------------------------
+
+.bss
+
+.end
