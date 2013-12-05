@@ -245,7 +245,7 @@ saving_tiles_usage_bitmap_text:
 .data
 
 game_info_pointer:
-	dc.l	mslug_info
+	dc.l	nitdbl_info
 
 mslug_info:
 	dc.l	mslug_game_name
@@ -438,6 +438,40 @@ viewpoin_c1_rom_file_name:
 
 viewpoin_c2_rom_file_name:
 	.asciz	"viewpoin\\051-c2.c2"
+
+.even
+
+nitdbl_info:
+	dc.l	nitdbl_game_name
+	dc.l	nitdbl_compiled_tiles_file_name,nitdbl_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,nitdbl_p1_rom_file_name,0
+	dc.l	0x800000															| Total tiles ROM size.
+	dc.l	0x400000,nitdbl_c1_rom_file_name,nitdbl_c2_rom_file_name
+	dc.l	0x400000,nitdbl_c3_rom_file_name,nitdbl_c4_rom_file_name
+
+nitdbl_game_name:
+	.asciz	"Nightmare in the Dark (bootleg)"
+
+nitdbl_compiled_tiles_file_name:
+	.asciz	"nitdbl\\nitdbl.tls"
+
+nitdbl_tiles_usage_bitmap_file_name:
+	.asciz	"nitdbl\\nitdbl.ubm"
+
+nitdbl_p1_rom_file_name:
+	.asciz	"nitdbl\\nitd-p1.bin"
+
+nitdbl_c1_rom_file_name:
+	.asciz	"nitdbl\\nitd-c1.bin"
+
+nitdbl_c2_rom_file_name:
+	.asciz	"nitdbl\\nitd-c2.bin"
+
+nitdbl_c3_rom_file_name:
+	.asciz	"nitdbl\\nitd-c3.bin"
+
+nitdbl_c4_rom_file_name:
+	.asciz	"nitdbl\\nitd-c4.bin"
 
 .even
 

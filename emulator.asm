@@ -3,8 +3,6 @@
 .global emulator
 .global emulator_end
 
-.equ	BREAKPOINT_ADDRESS,0xc11fb0
-
 .equ	SSW_OFFSET,0xa
 .equ	ACCESS_ADDRESS_OFFSET,0x10
 .equ	DATA_TO_BE_WRITTEN_OFFSET,0x18
@@ -1418,6 +1416,8 @@ palette_converted_flags:
 |	Trace handler.
 |
 |-------------------------------------------------------------------------------
+
+.equ	BREAKPOINT_ADDRESS,0x966
 
 trace_handler:
 	cmp.b	#0x01,0xfc02.w
