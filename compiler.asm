@@ -4,9 +4,6 @@
 
 .global compile_tiles
 
-.equ	game_info,	mslug_info
-|.equ	game_info,	neobombe_info
-
 .text
 
 |-------------------------------------------------------------------------------
@@ -20,7 +17,9 @@ compile_tiles:
 
 	| Load compiled tiles.
 
-	move.l	game_info,a0
+	move.l	game_info_pointer,a0
+	move.l	4(a0),a0
+
 	Fopen	(a0),#0
 	move	d0,d7
 	jmi		1f
@@ -37,7 +36,8 @@ compile_tiles:
 	| Compiling preparation.
 
 	lea		COMPILED_TILES_ADDRESS,a0
-	move.l	game_info+4,d1														| Tiles ROM size.
+	move.l	game_info_pointer,a1
+	move.l	6*4(a1),d1															| Tiles ROM size.
 	lsr.l	#7,d1																| Max. tile ROM index = tiles ROM size / (16 * 8).
 	lsl.l	#2,d1																| Max. compiled tiles index = max. tile ROM index * 4.
 	move.l	d1,max_compiled_tiles_index
@@ -63,7 +63,8 @@ compile_tiles:
 	Cconws	progress_text
 5:
 	clr.l	d0
-	lea		game_info+2*4,a0
+	move.l	game_info_pointer,a0
+	add		#7*4,a0
 4:
 	move.l	d0,d2
 	add.l	(a0)+,d0
@@ -419,7 +420,9 @@ compile_tiles:
 	move.l	a1,d6
 	sub.l	#COMPILED_TILES_ADDRESS,d6
 
-	move.l	game_info,a0
+	move.l	game_info_pointer,a0
+	move.l	4(a0),a0
+
 	Fcreate	(a0),#0
 	move	d0,d7
 
@@ -427,7 +430,7 @@ compile_tiles:
 
 	Fclose	d7
 
-	rts
+	jra		compile_tiles
 
 |-------------------------------------------------------------------------------
 
@@ -444,52 +447,6 @@ progress_text:
 
 saving_compiled_tiles_text:
 	.asciz	"\r\nSaving compiled tiles...\r\n"
-
-.even
-
-mslug_info:
-	dc.l	mslug_compiled_tiles_file_name										| Compiled tiles file name.
-	dc.l	0x1000000															| Total tiles ROM size.
-	dc.l	0x800000,mslug_c1_rom_file_name,mslug_c2_rom_file_name
-	dc.l	0x800000,mslug_c3_rom_file_name,mslug_c4_rom_file_name
-
-mslug_compiled_tiles_file_name:
-	.asciz	"mslug.tls"
-
-mslug_c1_rom_file_name:
-	.asciz	"201-c1.c1"
-
-mslug_c2_rom_file_name:
-	.asciz	"201-c2.c2"
-
-mslug_c3_rom_file_name:
-	.asciz	"201-c3.c3"
-
-mslug_c4_rom_file_name:
-	.asciz	"201-c4.c4"
-
-.even
-
-neobombe_info:
-	dc.l	neobombe_compiled_tiles_file_name									| Compiled tiles file name.
-	dc.l	0x900000															| Total tiles ROM size.
-	dc.l	0x800000,neobombe_c1_rom_file_name,neobombe_c2_rom_file_name
-	dc.l	0x100000,neobombe_c3_rom_file_name,neobombe_c4_rom_file_name
-
-neobombe_compiled_tiles_file_name:
-	.asciz	"neobombe.tls"
-
-neobombe_c1_rom_file_name:
-	.asciz	"093-c1.c1"
-
-neobombe_c2_rom_file_name:
-	.asciz	"093-c2.c2"
-
-neobombe_c3_rom_file_name:
-	.asciz	"093-c3.c3"
-
-neobombe_c4_rom_file_name:
-	.asciz	"093-c4.c4"
 
 .even
 

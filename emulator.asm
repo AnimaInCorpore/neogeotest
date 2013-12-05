@@ -840,7 +840,7 @@ draw_dummy_sprites:
 	lsr.l	#2,d2
 	or.l	d2,d0
 
-	and.l	#0x7ffff,d0
+	and.l	#0xfffff,d0
 
 	move	d0,d1
 	and		#0x7,d1
@@ -1111,7 +1111,7 @@ draw_tiles:
 	move.l	(a1)+,d0															| Sprite drawing code address.
 	jeq		1b
 
-	lea		address_error_data(pc),a0
+	lea		address_error_data(pc),a0											| Fixme: debugging.
 	move.l	a6,(a0)
 	move.l	d0,4(a0)
 
@@ -1382,7 +1382,7 @@ build_tile_infos:
 	lsr.l	#2,d2
 	or.l	d2,d0
 
-	and.l	#0x7ffff,d0
+	and.l	#0x7ffff,d0															| Fixme: should be 0xfffff!
 
 	lea		0x1000000,a5
 	move.l	(a5,d0.l*4),(a1)+
