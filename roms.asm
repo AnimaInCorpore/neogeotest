@@ -557,7 +557,7 @@ tophuntr_info:
 	dc.l	0x200000,tophuntr_c7_rom_file_name,tophuntr_c8_rom_file_name
 
 tophuntr_game_name:
-	.asciz	"Puzzle Bobble"
+	.asciz	"Top Hunter"
 
 tophuntr_compiled_tiles_file_name:
 	.asciz	"tophuntr\\tophuntr.tls"

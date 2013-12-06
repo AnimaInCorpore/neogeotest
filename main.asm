@@ -30,6 +30,12 @@ start:
 
 	| Copy emulator program to 0x500000.
 
+	move.l	game_info_pointer,a0												| Fixme: awkward way to prevent the tile index overflow.
+	move.l	6*4(a0),d0
+	lsr.l	#4+3-2,d0
+	subq.l	#1,d0
+	move.l	d0,tiles_index_mask
+
 	lea		emulator,a0
 	lea		0x500000,a1
 1:

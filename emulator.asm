@@ -3,6 +3,8 @@
 .global emulator
 .global emulator_end
 
+.global tiles_index_mask
+
 .equ	SSW_OFFSET,0xa
 .equ	ACCESS_ADDRESS_OFFSET,0x10
 .equ	DATA_TO_BE_WRITTEN_OFFSET,0x18
@@ -1380,7 +1382,8 @@ build_tile_infos:
 	lsr.l	#2,d2
 	or.l	d2,d0
 
-	and.l	#0x7ffff,d0															| Fixme: should be 0xfffff!
+	and.l	tiles_index_mask(pc),d0												| Fixme: e.g. 0xfffff for 32 MiB graphics ROM size!
+|	and.l	#0x3ffff,d0															| Fixme: e.g. 0xfffff for 32 MiB graphics ROM size!
 
 	lea		0x1000000,a5
 	move.l	(a5,d0.l*4),(a1)+
@@ -1410,6 +1413,9 @@ build_tile_infos:
 
 palette_converted_flags:
 	ds.b	256
+
+tiles_index_mask:
+	ds.l	1
 
 |-------------------------------------------------------------------------------
 |

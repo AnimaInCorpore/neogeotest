@@ -38,12 +38,9 @@ compile_tiles:
 	lea		COMPILED_TILES_ADDRESS,a0
 	move.l	game_info_pointer,a1
 	move.l	6*4(a1),d1															| Tiles ROM size.
-	lsr.l	#7,d1																| Max. tile ROM index = tiles ROM size / (16 * 8).
-	lsl.l	#2,d1																| Max. compiled tiles index = max. tile ROM index * 4.
+	lsr.l	#4+3-2,d1															| Max. compiled tiles index = tiles ROM size / (16 * 8) * 4.
 	move.l	d1,max_compiled_tiles_index
-	lsl.l	#2,d1																| Max. compiled tiles index = max. compiled tiles index * 4.
-	add.l	a0,d1
-	move.l	d1,a1																| Compiled tiles code address.
+	lea		(a0,d1.l*4),a1
 
 	clr.l	d0																	| Current compiled tile index.
 1:
