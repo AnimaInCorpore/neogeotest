@@ -6,9 +6,48 @@
 .global load_tiles_usage_bitmap
 .global save_tiles_usage_bitmap
 
+.global	select_game
+
 .global game_info_pointer
 
 .text
+
+|-------------------------------------------------------------------------------
+|
+|	Select game.
+|
+|	a0.l = argv[1]
+|
+|-------------------------------------------------------------------------------
+select_game:
+	lea		game_info_list,a1
+1:
+	move.l	(a1)+,a2
+	tst.l	a2
+	jeq		1f
+
+	move.l	4(a2),a3
+	move.l	a0,a4
+2:
+	cmp.b	(a3)+,(a4)+
+	jeq		2b
+
+	tst.b	-(a4)
+	jne		1b
+
+	move.l	a2,game_info_pointer
+
+	jra		1f
+1:
+	Cconws	loading_game_text_1
+
+	move.l	game_info_pointer,a0
+	move.l	(a0),a0
+	Cconws	(a0)
+
+	Cconws	loading_game_text_2
+
+	rts
 
 |-------------------------------------------------------------------------------
 |
@@ -244,8 +283,28 @@ saving_tiles_usage_bitmap_text:
 
 .data
 
-game_info_pointer:
+loading_game_text_1:
+	.asciz	"Loading "
+
+loading_game_text_2:
+	.asciz	"...\r\n"
+
+.even
+
+game_info_list:
+	dc.l	mslug_info
+	dc.l	mslug2_info
+	dc.l	neobombe_info
+	dc.l	kof94_info
+	dc.l	pulstar_info
+	dc.l	viewpoin_info
+	dc.l	nitdbl_info
+	dc.l	pbobblen_info
 	dc.l	tophuntr_info
+	dc.l	0
+
+game_info_pointer:
+	dc.l	mslug_info
 
 mslug_info:
 	dc.l	mslug_game_name

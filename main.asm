@@ -13,13 +13,9 @@
 |-------------------------------------------------------------------------------
 
 start:
-	Cconws	loading_game_text_1
-
-	move.l	game_info_pointer,a0
-	move.l	(a0),a0
-	Cconws	(a0)
-
-	Cconws	loading_game_text_2
+	move.l	4(sp),a0
+	lea		0x81(a0),a0
+	jbsr	select_game
 
 	jbsr	load_tiles_usage_bitmap
 	jbsr	compile_tiles
@@ -59,12 +55,6 @@ start:
 |-------------------------------------------------------------------------------
 
 .data
-
-loading_game_text_1:
-	.asciz	"Loading "
-
-loading_game_text_2:
-	.asciz	"...\r\n"
 
 |-------------------------------------------------------------------------------
 
