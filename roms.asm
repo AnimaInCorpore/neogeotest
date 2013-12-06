@@ -245,7 +245,7 @@ saving_tiles_usage_bitmap_text:
 .data
 
 game_info_pointer:
-	dc.l	nitdbl_info
+	dc.l	tophuntr_info
 
 mslug_info:
 	dc.l	mslug_game_name
@@ -278,6 +278,43 @@ mslug_c3_rom_file_name:
 
 mslug_c4_rom_file_name:
 	.asciz	"mslug\\201-c4.c4"
+
+.even
+
+mslug2_info:
+	dc.l	mslug2_game_name
+	dc.l	mslug2_compiled_tiles_file_name,mslug2_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_3,mslug2_p1_rom_file_name,mslug2_p2_rom_file_name
+	dc.l	0x2000000															| Total tiles ROM size.
+	dc.l	0x1000000,mslug2_c1_rom_file_name,mslug2_c2_rom_file_name
+	dc.l	0x1000000,mslug2_c3_rom_file_name,mslug2_c4_rom_file_name
+
+mslug2_game_name:
+	.asciz	"Metal Slug 2"
+
+mslug2_compiled_tiles_file_name:
+	.asciz	"mslug2\\mslug2.tls"
+
+mslug2_tiles_usage_bitmap_file_name:
+	.asciz	"mslug2\\mslug2.ubm"
+
+mslug2_p1_rom_file_name:
+	.asciz	"mslug2\\241-p1.p1"
+
+mslug2_p2_rom_file_name:
+	.asciz	"mslug2\\241-p2.sp2"
+
+mslug2_c1_rom_file_name:
+	.asciz	"mslug2\\241-c1.c1"
+
+mslug2_c2_rom_file_name:
+	.asciz	"mslug2\\241-c2.c2"
+
+mslug2_c3_rom_file_name:
+	.asciz	"mslug2\\241-c3.c3"
+
+mslug2_c4_rom_file_name:
+	.asciz	"mslug2\\241-c4.c4"
 
 .even
 
@@ -472,6 +509,91 @@ nitdbl_c3_rom_file_name:
 
 nitdbl_c4_rom_file_name:
 	.asciz	"nitdbl\\nitd-c4.bin"
+
+.even
+
+pbobblen_info:
+	dc.l	pbobblen_game_name
+	dc.l	pbobblen_compiled_tiles_file_name,pbobblen_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,pbobblen_p1_rom_file_name,0
+	dc.l	0x400000															| Total tiles ROM size.
+	dc.l	0x200000,pbobblen_c1_rom_file_name,pbobblen_c2_rom_file_name
+	dc.l	0x200000,pbobblen_c3_rom_file_name,pbobblen_c4_rom_file_name
+
+pbobblen_game_name:
+	.asciz	"Puzzle Bobble"
+
+pbobblen_compiled_tiles_file_name:
+	.asciz	"pbobblen\\pbobblen.tls"
+
+pbobblen_tiles_usage_bitmap_file_name:
+	.asciz	"pbobblen\\pbobblen.ubm"
+
+pbobblen_p1_rom_file_name:
+	.asciz	"pbobblen\\d96-07.ep1"
+
+pbobblen_c1_rom_file_name:
+	.asciz	"pbobblen\\068-c1.c1"
+
+pbobblen_c2_rom_file_name:
+	.asciz	"pbobblen\\068-c2.c2"
+
+pbobblen_c3_rom_file_name:
+	.asciz	"pbobblen\\068-c3.c3"
+
+pbobblen_c4_rom_file_name:
+	.asciz	"pbobblen\\068-c4.c4"
+
+.even
+
+tophuntr_info:
+	dc.l	tophuntr_game_name
+	dc.l	tophuntr_compiled_tiles_file_name,tophuntr_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_3,tophuntr_p1_rom_file_name,tophuntr_p2_rom_file_name
+	dc.l	0x800000															| Total tiles ROM size.
+	dc.l	0x200000,tophuntr_c1_rom_file_name,tophuntr_c2_rom_file_name
+	dc.l	0x200000,tophuntr_c3_rom_file_name,tophuntr_c4_rom_file_name
+	dc.l	0x200000,tophuntr_c5_rom_file_name,tophuntr_c6_rom_file_name
+	dc.l	0x200000,tophuntr_c7_rom_file_name,tophuntr_c8_rom_file_name
+
+tophuntr_game_name:
+	.asciz	"Puzzle Bobble"
+
+tophuntr_compiled_tiles_file_name:
+	.asciz	"tophuntr\\tophuntr.tls"
+
+tophuntr_tiles_usage_bitmap_file_name:
+	.asciz	"tophuntr\\tophuntr.ubm"
+
+tophuntr_p1_rom_file_name:
+	.asciz	"tophuntr\\046-p1.p1"
+
+tophuntr_p2_rom_file_name:
+	.asciz	"tophuntr\\046-p2.sp2"
+
+tophuntr_c1_rom_file_name:
+	.asciz	"tophuntr\\046-c1.c1"
+
+tophuntr_c2_rom_file_name:
+	.asciz	"tophuntr\\046-c2.c2"
+
+tophuntr_c3_rom_file_name:
+	.asciz	"tophuntr\\046-c3.c3"
+
+tophuntr_c4_rom_file_name:
+	.asciz	"tophuntr\\046-c4.c4"
+
+tophuntr_c5_rom_file_name:
+	.asciz	"tophuntr\\046-c5.c5"
+
+tophuntr_c6_rom_file_name:
+	.asciz	"tophuntr\\046-c6.c6"
+
+tophuntr_c7_rom_file_name:
+	.asciz	"tophuntr\\046-c7.c7"
+
+tophuntr_c8_rom_file_name:
+	.asciz	"tophuntr\\046-c8.c8"
 
 .even
 
