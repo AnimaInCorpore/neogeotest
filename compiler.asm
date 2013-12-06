@@ -39,8 +39,17 @@ compile_tiles:
 	move.l	game_info_pointer,a1
 	move.l	6*4(a1),d1															| Tiles ROM size.
 	lsr.l	#4+3-2,d1															| Max. compiled tiles index = tiles ROM size / (16 * 8) * 4.
-	move.l	d1,max_compiled_tiles_index
-	lea		(a0,d1.l*4),a1
+
+	moveq.l	#1,d0
+1:
+	cmp.l	d1,d0
+	jge		1f
+
+	add.l	d0,d0
+	jra		1b
+1:
+	move.l	d0,max_compiled_tiles_index
+	lea		(a0,d0.l*4),a1
 
 	clr.l	d0																	| Current compiled tile index.
 1:

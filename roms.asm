@@ -215,6 +215,33 @@ load_program_rom_3:
 
 	rts
 
+load_program_rom_4:
+	move.l	game_info_pointer,a0
+	move.l	4*4(a0),a0
+
+	Fopen	(a0),#0
+	move	d0,d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET,a0
+	Fread	d7,#PROGRAM_ROM_1_SIZE,(a0)
+
+	Fclose	d7
+
+	move.l	game_info_pointer,a0
+	move.l	5*4(a0),a0
+
+	Fopen	(a0),#0
+	move	d0,d7
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET+0x80000,a0
+	Fread	d7,#0x80000,(a0)
+
+	Fclose	d7
+
+	rts
+
 |-------------------------------------------------------------------------------
 |
 |	Load tiles usage bitmap.
@@ -301,6 +328,10 @@ game_info_list:
 	dc.l	nitdbl_info
 	dc.l	pbobblen_info
 	dc.l	tophuntr_info
+	dc.l	sengoku_info
+	dc.l	sengoku2_info
+	dc.l	blazstar_info
+	dc.l	lresort_info
 	dc.l	0
 
 game_info_pointer:
@@ -653,6 +684,162 @@ tophuntr_c7_rom_file_name:
 
 tophuntr_c8_rom_file_name:
 	.asciz	"tophuntr\\046-c8.c8"
+
+.even
+
+sengoku_info:
+	dc.l	sengoku_game_name
+	dc.l	sengoku_compiled_tiles_file_name,sengoku_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_4,sengoku_p1_rom_file_name,sengoku_p2_rom_file_name
+	dc.l	0x400000															| Total tiles ROM size.
+	dc.l	0x200000,sengoku_c1_rom_file_name,sengoku_c2_rom_file_name
+	dc.l	0x200000,sengoku_c3_rom_file_name,sengoku_c4_rom_file_name
+
+sengoku_game_name:
+	.asciz	"Sengoku"
+
+sengoku_compiled_tiles_file_name:
+	.asciz	"sengoku\\sengoku.tls"
+
+sengoku_tiles_usage_bitmap_file_name:
+	.asciz	"sengoku\\sengoku.ubm"
+
+sengoku_p1_rom_file_name:
+	.asciz	"sengoku\\017-p1.p1"
+
+sengoku_p2_rom_file_name:
+	.asciz	"sengoku\\017-p2.p2"
+
+sengoku_c1_rom_file_name:
+	.asciz	"sengoku\\017-c1.c1"
+
+sengoku_c2_rom_file_name:
+	.asciz	"sengoku\\017-c2.c2"
+
+sengoku_c3_rom_file_name:
+	.asciz	"sengoku\\017-c3.c3"
+
+sengoku_c4_rom_file_name:
+	.asciz	"sengoku\\017-c4.c4"
+
+.even
+
+sengoku2_info:
+	dc.l	sengoku2_game_name
+	dc.l	sengoku2_compiled_tiles_file_name,sengoku2_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,sengoku2_p1_rom_file_name,0
+	dc.l	0x500000															| Total tiles ROM size.
+	dc.l	0x400000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
+	dc.l	0x100000,sengoku2_c3_rom_file_name,sengoku2_c4_rom_file_name
+
+sengoku2_game_name:
+	.asciz	"Sengoku 2"
+
+sengoku2_compiled_tiles_file_name:
+	.asciz	"sengoku2\\sengoku2.tls"
+
+sengoku2_tiles_usage_bitmap_file_name:
+	.asciz	"sengoku2\\sengoku2.ubm"
+
+sengoku2_p1_rom_file_name:
+	.asciz	"sengoku2\\040-p1.p1"
+
+sengoku2_c1_rom_file_name:
+	.asciz	"sengoku2\\040-c1.c1"
+
+sengoku2_c2_rom_file_name:
+	.asciz	"sengoku2\\040-c2.c2"
+
+sengoku2_c3_rom_file_name:
+	.asciz	"sengoku2\\040-c3.c3"
+
+sengoku2_c4_rom_file_name:
+	.asciz	"sengoku2\\040-c4.c4"
+
+.even
+
+blazstar_info:
+	dc.l	blazstar_game_name
+	dc.l	blazstar_compiled_tiles_file_name,blazstar_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_3,blazstar_p1_rom_file_name,blazstar_p2_rom_file_name
+	dc.l	0x2000000															| Total tiles ROM size.
+	dc.l	0x800000,blazstar_c1_rom_file_name,blazstar_c2_rom_file_name
+	dc.l	0x800000,blazstar_c3_rom_file_name,blazstar_c4_rom_file_name
+	dc.l	0x800000,blazstar_c5_rom_file_name,blazstar_c6_rom_file_name
+	dc.l	0x800000,blazstar_c7_rom_file_name,blazstar_c8_rom_file_name
+
+blazstar_game_name:
+	.asciz	"Blazing Star"
+
+blazstar_compiled_tiles_file_name:
+	.asciz	"blazstar\\blazstar.tls"
+
+blazstar_tiles_usage_bitmap_file_name:
+	.asciz	"blazstar\\blazstar.ubm"
+
+blazstar_p1_rom_file_name:
+	.asciz	"blazstar\\239-p1.p1"
+
+blazstar_p2_rom_file_name:
+	.asciz	"blazstar\\239-p2.sp2"
+
+blazstar_c1_rom_file_name:
+	.asciz	"blazstar\\239-c1.c1"
+
+blazstar_c2_rom_file_name:
+	.asciz	"blazstar\\239-c2.c2"
+
+blazstar_c3_rom_file_name:
+	.asciz	"blazstar\\239-c3.c3"
+
+blazstar_c4_rom_file_name:
+	.asciz	"blazstar\\239-c4.c4"
+
+blazstar_c5_rom_file_name:
+	.asciz	"blazstar\\239-c5.c5"
+
+blazstar_c6_rom_file_name:
+	.asciz	"blazstar\\239-c6.c6"
+
+blazstar_c7_rom_file_name:
+	.asciz	"blazstar\\239-c7.c7"
+
+blazstar_c8_rom_file_name:
+	.asciz	"blazstar\\239-c8.c8"
+
+.even
+
+lresort_info:
+	dc.l	lresort_game_name
+	dc.l	lresort_compiled_tiles_file_name,lresort_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,lresort_p1_rom_file_name,0
+	dc.l	0x300000															| Total tiles ROM size.
+	dc.l	0x200000,lresort_c1_rom_file_name,lresort_c2_rom_file_name
+	dc.l	0x100000,lresort_c3_rom_file_name,lresort_c4_rom_file_name
+
+lresort_game_name:
+	.asciz	"Last Resort"
+
+lresort_compiled_tiles_file_name:
+	.asciz	"lresort\\lresort.tls"
+
+lresort_tiles_usage_bitmap_file_name:
+	.asciz	"lresort\\lresort.ubm"
+
+lresort_p1_rom_file_name:
+	.asciz	"lresort\\024-p1.p1"
+
+lresort_c1_rom_file_name:
+	.asciz	"lresort\\024-c1.c1"
+
+lresort_c2_rom_file_name:
+	.asciz	"lresort\\024-c2.c2"
+
+lresort_c3_rom_file_name:
+	.asciz	"lresort\\024-c3.c3"
+
+lresort_c4_rom_file_name:
+	.asciz	"lresort\\024-c4.c4"
 
 .even
 

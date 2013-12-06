@@ -29,8 +29,17 @@ start:
 	move.l	game_info_pointer,a0												| Fixme: awkward way to prevent the tile index overflow.
 	move.l	6*4(a0),d0
 	lsr.l	#4+3-2,d0
-	subq.l	#1,d0
-	move.l	d0,tiles_index_mask
+
+	moveq.l	#1,d1
+1:
+	cmp.l	d0,d1
+	jge		1f
+
+	add.l	d1,d1
+	jra		1b
+1:
+	subq.l	#1,d1
+	move.l	d1,tiles_index_mask
 
 	lea		emulator,a0
 	lea		0x500000,a1

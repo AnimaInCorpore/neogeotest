@@ -1147,10 +1147,7 @@ build_tile_infos:
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
 	lea		VRAM_ADDRESS,a1														| Tile maps.
-
-	lea		work_screen_address(pc),a2
-	move.l	(a2),a2
-
+	move.l	work_screen_address(pc),a2
 	lea.l	TILE_TEMP_INFOS_ADDRESS,a3
 
 	clr		d4 																	| Previous sprite height.
