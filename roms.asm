@@ -724,13 +724,14 @@ sengoku_c4_rom_file_name:
 
 .even
 
-sengoku2_info:
+sengoku2_info:																	| Note the strange C-ROM order!
 	dc.l	sengoku2_game_name
 	dc.l	sengoku2_compiled_tiles_file_name,sengoku2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,sengoku2_p1_rom_file_name,0
 	dc.l	0x500000															| Total tiles ROM size.
-	dc.l	0x400000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
+	dc.l	0x200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
 	dc.l	0x100000,sengoku2_c3_rom_file_name,sengoku2_c4_rom_file_name
+	dc.l	0x200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
 
 sengoku2_game_name:
 	.asciz	"Sengoku 2"

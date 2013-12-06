@@ -1218,7 +1218,9 @@ build_tile_infos:
 
 	sub.l	#512*2*512,a5
 
-	cmp.l	a2,a5
+	lea		-512*2*16(a2),a6
+
+	cmp.l	a6,a5
 	jle		5f
 4:
 	| Tile is visible so store all its temporary infos.
