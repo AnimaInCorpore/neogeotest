@@ -1108,12 +1108,22 @@ draw_tiles:
 
 	move.l	d0,a2
 	move.l	(a1)+,a6															| Screen address.
+
+|	clr.l	(a6)																| Fixme: debugging.
+|	clr.l	4(a6)
+|	move.l	#0x0000ffff,512*2(a6)
+|	move.l	#0xffff0000,512*2+4(a6)
+|	move.l	#0x0000ffff,512*2*2(a6)
+|	move.l	#0xffff0000,512*2*2+4(a6)
+|	clr.l	512*2*3(a6)
+|	clr.l	512*2*3+4(a6)
+
 	move.l	(a1)+,d0															| Sprite drawing code address.
 	jeq		1b
 
-	lea		address_error_data(pc),a0											| Fixme: debugging.
-	move.l	a6,(a0)
-	move.l	d0,4(a0)
+|	lea		address_error_data(pc),a0											| Fixme: debugging.
+|	move.l	a6,(a0)
+|	move.l	d0,4(a0)
 
 	lea		3f(pc),a0															| Return address.
 	movem.l	d0/a0-a1,-(sp)
