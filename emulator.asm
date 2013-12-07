@@ -1157,7 +1157,11 @@ build_tile_infos:
 
 	lea		VRAM_ADDRESS+0x8200*2,a0
 	lea		VRAM_ADDRESS,a1														| Tile maps.
+
 	move.l	work_screen_address(pc),a2
+	move.l	a2,a6
+	add.l	#512*2*(224+16),a6
+
 	lea.l	TILE_TEMP_INFOS_ADDRESS,a3
 
 	clr		d4 																	| Previous sprite height.
@@ -1184,6 +1188,12 @@ build_tile_infos:
 3:
 	move	d1,d3
 	and		#0x3f,d3 															| Sprite height.
+
+|	cmp		#32,d3
+|	jle		3f
+
+|	move	#32,d3
+|3:
 	move	d3,d4 																| Save sprite height.
 	jeq		2f
 
@@ -1197,12 +1207,12 @@ build_tile_infos:
 4:
 	| Check sprite X position boundaries.
 
-	cmp		#320,d0 															| Right screen border.
+	cmp		#320-8,d0 															| Right screen border.
 	jlt		6f
 
 	sub		#512,d0
 
-	cmp		#-16,d0 															| Left screen border.
+	cmp		#-16+8,d0 															| Left screen border.
 	jle		2f
 6:
 	move.l	a1,-(sp)
@@ -1220,17 +1230,12 @@ build_tile_infos:
 3:
 	move.l	a4,a5
 
-	move.l	a2,a6
-	add.l	#512*2*(224+16),a6
-
 	cmp.l	a6,a5
 	jlt		4f
 
 	sub.l	#512*2*512,a5
 
-	lea		-512*2*16(a2),a6
-
-	cmp.l	a6,a5
+	cmp.l	a2,a5
 	jle		5f
 4:
 	| Tile is visible so store all its temporary infos.

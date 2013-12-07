@@ -319,19 +319,21 @@ loading_game_text_2:
 .even
 
 game_info_list:
+	dc.l	blazstar_info
+	dc.l	kof94_info
+	dc.l	lresort_info
 	dc.l	mslug_info
 	dc.l	mslug2_info
 	dc.l	neobombe_info
-	dc.l	kof94_info
-	dc.l	pulstar_info
-	dc.l	viewpoin_info
 	dc.l	nitdbl_info
 	dc.l	pbobblen_info
-	dc.l	tophuntr_info
+	dc.l	pulstar_info
 	dc.l	sengoku_info
 	dc.l	sengoku2_info
-	dc.l	blazstar_info
-	dc.l	lresort_info
+	dc.l	sonicwi2_info
+	dc.l	sonicwi3_info
+	dc.l	tophuntr_info
+	dc.l	viewpoin_info
 	dc.l	0
 
 game_info_pointer:
@@ -341,7 +343,7 @@ mslug_info:
 	dc.l	mslug_game_name
 	dc.l	mslug_compiled_tiles_file_name,mslug_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,mslug_p1_rom_file_name,0
-	dc.l	0x1000000															| Total tiles ROM size.
+	dc.l	0x1000000
 	dc.l	0x800000,mslug_c1_rom_file_name,mslug_c2_rom_file_name
 	dc.l	0x800000,mslug_c3_rom_file_name,mslug_c4_rom_file_name
 
@@ -375,7 +377,7 @@ mslug2_info:
 	dc.l	mslug2_game_name
 	dc.l	mslug2_compiled_tiles_file_name,mslug2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,mslug2_p1_rom_file_name,mslug2_p2_rom_file_name
-	dc.l	0x2000000															| Total tiles ROM size.
+	dc.l	0x2000000
 	dc.l	0x1000000,mslug2_c1_rom_file_name,mslug2_c2_rom_file_name
 	dc.l	0x1000000,mslug2_c3_rom_file_name,mslug2_c4_rom_file_name
 
@@ -412,7 +414,7 @@ neobombe_info:
 	dc.l	neobombe_game_name
 	dc.l	neobombe_compiled_tiles_file_name,neobombe_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,neobombe_p1_rom_file_name,0
-	dc.l	0x900000															| Total tiles ROM size.
+	dc.l	0x900000
 	dc.l	0x800000,neobombe_c1_rom_file_name,neobombe_c2_rom_file_name
 	dc.l	0x100000,neobombe_c3_rom_file_name,neobombe_c4_rom_file_name
 
@@ -446,7 +448,7 @@ kof94_info:
 	dc.l	kof94_game_name
 	dc.l	kof94_compiled_tiles_file_name,kof94_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,kof94_p1_rom_file_name,0
-	dc.l	0x1000000															| Total tiles ROM size.
+	dc.l	0x1000000
 	dc.l	0x400000,kof94_c1_rom_file_name,kof94_c2_rom_file_name
 	dc.l	0x400000,kof94_c3_rom_file_name,kof94_c4_rom_file_name
 	dc.l	0x400000,kof94_c5_rom_file_name,kof94_c6_rom_file_name
@@ -494,7 +496,7 @@ pulstar_info:
 	dc.l	pulstar_game_name
 	dc.l	pulstar_compiled_tiles_file_name,pulstar_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,pulstar_p1_rom_file_name,pulstar_p2_rom_file_name
-	dc.l	0x1c00000															| Total tiles ROM size.
+	dc.l	0x1c00000
 	dc.l	0x800000,pulstar_c1_rom_file_name,pulstar_c2_rom_file_name
 	dc.l	0x800000,pulstar_c3_rom_file_name,pulstar_c4_rom_file_name
 	dc.l	0x800000,pulstar_c5_rom_file_name,pulstar_c6_rom_file_name
@@ -545,7 +547,7 @@ viewpoin_info:
 	dc.l	viewpoin_game_name
 	dc.l	viewpoin_compiled_tiles_file_name,viewpoin_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,viewpoin_p1_rom_file_name,0
-	dc.l	0x400000															| Total tiles ROM size.
+	dc.l	0x400000
 	dc.l	0x400000,viewpoin_c1_rom_file_name,viewpoin_c2_rom_file_name
 
 viewpoin_game_name:
@@ -572,7 +574,7 @@ nitdbl_info:
 	dc.l	nitdbl_game_name
 	dc.l	nitdbl_compiled_tiles_file_name,nitdbl_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,nitdbl_p1_rom_file_name,0
-	dc.l	0x800000															| Total tiles ROM size.
+	dc.l	0x800000
 	dc.l	0x400000,nitdbl_c1_rom_file_name,nitdbl_c2_rom_file_name
 	dc.l	0x400000,nitdbl_c3_rom_file_name,nitdbl_c4_rom_file_name
 
@@ -606,7 +608,7 @@ pbobblen_info:
 	dc.l	pbobblen_game_name
 	dc.l	pbobblen_compiled_tiles_file_name,pbobblen_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,pbobblen_p1_rom_file_name,0
-	dc.l	0x400000															| Total tiles ROM size.
+	dc.l	0x400000
 	dc.l	0x200000,pbobblen_c1_rom_file_name,pbobblen_c2_rom_file_name
 	dc.l	0x200000,pbobblen_c3_rom_file_name,pbobblen_c4_rom_file_name
 
@@ -640,7 +642,7 @@ tophuntr_info:
 	dc.l	tophuntr_game_name
 	dc.l	tophuntr_compiled_tiles_file_name,tophuntr_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,tophuntr_p1_rom_file_name,tophuntr_p2_rom_file_name
-	dc.l	0x800000															| Total tiles ROM size.
+	dc.l	0x800000
 	dc.l	0x200000,tophuntr_c1_rom_file_name,tophuntr_c2_rom_file_name
 	dc.l	0x200000,tophuntr_c3_rom_file_name,tophuntr_c4_rom_file_name
 	dc.l	0x200000,tophuntr_c5_rom_file_name,tophuntr_c6_rom_file_name
@@ -691,7 +693,7 @@ sengoku_info:
 	dc.l	sengoku_game_name
 	dc.l	sengoku_compiled_tiles_file_name,sengoku_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_4,sengoku_p1_rom_file_name,sengoku_p2_rom_file_name
-	dc.l	0x400000															| Total tiles ROM size.
+	dc.l	0x400000
 	dc.l	0x200000,sengoku_c1_rom_file_name,sengoku_c2_rom_file_name
 	dc.l	0x200000,sengoku_c3_rom_file_name,sengoku_c4_rom_file_name
 
@@ -728,7 +730,7 @@ sengoku2_info:																	| Note the strange C-ROM order!
 	dc.l	sengoku2_game_name
 	dc.l	sengoku2_compiled_tiles_file_name,sengoku2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,sengoku2_p1_rom_file_name,0
-	dc.l	0x500000															| Total tiles ROM size.
+	dc.l	0x500000
 	dc.l	0x200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
 	dc.l	0x100000,sengoku2_c3_rom_file_name,sengoku2_c4_rom_file_name
 	dc.l	0x200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
@@ -763,7 +765,7 @@ blazstar_info:
 	dc.l	blazstar_game_name
 	dc.l	blazstar_compiled_tiles_file_name,blazstar_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,blazstar_p1_rom_file_name,blazstar_p2_rom_file_name
-	dc.l	0x2000000															| Total tiles ROM size.
+	dc.l	0x2000000
 	dc.l	0x800000,blazstar_c1_rom_file_name,blazstar_c2_rom_file_name
 	dc.l	0x800000,blazstar_c3_rom_file_name,blazstar_c4_rom_file_name
 	dc.l	0x800000,blazstar_c5_rom_file_name,blazstar_c6_rom_file_name
@@ -814,7 +816,7 @@ lresort_info:
 	dc.l	lresort_game_name
 	dc.l	lresort_compiled_tiles_file_name,lresort_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,lresort_p1_rom_file_name,0
-	dc.l	0x300000															| Total tiles ROM size.
+	dc.l	0x300000
 	dc.l	0x200000,lresort_c1_rom_file_name,lresort_c2_rom_file_name
 	dc.l	0x100000,lresort_c3_rom_file_name,lresort_c4_rom_file_name
 
@@ -841,6 +843,74 @@ lresort_c3_rom_file_name:
 
 lresort_c4_rom_file_name:
 	.asciz	"lresort\\024-c4.c4"
+
+.even
+
+sonicwi2_info:
+	dc.l	sonicwi2_game_name
+	dc.l	sonicwi2_compiled_tiles_file_name,sonicwi2_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,sonicwi2_p1_rom_file_name,0
+	dc.l	0x800000
+	dc.l	0x400000,sonicwi2_c1_rom_file_name,sonicwi2_c2_rom_file_name
+	dc.l	0x400000,sonicwi2_c3_rom_file_name,sonicwi2_c4_rom_file_name
+
+sonicwi2_game_name:
+	.asciz	"Aero Fighters 2 / Sonic Wings 2"
+
+sonicwi2_compiled_tiles_file_name:
+	.asciz	"sonicwi2\\sonicwi2.tls"
+
+sonicwi2_tiles_usage_bitmap_file_name:
+	.asciz	"sonicwi2\\sonicwi2.ubm"
+
+sonicwi2_p1_rom_file_name:
+	.asciz	"sonicwi2\\075-p1.p1"
+
+sonicwi2_c1_rom_file_name:
+	.asciz	"sonicwi2\\075-c1.c1"
+
+sonicwi2_c2_rom_file_name:
+	.asciz	"sonicwi2\\075-c2.c2"
+
+sonicwi2_c3_rom_file_name:
+	.asciz	"sonicwi2\\075-c3.c3"
+
+sonicwi2_c4_rom_file_name:
+	.asciz	"sonicwi2\\075-c4.c4"
+
+.even
+
+sonicwi3_info:
+	dc.l	sonicwi3_game_name
+	dc.l	sonicwi3_compiled_tiles_file_name,sonicwi3_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,sonicwi3_p1_rom_file_name,0
+	dc.l	0xc00000
+	dc.l	0x800000,sonicwi3_c1_rom_file_name,sonicwi3_c2_rom_file_name
+	dc.l	0x400000,sonicwi3_c3_rom_file_name,sonicwi3_c4_rom_file_name
+
+sonicwi3_game_name:
+	.asciz	"Aero Fighters 3 / Sonic Wings 3"
+
+sonicwi3_compiled_tiles_file_name:
+	.asciz	"sonicwi3\\sonicwi3.tls"
+
+sonicwi3_tiles_usage_bitmap_file_name:
+	.asciz	"sonicwi3\\sonicwi3.ubm"
+
+sonicwi3_p1_rom_file_name:
+	.asciz	"sonicwi3\\097-p1.p1"
+
+sonicwi3_c1_rom_file_name:
+	.asciz	"sonicwi3\\097-c1.c1"
+
+sonicwi3_c2_rom_file_name:
+	.asciz	"sonicwi3\\097-c2.c2"
+
+sonicwi3_c3_rom_file_name:
+	.asciz	"sonicwi3\\097-c3.c3"
+
+sonicwi3_c4_rom_file_name:
+	.asciz	"sonicwi3\\097-c4.c4"
 
 .even
 
