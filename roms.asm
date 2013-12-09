@@ -320,8 +320,13 @@ loading_game_text_2:
 
 game_info_list:
 	dc.l	blazstar_info
+	dc.l	burningf_info
+	dc.l	gpilots_info
 	dc.l	kabukikl_info
+	dc.l	kizuna_info
 	dc.l	kof94_info
+	dc.l	kotm_info
+	dc.l	kotm2_info
 	dc.l	lresort_info
 	dc.l	mslug_info
 	dc.l	mslug2_info
@@ -946,6 +951,200 @@ kabukikl_c3_rom_file_name:
 
 kabukikl_c4_rom_file_name:
 	.asciz	"kabukikl\\092-c4.c4"
+
+.even
+
+kizuna_info:
+	dc.l	kizuna_game_name
+	dc.l	kizuna_compiled_tiles_file_name,kizuna_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,kizuna_p1_rom_file_name,0
+	dc.l	0x1c00000
+	dc.l	0x800000,kizuna_c1_rom_file_name,kizuna_c2_rom_file_name
+	dc.l	0x800000,kizuna_c3_rom_file_name,kizuna_c4_rom_file_name
+	dc.l	0x800000,kizuna_c5_rom_file_name,kizuna_c6_rom_file_name
+	dc.l	0x400000,kizuna_c7_rom_file_name,kizuna_c8_rom_file_name
+
+kizuna_game_name:
+	.asciz	"Kizuna Encounter: Super Tag Battle"
+
+kizuna_compiled_tiles_file_name:
+	.asciz	"kizuna\\kizuna.tls"
+
+kizuna_tiles_usage_bitmap_file_name:
+	.asciz	"kizuna\\kizuna.ubm"
+
+kizuna_p1_rom_file_name:
+	.asciz	"kizuna\\216-p1.p1"
+
+kizuna_c1_rom_file_name:
+	.asciz	"kizuna\\059-c1.c1"
+
+kizuna_c2_rom_file_name:
+	.asciz	"kizuna\\059-c2.c2"
+
+kizuna_c3_rom_file_name:
+	.asciz	"kizuna\\216-c3.c3"
+
+kizuna_c4_rom_file_name:
+	.asciz	"kizuna\\216-c4.c4"
+
+kizuna_c5_rom_file_name:
+	.asciz	"kizuna\\059-c5.c5"
+
+kizuna_c6_rom_file_name:
+	.asciz	"kizuna\\059-c6.c6"
+
+kizuna_c7_rom_file_name:
+	.asciz	"kizuna\\059-c7.c7"
+
+kizuna_c8_rom_file_name:
+	.asciz	"kizuna\\059-c8.c8"
+
+.even
+
+kotm_info:
+	dc.l	kotm_game_name
+	dc.l	kotm_compiled_tiles_file_name,kotm_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_4,kotm_p1_rom_file_name,kotm_p2_rom_file_name
+	dc.l	0x400000
+	dc.l	0x200000,kotm_c1_rom_file_name,kotm_c2_rom_file_name
+	dc.l	0x200000,kotm_c3_rom_file_name,kotm_c4_rom_file_name
+
+kotm_game_name:
+	.asciz	"King of the Monsters"
+
+kotm_compiled_tiles_file_name:
+	.asciz	"kotm\\kotm.tls"
+
+kotm_tiles_usage_bitmap_file_name:
+	.asciz	"kotm\\kotm.ubm"
+
+kotm_p1_rom_file_name:
+	.asciz	"kotm\\016-p1.p1"
+
+kotm_p2_rom_file_name:
+	.asciz	"kotm\\016-p2.p2"
+
+kotm_c1_rom_file_name:
+	.asciz	"kotm\\016-c1.c1"
+
+kotm_c2_rom_file_name:
+	.asciz	"kotm\\016-c2.c2"
+
+kotm_c3_rom_file_name:
+	.asciz	"kotm\\016-c3.c3"
+
+kotm_c4_rom_file_name:
+	.asciz	"kotm\\016-c4.c4"
+
+.even
+
+kotm2_info:
+	dc.l	kotm2_game_name
+	dc.l	kotm2_compiled_tiles_file_name,kotm2_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,kotm2_p1_rom_file_name,kotm2_p2_rom_file_name
+	dc.l	0x600000
+	dc.l	0x200000,kotm2_c1_rom_file_name,kotm2_c2_rom_file_name
+	dc.l	0x100000,kotm2_c3_rom_file_name,kotm2_c4_rom_file_name
+	dc.l	0x200000,kotm2_c1_rom_file_name,kotm2_c2_rom_file_name
+
+kotm2_game_name:
+	.asciz	"King of the Monsters 2"
+
+kotm2_compiled_tiles_file_name:
+	.asciz	"kotm2\\kotm2.tls"
+
+kotm2_tiles_usage_bitmap_file_name:
+	.asciz	"kotm2\\kotm2.ubm"
+
+kotm2_p1_rom_file_name:
+	.asciz	"kotm2\\039-p1.p1"
+
+kotm2_p2_rom_file_name:
+	.asciz	"kotm2\\039-p2.p2"
+
+kotm2_c1_rom_file_name:
+	.asciz	"kotm2\\039-c1.c1"
+
+kotm2_c2_rom_file_name:
+	.asciz	"kotm2\\039-c2.c2"
+
+kotm2_c3_rom_file_name:
+	.asciz	"kotm2\\039-c3.c3"
+
+kotm2_c4_rom_file_name:
+	.asciz	"kotm2\\039-c4.c4"
+
+.even
+
+burningf_info:
+	dc.l	burningf_game_name
+	dc.l	burningf_compiled_tiles_file_name,burningf_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,burningf_p1_rom_file_name,0
+	dc.l	0x400000
+	dc.l	0x200000,burningf_c1_rom_file_name,burningf_c2_rom_file_name
+	dc.l	0x200000,burningf_c3_rom_file_name,burningf_c4_rom_file_name
+
+burningf_game_name:
+	.asciz	"Burning Fight"
+
+burningf_compiled_tiles_file_name:
+	.asciz	"burningf\\burningf.tls"
+
+burningf_tiles_usage_bitmap_file_name:
+	.asciz	"burningf\\burningf.ubm"
+
+burningf_p1_rom_file_name:
+	.asciz	"burningf\\018-p1.p1"
+
+burningf_c1_rom_file_name:
+	.asciz	"burningf\\018-c1.c1"
+
+burningf_c2_rom_file_name:
+	.asciz	"burningf\\018-c2.c2"
+
+burningf_c3_rom_file_name:
+	.asciz	"burningf\\018-c3.c3"
+
+burningf_c4_rom_file_name:
+	.asciz	"burningf\\018-c4.c4"
+
+.even
+
+gpilots_info:
+	dc.l	gpilots_game_name
+	dc.l	gpilots_compiled_tiles_file_name,gpilots_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_4,gpilots_p1_rom_file_name,gpilots_p2_rom_file_name
+	dc.l	0x400000
+	dc.l	0x200000,gpilots_c1_rom_file_name,gpilots_c2_rom_file_name
+	dc.l	0x200000,gpilots_c3_rom_file_name,gpilots_c4_rom_file_name
+
+gpilots_game_name:
+	.asciz	"Ghost Pilots"
+
+gpilots_compiled_tiles_file_name:
+	.asciz	"gpilots\\gpilots.tls"
+
+gpilots_tiles_usage_bitmap_file_name:
+	.asciz	"gpilots\\gpilots.ubm"
+
+gpilots_p1_rom_file_name:
+	.asciz	"gpilots\\020-p1.p1"
+
+gpilots_p2_rom_file_name:
+	.asciz	"gpilots\\020-p2.p2"
+
+gpilots_c1_rom_file_name:
+	.asciz	"gpilots\\020-c1.c1"
+
+gpilots_c2_rom_file_name:
+	.asciz	"gpilots\\020-c2.c2"
+
+gpilots_c3_rom_file_name:
+	.asciz	"gpilots\\020-c3.c3"
+
+gpilots_c4_rom_file_name:
+	.asciz	"gpilots\\020-c4.c4"
 
 .even
 
