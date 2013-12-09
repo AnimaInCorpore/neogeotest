@@ -1315,6 +1315,9 @@ build_tile_infos:
 
 	sub.l	#512*2*512,a5
 
+	cmp.l	a6,a5
+	jge		5f
+
 	cmp.l	a2,a5
 	jle		5f
 4:
