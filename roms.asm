@@ -320,6 +320,7 @@ loading_game_text_2:
 
 game_info_list:
 	dc.l	blazstar_info
+	dc.l	kabukikl_info
 	dc.l	kof94_info
 	dc.l	lresort_info
 	dc.l	mslug_info
@@ -911,6 +912,40 @@ sonicwi3_c3_rom_file_name:
 
 sonicwi3_c4_rom_file_name:
 	.asciz	"sonicwi3\\097-c4.c4"
+
+.even
+
+kabukikl_info:
+	dc.l	kabukikl_game_name
+	dc.l	kabukikl_compiled_tiles_file_name,kabukikl_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,kabukikl_p1_rom_file_name,0
+	dc.l	0x1000000
+	dc.l	0x800000,kabukikl_c1_rom_file_name,kabukikl_c2_rom_file_name
+	dc.l	0x800000,kabukikl_c3_rom_file_name,kabukikl_c4_rom_file_name
+
+kabukikl_game_name:
+	.asciz	"Kabuki Klash"
+
+kabukikl_compiled_tiles_file_name:
+	.asciz	"kabukikl\\kabukikl.tls"
+
+kabukikl_tiles_usage_bitmap_file_name:
+	.asciz	"kabukikl\\kabukikl.ubm"
+
+kabukikl_p1_rom_file_name:
+	.asciz	"kabukikl\\092-p1.p1"
+
+kabukikl_c1_rom_file_name:
+	.asciz	"kabukikl\\092-c1.c1"
+
+kabukikl_c2_rom_file_name:
+	.asciz	"kabukikl\\092-c2.c2"
+
+kabukikl_c3_rom_file_name:
+	.asciz	"kabukikl\\092-c3.c3"
+
+kabukikl_c4_rom_file_name:
+	.asciz	"kabukikl\\092-c4.c4"
 
 .even
 

@@ -784,6 +784,33 @@ draw_dummy_sprites:
 	movem.l	d0-a6,-(sp)
 
 
+/*
+	| Sprite zoom test (just an idea and not for use).
+
+	clr.l	d3
+
+	move.l	(a0)+,d0
+
+	moveq	#8-1,d7
+1:
+	add.b	d2,d2
+	jcc		3f
+
+	move	d0,d1
+	and		d2,d1
+	jeq		2f
+
+	move	(a1,d1.w*2),d3
+	move	(a2,d3.l*2),(a6)
+2:
+	addq	#2,a6
+3:
+	lsr.l	#4,d0
+
+	dbf		d7,1b
+*/
+
+
 
 
 
