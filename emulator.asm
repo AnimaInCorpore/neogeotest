@@ -5,10 +5,35 @@
 
 .global tiles_index_mask
 
-.equ	SSW_OFFSET,0xa
-.equ	ACCESS_ADDRESS_OFFSET,0x10
-.equ	DATA_TO_BE_WRITTEN_OFFSET,0x18
-.equ	DATA_TO_BE_READ_OFFSET,0x2c
+.equ	SSW_OFFSET, 0xa
+.equ	ACCESS_ADDRESS_OFFSET, 0x10
+.equ	DATA_TO_BE_WRITTEN_OFFSET, 0x18
+.equ	DATA_TO_BE_READ_OFFSET, 0x2c
+
+.equ	Halftone, 0x8a00
+
+.equ	Src_Xinc, 0x8a20
+.equ	Src_Yinc, 0x8a22
+.equ	Src_Addr, 0x8a24
+
+.equ	Endmask1, 0x8a28
+.equ	Endmask2, 0x8a2a
+.equ	Endmask3, 0x8a2c
+
+.equ	Dst_Xinc, 0x8a2e
+.equ	Dst_Yinc, 0x8a30
+.equ	Dst_Addr, 0x8a32
+
+.equ	X_Count, 0x8a36
+.equ	Y_Count, 0x8a38
+
+.equ	HOP, 0x8a3a
+
+.equ	OP, 0x8a3b
+
+.equ	Line_Num, 0x8a3c
+
+.equ	Skew, 0x8a3d
 
 .text
 
@@ -1176,9 +1201,37 @@ draw_tiles:
 |-------------------------------------------------------------------------------
 
 build_tile_infos:
-|	move.l	#0x000000ff,0x9800.w
+|	move.l	#0x000000ff,0x9800.w												| Fixme: debugging!
 
 	movem.l	d0-a6,-(sp)
+
+	| Blitter clears the screen in parallel.
+
+	move.b	#0b00000001,HOP.w													| Source = halftone.
+	move.b	#0b00000011,OP.w													| Destination = source.
+	move	#-1,Endmask1.w
+	move	#-1,Endmask2.w
+	move	#-1,Endmask3.w
+	move	#2,Dst_Xinc.w
+	move	#(512-304+1)*2,Dst_Yinc.w
+	move	#304,X_Count.w
+	move	#224,Y_Count.w
+
+	move.l	work_screen_address(pc),d0
+	add.l	#512*2*16+8*2,d0
+	move.l	d0,Dst_Addr.w
+
+	lea		PALETTE_DECODER_TABLE,a1
+	clr.l	d0
+	move	PALETTE_RAM+0x1ffe,d0
+	move	(a1,d0.l*2),d0
+
+	lea		Halftone.w,a1
+.rept 16
+	move	d0,(a1)+
+.endr
+
+	move.b	#0b10000000,Line_Num.w												| Start blitter.
 
 	| Pass 1: look which tiles are visible and store its temporary info.
 
@@ -1283,7 +1336,7 @@ build_tile_infos:
 
 	clr.l	(a3)																| End marker.
 
-|	move.l	#0xff000000,0x9800.w
+|	move.l	#0xff000000,0x9800.w												| Fixme: debugging!
 
 	| Pass 2: convert the temporary infos.
 
@@ -1424,7 +1477,6 @@ build_tile_infos:
 	or.l	d2,d0
 
 	and.l	tiles_index_mask(pc),d0												| Fixme: e.g. 0xfffff for 32 MiB graphics ROM size!
-|	and.l	#0x3ffff,d0															| Fixme: e.g. 0xfffff for 32 MiB graphics ROM size!
 
 	lea		0x1000000,a5
 	move.l	(a5,d0.l*4),(a1)+
@@ -1445,10 +1497,14 @@ build_tile_infos:
 	jra		1b
 1:
 	clr.l	(a1)																| End marker.
+1:
+	tas		Line_Num.w															| Restart the blitter.
+  	nop
+  	jmi		1b
 
-	movem.l	(sp)+,d0-a6
+   	movem.l	(sp)+,d0-a6
 
-|	clr.l	0x9800.w
+|	clr.l	0x9800.w															| Fixme: debugging!
 
 	rts
 
@@ -1569,8 +1625,7 @@ hbl_handler:
 vbl_handler:
 	movem.l	d0-d1/a0-a1,-(sp)
 
-	lea		display_screen_address(pc),a0
-	move.l	(a0),d0
+	move.l	display_screen_address(pc),d0
 	add.l	#512*2*16+8*2,d0
 |	move.l	#0x400000,d0														| Fixme: only for debugging.
 |	move.l	#PALETTES_ADDRESS,d0												| Fixme: only for debugging.
