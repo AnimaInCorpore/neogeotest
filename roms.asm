@@ -334,6 +334,7 @@ game_info_list:
 	dc.l	nitdbl_info
 	dc.l	pbobblen_info
 	dc.l	pulstar_info
+	dc.l	samsho2_info
 	dc.l	sengoku_info
 	dc.l	sengoku2_info
 	dc.l	sonicwi2_info
@@ -614,9 +615,10 @@ pbobblen_info:
 	dc.l	pbobblen_game_name
 	dc.l	pbobblen_compiled_tiles_file_name,pbobblen_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,pbobblen_p1_rom_file_name,0
-	dc.l	0x400000
+	dc.l	0x500000
 	dc.l	0x200000,pbobblen_c1_rom_file_name,pbobblen_c2_rom_file_name
 	dc.l	0x200000,pbobblen_c3_rom_file_name,pbobblen_c4_rom_file_name
+	dc.l	0x100000,pbobblen_c5_rom_file_name,pbobblen_c6_rom_file_name
 
 pbobblen_game_name:
 	.asciz	"Puzzle Bobble"
@@ -641,6 +643,12 @@ pbobblen_c3_rom_file_name:
 
 pbobblen_c4_rom_file_name:
 	.asciz	"pbobblen\\068-c4.c4"
+
+pbobblen_c5_rom_file_name:
+	.asciz	"pbobblen\\d96-02.c5"
+
+pbobblen_c6_rom_file_name:
+	.asciz	"pbobblen\\d96-03.c6"
 
 .even
 
@@ -1145,6 +1153,54 @@ gpilots_c3_rom_file_name:
 
 gpilots_c4_rom_file_name:
 	.asciz	"gpilots\\020-c4.c4"
+
+.even
+
+samsho2_info:
+	dc.l	samsho2_game_name
+	dc.l	samsho2_compiled_tiles_file_name,samsho2_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,samsho2_p1_rom_file_name,0
+	dc.l	0x1000000
+	dc.l	0x400000,samsho2_c1_rom_file_name,samsho2_c2_rom_file_name
+	dc.l	0x400000,samsho2_c3_rom_file_name,samsho2_c4_rom_file_name
+	dc.l	0x400000,samsho2_c5_rom_file_name,samsho2_c6_rom_file_name
+	dc.l	0x400000,samsho2_c7_rom_file_name,samsho2_c8_rom_file_name
+
+samsho2_game_name:
+	.asciz	"Samurai Shodown 2"
+
+samsho2_compiled_tiles_file_name:
+	.asciz	"samsho2\\samsho2.tls"
+
+samsho2_tiles_usage_bitmap_file_name:
+	.asciz	"samsho2\\samsho2.ubm"
+
+samsho2_p1_rom_file_name:
+	.asciz	"samsho2\\063-p1.p1"
+
+samsho2_c1_rom_file_name:
+	.asciz	"samsho2\\063-c1.c1"
+
+samsho2_c2_rom_file_name:
+	.asciz	"samsho2\\063-c2.c2"
+
+samsho2_c3_rom_file_name:
+	.asciz	"samsho2\\063-c3.c3"
+
+samsho2_c4_rom_file_name:
+	.asciz	"samsho2\\063-c4.c4"
+
+samsho2_c5_rom_file_name:
+	.asciz	"samsho2\\063-c5.c5"
+
+samsho2_c6_rom_file_name:
+	.asciz	"samsho2\\063-c6.c6"
+
+samsho2_c7_rom_file_name:
+	.asciz	"samsho2\\063-c7.c7"
+
+samsho2_c8_rom_file_name:
+	.asciz	"samsho2\\063-c8.c8"
 
 .even
 
