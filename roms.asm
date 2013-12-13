@@ -334,6 +334,7 @@ game_info_list:
 	dc.l	nitdbl_info
 	dc.l	pbobblen_info
 	dc.l	pulstar_info
+	dc.l	samsho_info
 	dc.l	samsho2_info
 	dc.l	sengoku_info
 	dc.l	sengoku2_info
@@ -1201,6 +1202,50 @@ samsho2_c7_rom_file_name:
 
 samsho2_c8_rom_file_name:
 	.asciz	"samsho2\\063-c8.c8"
+
+.even
+
+samsho_info:
+	dc.l	samsho_game_name
+	dc.l	samsho_compiled_tiles_file_name,samsho_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_3,samsho_p1_rom_file_name,samsho_p2_rom_file_name
+	dc.l	0x1000000
+	dc.l	0x400000,samsho_c1_rom_file_name,samsho_c2_rom_file_name
+	dc.l	0x400000,samsho_c3_rom_file_name,samsho_c4_rom_file_name
+	dc.l	0x200000,samsho_c5_rom_file_name,samsho_c6_rom_file_name
+
+samsho_game_name:
+	.asciz	"Samurai Shodown"
+
+samsho_compiled_tiles_file_name:
+	.asciz	"samsho\\samsho.tls"
+
+samsho_tiles_usage_bitmap_file_name:
+	.asciz	"samsho\\samsho.ubm"
+
+samsho_p1_rom_file_name:
+	.asciz	"samsho\\045-p1.p1"
+
+samsho_p2_rom_file_name:
+	.asciz	"samsho\\045-pg2.sp2"
+
+samsho_c1_rom_file_name:
+	.asciz	"samsho\\045-c1.c1"
+
+samsho_c2_rom_file_name:
+	.asciz	"samsho\\045-c2.c2"
+
+samsho_c3_rom_file_name:
+	.asciz	"samsho\\045-c3.c3"
+
+samsho_c4_rom_file_name:
+	.asciz	"samsho\\045-c4.c4"
+
+samsho_c5_rom_file_name:
+	.asciz	"samsho\\045-c51.c5"
+
+samsho_c6_rom_file_name:
+	.asciz	"samsho\\045-c61.c6"
 
 .even
 
