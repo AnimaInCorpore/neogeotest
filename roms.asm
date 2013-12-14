@@ -321,6 +321,7 @@ loading_game_text_2:
 game_info_list:
 	dc.l	blazstar_info
 	dc.l	burningf_info
+	dc.l	ctomaday_info
 	dc.l	gpilots_info
 	dc.l	kabukikl_info
 	dc.l	kizuna_info
@@ -342,6 +343,7 @@ game_info_list:
 	dc.l	sonicwi2_info
 	dc.l	sonicwi3_info
 	dc.l	tophuntr_info
+	dc.l	twinspri_info
 	dc.l	viewpoin_info
 	dc.l	0
 
@@ -1281,6 +1283,67 @@ mutnat_c3_rom_file_name:
 
 mutnat_c4_rom_file_name:
 	.asciz	"mutnat\\014-c4.c4"
+
+.even
+
+twinspri_info:
+	dc.l	twinspri_game_name
+	dc.l	twinspri_compiled_tiles_file_name,twinspri_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,twinspri_p1_rom_file_name,0
+	dc.l	0xa00000
+	dc.l	0x800000,twinspri_c1_rom_file_name,twinspri_c2_rom_file_name
+	dc.l	0x200000,twinspri_c3_rom_file_name,twinspri_c4_rom_file_name
+
+twinspri_game_name:
+	.asciz	"Twinkle Star Sprites"
+
+twinspri_compiled_tiles_file_name:
+	.asciz	"twinspri\\twinspri.tls"
+
+twinspri_tiles_usage_bitmap_file_name:
+	.asciz	"twinspri\\twinspri.ubm"
+
+twinspri_p1_rom_file_name:
+	.asciz	"twinspri\\224-p1.p1"
+
+twinspri_c1_rom_file_name:
+	.asciz	"twinspri\\224-c1.c1"
+
+twinspri_c2_rom_file_name:
+	.asciz	"twinspri\\224-c2.c2"
+
+twinspri_c3_rom_file_name:
+	.asciz	"twinspri\\224-c3.c3"
+
+twinspri_c4_rom_file_name:
+	.asciz	"twinspri\\224-c4.c4"
+
+.even
+
+ctomaday_info:
+	dc.l	ctomaday_game_name
+	dc.l	ctomaday_compiled_tiles_file_name,ctomaday_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,ctomaday_p1_rom_file_name,0
+	dc.l	0x800000
+	dc.l	0x800000,ctomaday_c1_rom_file_name,ctomaday_c2_rom_file_name
+
+ctomaday_game_name:
+	.asciz	"Captain Tomaday"
+
+ctomaday_compiled_tiles_file_name:
+	.asciz	"ctomaday\\ctomaday.tls"
+
+ctomaday_tiles_usage_bitmap_file_name:
+	.asciz	"ctomaday\\ctomaday.ubm"
+
+ctomaday_p1_rom_file_name:
+	.asciz	"ctomaday\\249-p1.p1"
+
+ctomaday_c1_rom_file_name:
+	.asciz	"ctomaday\\249-c1.c1"
+
+ctomaday_c2_rom_file_name:
+	.asciz	"ctomaday\\249-c2.c2"
 
 .even
 
