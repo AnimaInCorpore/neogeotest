@@ -330,6 +330,7 @@ game_info_list:
 	dc.l	lresort_info
 	dc.l	mslug_info
 	dc.l	mslug2_info
+	dc.l	mutnat_info
 	dc.l	neobombe_info
 	dc.l	nitdbl_info
 	dc.l	pbobblen_info
@@ -1246,6 +1247,40 @@ samsho_c5_rom_file_name:
 
 samsho_c6_rom_file_name:
 	.asciz	"samsho\\045-c61.c6"
+
+.even
+
+mutnat_info:
+	dc.l	mutnat_game_name
+	dc.l	mutnat_compiled_tiles_file_name,mutnat_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,mutnat_p1_rom_file_name,0
+	dc.l	0x400000
+	dc.l	0x200000,mutnat_c1_rom_file_name,mutnat_c2_rom_file_name
+	dc.l	0x200000,mutnat_c3_rom_file_name,mutnat_c4_rom_file_name
+
+mutnat_game_name:
+	.asciz	"Mutation Nation"
+
+mutnat_compiled_tiles_file_name:
+	.asciz	"mutnat\\mutnat.tls"
+
+mutnat_tiles_usage_bitmap_file_name:
+	.asciz	"mutnat\\mutnat.ubm"
+
+mutnat_p1_rom_file_name:
+	.asciz	"mutnat\\014-p1.p1"
+
+mutnat_c1_rom_file_name:
+	.asciz	"mutnat\\014-c1.c1"
+
+mutnat_c2_rom_file_name:
+	.asciz	"mutnat\\014-c2.c2"
+
+mutnat_c3_rom_file_name:
+	.asciz	"mutnat\\014-c3.c3"
+
+mutnat_c4_rom_file_name:
+	.asciz	"mutnat\\014-c4.c4"
 
 .even
 
