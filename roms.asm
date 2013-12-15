@@ -58,7 +58,7 @@ select_game:
 load_roms:
 	| Load the program ROM.
 
-	Cconws	loading_program_roms_text
+|	Cconws	loading_program_roms_text
 
 	move.l	game_info_pointer,a0
 	move.l	3*4(a0),a0
@@ -66,7 +66,7 @@ load_roms:
 
 	| Reorder program ROMs.
 
-	Cconws	reordering_program_roms_text
+|	Cconws	reordering_program_roms_text
 
 	move.l	neogeo_memory_pages_start,a0
 	add.l	#PROGRAM_ROM_1_OFFSET,a0
@@ -96,7 +96,7 @@ load_roms:
 
 	| Load the BIOS ROM.
 
-	Cconws	loading_bios_rom_text
+|	Cconws	loading_bios_rom_text
 
 	Fopen	bios_rom_file_name,#0
 	move	d0,d7
@@ -249,7 +249,7 @@ load_program_rom_4:
 |-------------------------------------------------------------------------------
 
 load_tiles_usage_bitmap:
-	Cconws	loading_tiles_usage_bitmap_text
+|	Cconws	loading_tiles_usage_bitmap_text
 
 	move.l	game_info_pointer,a0
 	move.l	2*4(a0),a0
@@ -287,7 +287,7 @@ loading_tiles_usage_bitmap_text:
 |-------------------------------------------------------------------------------
 
 save_tiles_usage_bitmap:
-	Cconws	saving_tiles_usage_bitmap_text
+|	Cconws	saving_tiles_usage_bitmap_text
 
 	move.l	game_info_pointer,a0
 	move.l	2*4(a0),a0

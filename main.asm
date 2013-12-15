@@ -13,6 +13,8 @@
 |-------------------------------------------------------------------------------
 
 start:
+	Cconws	emulator_text
+
 	move.l	4(sp),a0
 	lea		0x81(a0),a0
 	jbsr	select_game
@@ -64,6 +66,13 @@ start:
 |-------------------------------------------------------------------------------
 
 .data
+
+emulator_text:
+	.ascii	"Neo Geo Emulator for the Atari Falcon.\r\n"
+	.ascii	"Programmed by Sascha Springer.\r\n"
+	.ascii	"Pre-Alpha Version 15122013.\r\n"
+	.ascii	"Greetings to all Atari fans.\r\n"
+	.asciz	"\r\n"
 
 |-------------------------------------------------------------------------------
 

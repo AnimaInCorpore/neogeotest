@@ -13,7 +13,7 @@
 |-------------------------------------------------------------------------------
 
 compile_tiles:
-	Cconws	loading_compiled_tiles_text
+|	Cconws	loading_compiled_tiles_text
 
 	| Load compiled tiles.
 
