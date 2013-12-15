@@ -319,10 +319,12 @@ loading_game_text_2:
 .even
 
 game_info_list:
+	dc.l	alpham2_info
 	dc.l	blazstar_info
 	dc.l	burningf_info
 	dc.l	ctomaday_info
 	dc.l	gpilots_info
+	dc.l	ironclad_info
 	dc.l	kabukikl_info
 	dc.l	kizuna_info
 	dc.l	kof94_info
@@ -333,6 +335,7 @@ game_info_list:
 	dc.l	mslug2_info
 	dc.l	mutnat_info
 	dc.l	neobombe_info
+	dc.l	neomrdo_info
 	dc.l	nitdbl_info
 	dc.l	pbobblen_info
 	dc.l	pulstar_info
@@ -345,6 +348,7 @@ game_info_list:
 	dc.l	tophuntr_info
 	dc.l	twinspri_info
 	dc.l	viewpoin_info
+	dc.l	zedblade_info
 	dc.l	0
 
 game_info_pointer:
@@ -1344,6 +1348,138 @@ ctomaday_c1_rom_file_name:
 
 ctomaday_c2_rom_file_name:
 	.asciz	"ctomaday\\249-c2.c2"
+
+.even
+
+alpham2_info:
+	dc.l	alpham2_game_name
+	dc.l	alpham2_compiled_tiles_file_name,alpham2_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_4,alpham2_p1_rom_file_name,alpham2_p2_rom_file_name
+	dc.l	0x300000
+	dc.l	0x200000,alpham2_c1_rom_file_name,alpham2_c2_rom_file_name
+	dc.l	0x100000,alpham2_c3_rom_file_name,alpham2_c4_rom_file_name
+
+alpham2_game_name:
+	.asciz	"Alpha Mission 2"
+
+alpham2_compiled_tiles_file_name:
+	.asciz	"alpham2\\alpham2.tls"
+
+alpham2_tiles_usage_bitmap_file_name:
+	.asciz	"alpham2\\alpham2.ubm"
+
+alpham2_p1_rom_file_name:
+	.asciz	"alpham2\\007-p1.p1"
+
+alpham2_p2_rom_file_name:
+	.asciz	"alpham2\\007-p2.p2"
+
+alpham2_c1_rom_file_name:
+	.asciz	"alpham2\\007-c1.c1"
+
+alpham2_c2_rom_file_name:
+	.asciz	"alpham2\\007-c2.c2"
+
+alpham2_c3_rom_file_name:
+	.asciz	"alpham2\\007-c3.c3"
+
+alpham2_c4_rom_file_name:
+	.asciz	"alpham2\\007-c4.c4"
+
+.even
+
+ironclad_info:
+	dc.l	ironclad_game_name
+	dc.l	ironclad_compiled_tiles_file_name,ironclad_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,ironclad_p1_rom_file_name,0
+	dc.l	0x1000000
+	dc.l	0x800000,ironclad_c1_rom_file_name,ironclad_c2_rom_file_name
+	dc.l	0x800000,ironclad_c3_rom_file_name,ironclad_c4_rom_file_name
+
+ironclad_game_name:
+	.asciz	"Iron Clad"
+
+ironclad_compiled_tiles_file_name:
+	.asciz	"ironclad\\ironclad.tls"
+
+ironclad_tiles_usage_bitmap_file_name:
+	.asciz	"ironclad\\ironclad.ubm"
+
+ironclad_p1_rom_file_name:
+	.asciz	"ironclad\\proto_22.p1"
+
+ironclad_c1_rom_file_name:
+	.asciz	"ironclad\\proto_22.c1"
+
+ironclad_c2_rom_file_name:
+	.asciz	"ironclad\\proto_22.c2"
+
+ironclad_c3_rom_file_name:
+	.asciz	"ironclad\\proto_22.c3"
+
+ironclad_c4_rom_file_name:
+	.asciz	"ironclad\\proto_22.c4"
+
+.even
+
+zedblade_info:
+	dc.l	zedblade_game_name
+	dc.l	zedblade_compiled_tiles_file_name,zedblade_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,zedblade_p1_rom_file_name,0
+	dc.l	0x800000
+	dc.l	0x400000,zedblade_c1_rom_file_name,zedblade_c2_rom_file_name
+	dc.l	0x400000,zedblade_c3_rom_file_name,zedblade_c4_rom_file_name
+
+zedblade_game_name:
+	.asciz	"Zed Blade"
+
+zedblade_compiled_tiles_file_name:
+	.asciz	"zedblade\\zedblade.tls"
+
+zedblade_tiles_usage_bitmap_file_name:
+	.asciz	"zedblade\\zedblade.ubm"
+
+zedblade_p1_rom_file_name:
+	.asciz	"zedblade\\076-p1.p1"
+
+zedblade_c1_rom_file_name:
+	.asciz	"zedblade\\076-c1.c1"
+
+zedblade_c2_rom_file_name:
+	.asciz	"zedblade\\076-c2.c2"
+
+zedblade_c3_rom_file_name:
+	.asciz	"zedblade\\076-c3.c3"
+
+zedblade_c4_rom_file_name:
+	.asciz	"zedblade\\076-c4.c4"
+
+.even
+
+neomrdo_info:
+	dc.l	neomrdo_game_name
+	dc.l	neomrdo_compiled_tiles_file_name,neomrdo_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,neomrdo_p1_rom_file_name,0
+	dc.l	0x400000
+	dc.l	0x400000,neomrdo_c1_rom_file_name,neomrdo_c2_rom_file_name
+
+neomrdo_game_name:
+	.asciz	"Neo Mr. Do!"
+
+neomrdo_compiled_tiles_file_name:
+	.asciz	"neomrdo\\neomrdo.tls"
+
+neomrdo_tiles_usage_bitmap_file_name:
+	.asciz	"neomrdo\\neomrdo.ubm"
+
+neomrdo_p1_rom_file_name:
+	.asciz	"neomrdo\\207-p1.p1"
+
+neomrdo_c1_rom_file_name:
+	.asciz	"neomrdo\\207-c1.c1"
+
+neomrdo_c2_rom_file_name:
+	.asciz	"neomrdo\\207-c2.c2"
 
 .even
 

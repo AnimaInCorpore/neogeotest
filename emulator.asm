@@ -140,14 +140,13 @@ emulator:
 
 	move	d3,d7
 
-	btst	#15,d0
-	jne		2f
+|	btst	#15,d0
+|	jne		2f
 
 	or		d2,d1
 	or		d3,d1
 	move	d1,(a0)+
-
-	jra		3f
+/*
 2:
 	tst		d5
 	jeq		2f
@@ -167,7 +166,7 @@ emulator:
 	or		d6,d5
 	or		d7,d5
 	move	d1,(a0)+
-3:
+*/
 	addq	#1,d0
 	jne		1b
 
