@@ -448,43 +448,7 @@ bus_error_handler:
 	tst		ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	move.l	d0,-(sp)
-
-	move	#0xff,d0
-
-	cmp.b	#0x2a,0xfc02.w														| Left SHIFT.
-	jne		3f
-
-	and		#0xef,d0
-3:
-	cmp.b	#0x1d,0xfc02.w														| CONTROL.
-	jne		3f
-
-	and		#0xdf,d0
-3:
-	cmp.b	#0x4b,0xfc02.w														| Arrow left.
-	jne		3f
-
-	and		#0xfb,d0
-3:
-	cmp.b	#0x4d,0xfc02.w														| Arrow right.
-	jne		3f
-
-	and		#0xf7,d0
-3:
-	cmp.b	#0x48,0xfc02.w														| Arrow up.
-	jne		3f
-
-	and		#0xfe,d0
-3:
-	cmp.b	#0x50,0xfc02.w														| Arrow down.
-	jne		3f
-
-	and		#0xfd,d0
-3:
-	move.b	d0,1*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_P1CNT.
-
-	move.l	(sp)+,d0
+	move.b	input_player_1(pc),DATA_TO_BE_READ_OFFSET+3(sp)						| Read (byte sized) data from REG_P1CNT.
 
 	rte
 2:
@@ -493,8 +457,14 @@ bus_error_handler:
 	cmp		#0x0001,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	cmp.b	#0x01,0xfc02.w
+	move.l	d0,-(sp)
+
+	move.b	keyboard_value(pc),d0
+
+	cmp.b	#0x01,d0
 	jeq		emulator_exit
+
+	move.l	(sp)+,d0
 
 	move.b	#0xff,DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_DIPSW.
 
@@ -556,7 +526,8 @@ bus_error_handler:
 	eor		#0x0040,(a0)
 	move	(a0),d0
 
-	cmp.b	#0x06,0xfc02.w
+	lea		keyboard_value(pc),a0
+	cmp.b	#0x06,(a0)
 	jne		3f
 
 	and		#0xfe,d0
@@ -580,13 +551,19 @@ bus_error_handler:
 	tst		ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
-	move.b	#0xff,DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
+	move.l	a0,-(sp)
 
-	cmp.b	#0x02,0xfc02.w
+	lea		keyboard_value(pc),a0
+
+	move.b	#0xff,1*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
+
+	cmp.b	#0x02,(a0)
 	jne		3f
 
-	move.b	#0xfe,DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
+	move.b	#0xfe,1*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
 3:
+	move.l	(sp)+,a0
+
 	rte
 2:
 	rte
@@ -717,6 +694,9 @@ reg_status_a_counter:
 
 sprite_draw_counter:
 	dc.w	1
+
+input_player_1:
+	dc.w	0xff00
 
 |-------------------------------------------------------------------------------
 |
@@ -1149,8 +1129,8 @@ dummy_palette:
 draw_tiles:
 	movem.l	d0-a6,-(sp)
 
-	cmp.b	#0x39,0xfc02.w
-	jeq		2f
+|	cmp.b	#0x39,0xfc02.w
+|	jeq		2f
 
 	lea		TILE_INFOS_ADDRESS,a1
 1:
@@ -1682,13 +1662,239 @@ work_screen_address:
 |
 |-------------------------------------------------------------------------------
 
+.equ KEY_VALUE,		0
+.equ MOUSE_FLAG,	2
+.equ MOUSE_KEY,		4
+.equ MOUSE_X,		6
+.equ MOUSE_Y,		8
+.equ JOY_FLAG,		10
+.equ JOY_SELECT,	12
+.equ JOYSTICK0,		14
+.equ JOYSTICK1,		15
+
 ikbd_handler:
-|	cmp.b	#0x01,0xfc02.w
-|	jeq		emulator_exit
+	movem.l	d0-d1/a0,-(sp)
+2:
+	btst	#0,0xfc04.w
+	jeq		1f
+
+	lea		midi_data(pc),a0
+	move.b	0xfc06.w,d0
+	move.b	d0,(a0)
+
+	lea		keyboard_data2(pc),a0
+	jbsr	keyboard_ikbd
+1:
+	btst	#0,0xfc00.w
+	jeq		1f
+
+	move.b	0xfc02.w,d0
+
+	lea		keyboard_data(pc),a0
+	jbsr	keyboard_ikbd
+1:
+	btst	#4,0xfa01.w
+	jeq		2b
+
+	movem.l	(a7)+,d0-d1/a0
 
 	bclr	#6,0xfa11.w
 
 	rte
+
+keyboard_ikbd:
+	tst		JOY_FLAG(a0)
+	jne		keyboard_joy
+
+	cmp		#2,MOUSE_FLAG(a0)
+	jeq		keyboard_mouse2
+
+	tst		MOUSE_FLAG(a0)
+	jne		keyboard_mouse1
+
+	move.b	d0,d1
+	and.b	#0xfc,d1
+	cmp.b	#0xf8,d1
+	jne		keyboard_no_mouse
+
+	and.b	#0x03,d0
+	move.b	d0,MOUSE_KEY(a0)
+	move	#2,MOUSE_FLAG(a0)
+
+	rts
+
+keyboard_no_mouse:
+	move.b	d0,d1
+	and.b	#0xfe,d1
+	cmp.b	#0xfe,d1
+	jne		keyboard_no_joy
+
+	not.b	d0
+	move.b	d0,JOY_SELECT(a0)
+	not		JOY_FLAG(a0)
+
+	rts
+
+keyboard_no_joy:
+	move.b	d0,KEY_VALUE(a0)
+
+	move.l	a0,-(sp)
+
+	lea		input_player_1(pc),a0
+
+	cmp.b	#0x2a,d0															| Left SHIFT pressed.
+	jne		3f
+
+	and.b	#0xef,(a0)
+3:
+	cmp.b	#0x2a+0x80,d0														| Left SHIFT released.
+	jne		3f
+
+	or.b	#0x10,(a0)
+3:
+	cmp.b	#0x1d,d0															| CONTROL pressed.
+	jne		3f
+
+	and.b	#0xdf,(a0)
+3:
+	cmp.b	#0x1d+0x80,d0														| CONTROL released.
+	jne		3f
+
+	or.b	#0x20,(a0)
+3:
+	cmp.b	#0x4b,d0															| Arrow left pressed.
+	jne		3f
+
+	and.b	#0xfb,(a0)
+3:
+	cmp.b	#0x4b+0x80,d0														| Arrow left released.
+	jne		3f
+
+	or.b	#0x04,(a0)
+3:
+	cmp.b	#0x4d,d0															| Arrow right pressed.
+	jne		3f
+
+	and.b	#0xf7,(a0)
+3:
+	cmp.b	#0x4d+0x80,d0														| Arrow right released.
+	jne		3f
+
+	or.b	#0x08,(a0)
+3:
+	cmp.b	#0x48,d0															| Arrow up pressed.
+	jne		3f
+
+	and.b	#0xfe,(a0)
+3:
+	cmp.b	#0x48+0x80,d0														| Arrow up released.
+	jne		3f
+
+	or.b	#0x01,(a0)
+3:
+	cmp.b	#0x50,d0															| Arrow down pressed.
+	jne		3f
+
+	and.b	#0xfd,(a0)
+3:
+	cmp.b	#0x50+0x80,d0														| Arrow down released.
+	jne		3f
+
+	or.b	#0x02,(a0)
+3:
+	move.l	(sp)+,a0
+
+	rts
+
+keyboard_mouse2:
+	ext		d0
+	add		d0,MOUSE_X(a0)
+	subq	#1,MOUSE_FLAG(a0)
+
+	rts
+
+keyboard_mouse1:
+	ext		d0
+	add		d0,MOUSE_Y(a0)
+	subq	#1,MOUSE_FLAG(a0)
+
+	rts
+
+keyboard_joy:
+	clr		JOY_FLAG(a0)
+
+	tst.b	JOY_SELECT(a0)
+	jne		keyboard_joy2
+
+	move.b	d0,JOYSTICK0(a0)
+
+	rts
+
+keyboard_joy2:
+	move.b	d0,JOYSTICK1(a0)
+
+	rts
+
+keyboard_data:
+
+keyboard_value:
+	ds.w	1
+
+mouse_flag:
+	ds.w	1
+
+mouse_key:
+	ds.w	1
+
+mouse_x:
+	ds.w	1
+
+mouse_y:
+	ds.w	1
+
+joystick_flag:
+	ds.w	1
+
+joystick_select:
+	ds.w	1
+
+joystick0:
+	ds.b	1
+
+joystick1:
+	ds.b	1
+
+keyboard_data2:
+
+keyboard_value2:
+	ds.w	1
+
+mouse_flag2:
+	ds.w	1
+
+mouse_key2:
+	ds.w	1
+
+mouse_x2:
+	ds.w	1
+
+mouse_y2:
+	ds.w	1
+
+joystick_flag2:
+	ds.w	1
+
+joystick_select2:
+	ds.w	1
+
+joystick02:
+	ds.b	1
+
+joystick12:
+	ds.b	1
+
+midi_data:
+	ds.w	1
 
 |-------------------------------------------------------------------------------
 |
