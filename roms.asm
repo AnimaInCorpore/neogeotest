@@ -323,6 +323,7 @@ game_info_list:
 	dc.l	blazstar_info
 	dc.l	burningf_info
 	dc.l	ctomaday_info
+	dc.l	gowcaizr_info
 	dc.l	gpilots_info
 	dc.l	ironclad_info
 	dc.l	kabukikl_info
@@ -341,6 +342,7 @@ game_info_list:
 	dc.l	pulstar_info
 	dc.l	samsho_info
 	dc.l	samsho2_info
+	dc.l	savagere_info
 	dc.l	sengoku_info
 	dc.l	sengoku2_info
 	dc.l	sonicwi2_info
@@ -1480,6 +1482,102 @@ neomrdo_c1_rom_file_name:
 
 neomrdo_c2_rom_file_name:
 	.asciz	"neomrdo\\207-c2.c2"
+
+.even
+
+savagere_info:
+	dc.l	savagere_game_name
+	dc.l	savagere_compiled_tiles_file_name,savagere_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,savagere_p1_rom_file_name,0
+	dc.l	0x1000000
+	dc.l	0x400000,savagere_c1_rom_file_name,savagere_c2_rom_file_name
+	dc.l	0x400000,savagere_c3_rom_file_name,savagere_c4_rom_file_name
+	dc.l	0x400000,savagere_c5_rom_file_name,savagere_c6_rom_file_name
+	dc.l	0x400000,savagere_c7_rom_file_name,savagere_c8_rom_file_name
+
+savagere_game_name:
+	.asciz	"Savage Reign"
+
+savagere_compiled_tiles_file_name:
+	.asciz	"savagere\\savagere.tls"
+
+savagere_tiles_usage_bitmap_file_name:
+	.asciz	"savagere\\savagere.ubm"
+
+savagere_p1_rom_file_name:
+	.asciz	"savagere\\059-p1.p1"
+
+savagere_c1_rom_file_name:
+	.asciz	"savagere\\059-c1.c1"
+
+savagere_c2_rom_file_name:
+	.asciz	"savagere\\059-c2.c2"
+
+savagere_c3_rom_file_name:
+	.asciz	"savagere\\059-c3.c3"
+
+savagere_c4_rom_file_name:
+	.asciz	"savagere\\059-c4.c4"
+
+savagere_c5_rom_file_name:
+	.asciz	"savagere\\059-c5.c5"
+
+savagere_c6_rom_file_name:
+	.asciz	"savagere\\059-c6.c6"
+
+savagere_c7_rom_file_name:
+	.asciz	"savagere\\059-c7.c7"
+
+savagere_c8_rom_file_name:
+	.asciz	"savagere\\059-c8.c8"
+
+.even
+
+gowcaizr_info:
+	dc.l	gowcaizr_game_name
+	dc.l	gowcaizr_compiled_tiles_file_name,gowcaizr_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,gowcaizr_p1_rom_file_name,0
+	dc.l	0x1000000
+	dc.l	0x400000,gowcaizr_c1_rom_file_name,gowcaizr_c2_rom_file_name
+	dc.l	0x400000,gowcaizr_c3_rom_file_name,gowcaizr_c4_rom_file_name
+	dc.l	0x400000,gowcaizr_c5_rom_file_name,gowcaizr_c6_rom_file_name
+	dc.l	0x400000,gowcaizr_c7_rom_file_name,gowcaizr_c8_rom_file_name
+
+gowcaizr_game_name:
+	.asciz	"Voltage Fighter - Gowcaizer"
+
+gowcaizr_compiled_tiles_file_name:
+	.asciz	"gowcaizr\\gowcaizr.tls"
+
+gowcaizr_tiles_usage_bitmap_file_name:
+	.asciz	"gowcaizr\\gowcaizr.ubm"
+
+gowcaizr_p1_rom_file_name:
+	.asciz	"gowcaizr\\094-p1.p1"
+
+gowcaizr_c1_rom_file_name:
+	.asciz	"gowcaizr\\094-c1.c1"
+
+gowcaizr_c2_rom_file_name:
+	.asciz	"gowcaizr\\094-c2.c2"
+
+gowcaizr_c3_rom_file_name:
+	.asciz	"gowcaizr\\094-c3.c3"
+
+gowcaizr_c4_rom_file_name:
+	.asciz	"gowcaizr\\094-c4.c4"
+
+gowcaizr_c5_rom_file_name:
+	.asciz	"gowcaizr\\094-c5.c5"
+
+gowcaizr_c6_rom_file_name:
+	.asciz	"gowcaizr\\094-c6.c6"
+
+gowcaizr_c7_rom_file_name:
+	.asciz	"gowcaizr\\094-c7.c7"
+
+gowcaizr_c8_rom_file_name:
+	.asciz	"gowcaizr\\059-c8.c8"
 
 .even
 
