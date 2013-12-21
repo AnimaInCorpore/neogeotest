@@ -324,6 +324,7 @@ game_info_list:
 	dc.l	blazstar_info
 	dc.l	burningf_info
 	dc.l	ctomaday_info
+	dc.l	flipshot_info
 	dc.l	ganryu_info
 	dc.l	gowcaizr_info
 	dc.l	gpilots_info
@@ -1777,6 +1778,33 @@ androdun_c1_rom_file_name:
 
 androdun_c2_rom_file_name:
 	.asciz	"androdun\\049-c2.c2"
+
+.even
+
+flipshot_info:
+	dc.l	flipshot_game_name
+	dc.l	flipshot_compiled_tiles_file_name,flipshot_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,flipshot_p1_rom_file_name,0
+	dc.l	0x400000
+	dc.l	0x400000,flipshot_c1_rom_file_name,flipshot_c2_rom_file_name
+
+flipshot_game_name:
+	.asciz	"Flipshot"
+
+flipshot_compiled_tiles_file_name:
+	.asciz	"flipshot\\flipshot.tls"
+
+flipshot_tiles_usage_bitmap_file_name:
+	.asciz	"flipshot\\flipshot.ubm"
+
+flipshot_p1_rom_file_name:
+	.asciz	"flipshot\\247-p1.p1"
+
+flipshot_c1_rom_file_name:
+	.asciz	"flipshot\\247-c1.c1"
+
+flipshot_c2_rom_file_name:
+	.asciz	"flipshot\\247-c2.c2"
 
 .even
 
