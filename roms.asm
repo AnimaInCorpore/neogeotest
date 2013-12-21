@@ -333,6 +333,7 @@ game_info_list:
 	dc.l	kotm_info
 	dc.l	kotm2_info
 	dc.l	lresort_info
+	dc.l	maglord_info
 	dc.l	mslug_info
 	dc.l	mslug2_info
 	dc.l	mutnat_info
@@ -1653,7 +1654,7 @@ zupapa_info:
 	dc.l	0x1000000,zupapa_c1_rom_file_name,zupapa_c2_rom_file_name
 
 zupapa_game_name:
-	.asciz	"ZuPaPa!"
+	.asciz	"Zupapa!"
 
 zupapa_compiled_tiles_file_name:
 	.asciz	"zupapa\\zupapa.tls"
@@ -1669,6 +1670,47 @@ zupapa_c1_rom_file_name:
 
 zupapa_c2_rom_file_name:
 	.asciz	"zupapa\\zupan_c2.rom"
+
+.even
+
+maglord_info:
+	dc.l	maglord_game_name
+	dc.l	maglord_compiled_tiles_file_name,maglord_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,maglord_p1_rom_file_name,0
+	dc.l	0x300000
+	dc.l	0x100000,maglord_c1_rom_file_name,maglord_c2_rom_file_name
+	dc.l	0x100000,maglord_c3_rom_file_name,maglord_c4_rom_file_name
+	dc.l	0x100000,maglord_c5_rom_file_name,maglord_c6_rom_file_name
+
+maglord_game_name:
+	.asciz	"Magician Lord"
+
+maglord_compiled_tiles_file_name:
+	.asciz	"maglord\\maglord.tls"
+
+maglord_tiles_usage_bitmap_file_name:
+	.asciz	"maglord\\maglord.ubm"
+
+maglord_p1_rom_file_name:
+	.asciz	"maglord\\005-pg1.p1"
+
+maglord_c1_rom_file_name:
+	.asciz	"maglord\\005-c1.c1"
+
+maglord_c2_rom_file_name:
+	.asciz	"maglord\\005-c2.c2"
+
+maglord_c3_rom_file_name:
+	.asciz	"maglord\\005-c3.c3"
+
+maglord_c4_rom_file_name:
+	.asciz	"maglord\\005-c4.c4"
+
+maglord_c5_rom_file_name:
+	.asciz	"maglord\\005-c5.c5"
+
+maglord_c6_rom_file_name:
+	.asciz	"maglord\\005-c6.c6"
 
 .even
 
