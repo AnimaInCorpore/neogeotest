@@ -320,6 +320,7 @@ loading_game_text_2:
 
 game_info_list:
 	dc.l	alpham2_info
+	dc.l	androdun_info
 	dc.l	blazstar_info
 	dc.l	burningf_info
 	dc.l	ctomaday_info
@@ -342,6 +343,7 @@ game_info_list:
 	dc.l	nitdbl_info
 	dc.l	pbobblen_info
 	dc.l	pulstar_info
+	dc.l	roboarmy_info
 	dc.l	samsho_info
 	dc.l	samsho2_info
 	dc.l	savagere_info
@@ -1711,6 +1713,70 @@ maglord_c5_rom_file_name:
 
 maglord_c6_rom_file_name:
 	.asciz	"maglord\\005-c6.c6"
+
+.even
+
+roboarmy_info:
+	dc.l	roboarmy_game_name
+	dc.l	roboarmy_compiled_tiles_file_name,roboarmy_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,roboarmy_p1_rom_file_name,0
+	dc.l	0x300000
+	dc.l	0x200000,roboarmy_c1_rom_file_name,roboarmy_c2_rom_file_name
+	dc.l	0x100000,roboarmy_c3_rom_file_name,roboarmy_c4_rom_file_name
+
+roboarmy_game_name:
+	.asciz	"Robo Army"
+
+roboarmy_compiled_tiles_file_name:
+	.asciz	"roboarmy\\roboarmy.tls"
+
+roboarmy_tiles_usage_bitmap_file_name:
+	.asciz	"roboarmy\\roboarmy.ubm"
+
+roboarmy_p1_rom_file_name:
+	.asciz	"roboarmy\\032-p1.p1"
+
+roboarmy_c1_rom_file_name:
+	.asciz	"roboarmy\\032-c1.c1"
+
+roboarmy_c2_rom_file_name:
+	.asciz	"roboarmy\\032-c2.c2"
+
+roboarmy_c3_rom_file_name:
+	.asciz	"roboarmy\\032-c3.c3"
+
+roboarmy_c4_rom_file_name:
+	.asciz	"roboarmy\\032-c4.c4"
+
+.even
+
+androdun_info:
+	dc.l	androdun_game_name
+	dc.l	androdun_compiled_tiles_file_name,androdun_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_4,androdun_p1_rom_file_name,androdun_p2_rom_file_name
+	dc.l	0x200000
+	dc.l	0x200000,androdun_c1_rom_file_name,androdun_c2_rom_file_name
+
+androdun_game_name:
+	.asciz	"Andro Dunos"
+
+androdun_compiled_tiles_file_name:
+	.asciz	"androdun\\androdun.tls"
+
+androdun_tiles_usage_bitmap_file_name:
+	.asciz	"androdun\\androdun.ubm"
+
+androdun_p1_rom_file_name:
+	.asciz	"androdun\\049-p1.p1"
+
+androdun_p2_rom_file_name:
+	.asciz	"androdun\\049-p2.p2"
+
+androdun_c1_rom_file_name:
+	.asciz	"androdun\\049-c1.c1"
+
+androdun_c2_rom_file_name:
+	.asciz	"androdun\\049-c2.c2"
 
 .even
 
