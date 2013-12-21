@@ -323,6 +323,7 @@ game_info_list:
 	dc.l	blazstar_info
 	dc.l	burningf_info
 	dc.l	ctomaday_info
+	dc.l	ganryu_info
 	dc.l	gowcaizr_info
 	dc.l	gpilots_info
 	dc.l	ironclad_info
@@ -345,12 +346,14 @@ game_info_list:
 	dc.l	savagere_info
 	dc.l	sengoku_info
 	dc.l	sengoku2_info
+	dc.l	sengoku3_info
 	dc.l	sonicwi2_info
 	dc.l	sonicwi3_info
 	dc.l	tophuntr_info
 	dc.l	twinspri_info
 	dc.l	viewpoin_info
 	dc.l	zedblade_info
+	dc.l	zupapa_info
 	dc.l	0
 
 game_info_pointer:
@@ -1578,6 +1581,94 @@ gowcaizr_c7_rom_file_name:
 
 gowcaizr_c8_rom_file_name:
 	.asciz	"gowcaizr\\059-c8.c8"
+
+.even
+
+ganryu_info:
+	dc.l	ganryu_game_name
+	dc.l	ganryu_compiled_tiles_file_name,ganryu_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,ganryu_p1_rom_file_name,0
+	dc.l	0x1000000
+	dc.l	0x1000000,ganryu_c1_rom_file_name,ganryu_c2_rom_file_name
+
+ganryu_game_name:
+	.asciz	"Ganryu"
+
+ganryu_compiled_tiles_file_name:
+	.asciz	"ganryu\\ganryu.tls"
+
+ganryu_tiles_usage_bitmap_file_name:
+	.asciz	"ganryu\\ganryu.ubm"
+
+ganryu_p1_rom_file_name:
+	.asciz	"ganryu\\252-p1.p1"
+
+ganryu_c1_rom_file_name:
+	.asciz	"ganryu\\gann_c1.rom"
+
+ganryu_c2_rom_file_name:
+	.asciz	"ganryu\\gann_c2.rom"
+
+.even
+
+sengoku3_info:
+	dc.l	sengoku3_game_name
+	dc.l	sengoku3_compiled_tiles_file_name,sengoku3_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,sengoku3_p1_rom_file_name,0
+	dc.l	0x2000000
+	dc.l	0x1000000,sengoku3_c1_rom_file_name,sengoku3_c2_rom_file_name
+	dc.l	0x1000000,sengoku3_c3_rom_file_name,sengoku3_c4_rom_file_name
+
+sengoku3_game_name:
+	.asciz	"Sengoku 3"
+
+sengoku3_compiled_tiles_file_name:
+	.asciz	"sengoku3\\sengoku3.tls"
+
+sengoku3_tiles_usage_bitmap_file_name:
+	.asciz	"sengoku3\\sengoku3.ubm"
+
+sengoku3_p1_rom_file_name:
+	.asciz	"sengoku3\\261-ph1.p1"
+
+sengoku3_c1_rom_file_name:
+	.asciz	"sengoku3\\sen3n_c1.rom"
+
+sengoku3_c2_rom_file_name:
+	.asciz	"sengoku3\\sen3n_c2.rom"
+
+sengoku3_c3_rom_file_name:
+	.asciz	"sengoku3\\sen3n_c3.rom"
+
+sengoku3_c4_rom_file_name:
+	.asciz	"sengoku3\\sen3n_c4.rom"
+
+.even
+
+zupapa_info:
+	dc.l	zupapa_game_name
+	dc.l	zupapa_compiled_tiles_file_name,zupapa_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,zupapa_p1_rom_file_name,0
+	dc.l	0x1000000
+	dc.l	0x1000000,zupapa_c1_rom_file_name,zupapa_c2_rom_file_name
+
+zupapa_game_name:
+	.asciz	"ZuPaPa!"
+
+zupapa_compiled_tiles_file_name:
+	.asciz	"zupapa\\zupapa.tls"
+
+zupapa_tiles_usage_bitmap_file_name:
+	.asciz	"zupapa\\zupapa.ubm"
+
+zupapa_p1_rom_file_name:
+	.asciz	"zupapa\\070-p1.p1"
+
+zupapa_c1_rom_file_name:
+	.asciz	"zupapa\\zupan_c1.rom"
+
+zupapa_c2_rom_file_name:
+	.asciz	"zupapa\\zupan_c2.rom"
 
 .even
 

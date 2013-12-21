@@ -1210,7 +1210,7 @@ build_tile_infos:
 	move	d0,(a1)+
 .endr
 
-	move.b	#0b10000000,Line_Num.w												| Start blitter.
+|	move.b	#0b10000000,Line_Num.w												| Start blitter.
 
 	| Pass 1: look which tiles are visible and store its temporary info.
 
@@ -1479,10 +1479,14 @@ build_tile_infos:
 	jra		1b
 1:
 	clr.l	(a1)																| End marker.
-1:
-	tas		Line_Num.w															| Restart the blitter.
-  	nop
-  	jmi		1b
+
+	| Keep the Blitter running.
+
+|	move.l	#0xff000000,0x9800.w												| Fixme: debugging!
+|1:
+|	tas		Line_Num.w															| Restart the blitter.
+|	nop
+|	jmi		1b
 
    	movem.l	(sp)+,d0-a6
 
