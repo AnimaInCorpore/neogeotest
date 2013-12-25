@@ -94,6 +94,15 @@ load_roms:
 	cmp.l	a1,a0
 	jlt		1b
 
+	| Patch Viewpoint.
+
+	cmp.l	#viewpoin_info,game_info_pointer
+	jne		1f
+
+	move.l	neogeo_memory_pages_start,a0
+	add.l	#PROGRAM_ROM_1_OFFSET+0x5aba,a0
+	move	#0x508f,(a0)
+1:
 	| Load the BIOS ROM.
 
 |	Cconws	loading_bios_rom_text
@@ -321,9 +330,12 @@ loading_game_text_2:
 game_info_list:
 	dc.l	alpham2_info
 	dc.l	androdun_info
+	dc.l	bjourney_info
 	dc.l	blazstar_info
 	dc.l	burningf_info
 	dc.l	ctomaday_info
+	dc.l	eightman_info
+	dc.l	fatfury1_info
 	dc.l	flipshot_info
 	dc.l	ganryu_info
 	dc.l	gowcaizr_info
@@ -353,6 +365,7 @@ game_info_list:
 	dc.l	sengoku3_info
 	dc.l	sonicwi2_info
 	dc.l	sonicwi3_info
+	dc.l	spinmast_info
 	dc.l	tophuntr_info
 	dc.l	twinspri_info
 	dc.l	viewpoin_info
@@ -1805,6 +1818,162 @@ flipshot_c1_rom_file_name:
 
 flipshot_c2_rom_file_name:
 	.asciz	"flipshot\\247-c2.c2"
+
+.even
+
+spinmast_info:
+	dc.l	spinmast_game_name
+	dc.l	spinmast_compiled_tiles_file_name,spinmast_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_3,spinmast_p1_rom_file_name,spinmast_p2_rom_file_name
+	dc.l	0x800000
+	dc.l	0x200000,spinmast_c1_rom_file_name,spinmast_c2_rom_file_name
+	dc.l	0x200000,spinmast_c3_rom_file_name,spinmast_c4_rom_file_name
+	dc.l	0x200000,spinmast_c5_rom_file_name,spinmast_c6_rom_file_name
+	dc.l	0x200000,spinmast_c7_rom_file_name,spinmast_c8_rom_file_name
+
+spinmast_game_name:
+	.asciz	"Spin Master"
+
+spinmast_compiled_tiles_file_name:
+	.asciz	"spinmast\\spinmast.tls"
+
+spinmast_tiles_usage_bitmap_file_name:
+	.asciz	"spinmast\\spinmast.ubm"
+
+spinmast_p1_rom_file_name:
+	.asciz	"spinmast\\062-p1.p1"
+
+spinmast_p2_rom_file_name:
+	.asciz	"spinmast\\062-p2.sp2"
+
+spinmast_c1_rom_file_name:
+	.asciz	"spinmast\\062-c1.c1"
+
+spinmast_c2_rom_file_name:
+	.asciz	"spinmast\\062-c2.c2"
+
+spinmast_c3_rom_file_name:
+	.asciz	"spinmast\\062-c3.c3"
+
+spinmast_c4_rom_file_name:
+	.asciz	"spinmast\\062-c4.c4"
+
+spinmast_c5_rom_file_name:
+	.asciz	"spinmast\\062-c5.c5"
+
+spinmast_c6_rom_file_name:
+	.asciz	"spinmast\\062-c6.c6"
+
+spinmast_c7_rom_file_name:
+	.asciz	"spinmast\\062-c7.c7"
+
+spinmast_c8_rom_file_name:
+	.asciz	"spinmast\\062-c8.c8"
+
+.even
+
+bjourney_info:
+	dc.l	bjourney_game_name
+	dc.l	bjourney_compiled_tiles_file_name,bjourney_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,bjourney_p1_rom_file_name,0
+	dc.l	0x300000
+	dc.l	0x200000,bjourney_c1_rom_file_name,bjourney_c2_rom_file_name
+	dc.l	0x100000,bjourney_c3_rom_file_name,bjourney_c4_rom_file_name
+
+bjourney_game_name:
+	.asciz	"Blue's Journey"
+
+bjourney_compiled_tiles_file_name:
+	.asciz	"bjourney\\bjourney.tls"
+
+bjourney_tiles_usage_bitmap_file_name:
+	.asciz	"bjourney\\bjourney.ubm"
+
+bjourney_p1_rom_file_name:
+	.asciz	"bjourney\\022-p1.p1"
+
+bjourney_c1_rom_file_name:
+	.asciz	"bjourney\\022-c1.c1"
+
+bjourney_c2_rom_file_name:
+	.asciz	"bjourney\\022-c2.c2"
+
+bjourney_c3_rom_file_name:
+	.asciz	"bjourney\\022-c3.c3"
+
+bjourney_c4_rom_file_name:
+	.asciz	"bjourney\\022-c4.c4"
+
+.even
+
+eightman_info:
+	dc.l	eightman_game_name
+	dc.l	eightman_compiled_tiles_file_name,eightman_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,eightman_p1_rom_file_name,0
+	dc.l	0x300000
+	dc.l	0x200000,eightman_c1_rom_file_name,eightman_c2_rom_file_name
+	dc.l	0x100000,eightman_c3_rom_file_name,eightman_c4_rom_file_name
+
+eightman_game_name:
+	.asciz	"Eight Man"
+
+eightman_compiled_tiles_file_name:
+	.asciz	"eightman\\eightman.tls"
+
+eightman_tiles_usage_bitmap_file_name:
+	.asciz	"eightman\\eightman.ubm"
+
+eightman_p1_rom_file_name:
+	.asciz	"eightman\\025-p1.p1"
+
+eightman_c1_rom_file_name:
+	.asciz	"eightman\\025-c1.c1"
+
+eightman_c2_rom_file_name:
+	.asciz	"eightman\\025-c2.c2"
+
+eightman_c3_rom_file_name:
+	.asciz	"eightman\\025-c3.c3"
+
+eightman_c4_rom_file_name:
+	.asciz	"eightman\\025-c4.c4"
+
+.even
+
+fatfury1_info:
+	dc.l	fatfury1_game_name
+	dc.l	fatfury1_compiled_tiles_file_name,fatfury1_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_4,fatfury1_p1_rom_file_name,fatfury1_p2_rom_file_name
+	dc.l	0x400000
+	dc.l	0x200000,fatfury1_c1_rom_file_name,fatfury1_c2_rom_file_name
+	dc.l	0x200000,fatfury1_c3_rom_file_name,fatfury1_c4_rom_file_name
+
+fatfury1_game_name:
+	.asciz	"Fatal Fury - King of Fighters"
+
+fatfury1_compiled_tiles_file_name:
+	.asciz	"fatfury1\\fatfury1.tls"
+
+fatfury1_tiles_usage_bitmap_file_name:
+	.asciz	"fatfury1\\fatfury1.ubm"
+
+fatfury1_p1_rom_file_name:
+	.asciz	"fatfury1\\033-p1.p1"
+
+fatfury1_p2_rom_file_name:
+	.asciz	"fatfury1\\033-p2.p2"
+
+fatfury1_c1_rom_file_name:
+	.asciz	"fatfury1\\033-c1.c1"
+
+fatfury1_c2_rom_file_name:
+	.asciz	"fatfury1\\033-c2.c2"
+
+fatfury1_c3_rom_file_name:
+	.asciz	"fatfury1\\033-c3.c3"
+
+fatfury1_c4_rom_file_name:
+	.asciz	"fatfury1\\033-c4.c4"
 
 .even
 
