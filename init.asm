@@ -291,6 +291,19 @@ screen_vga_320_240:
 	dc.w	0x5
 	dc.w	0x140
 
+screen_vga_304_224:
+	dc.l	0xc6008d
+	dc.l	0x1502b4
+	dc.l	0x850097
+	dc.l	0x41903ff
+	dc.l	0x3f005d
+	dc.l	0x3dd0415
+	dc.w	0x200
+	dc.w	0x186
+	dc.w	0x100
+	dc.w	0x5
+	dc.w	0x130
+
 screen_vga_256_240:
 	dc.l	0xc6008d
 	dc.l	0x150004
