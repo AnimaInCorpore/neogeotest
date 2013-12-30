@@ -351,6 +351,7 @@ game_info_list:
 	dc.l	mslug_info
 	dc.l	mslug2_info
 	dc.l	mutnat_info
+	dc.l	ncommand_info
 	dc.l	neobombe_info
 	dc.l	neomrdo_info
 	dc.l	nitdbl_info
@@ -1974,6 +1975,40 @@ fatfury1_c3_rom_file_name:
 
 fatfury1_c4_rom_file_name:
 	.asciz	"fatfury1\\033-c4.c4"
+
+.even
+
+ncommand_info:
+	dc.l	ncommand_game_name
+	dc.l	ncommand_compiled_tiles_file_name,ncommand_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,ncommand_p1_rom_file_name,0
+	dc.l	0x400000
+	dc.l	0x200000,ncommand_c1_rom_file_name,ncommand_c2_rom_file_name
+	dc.l	0x200000,ncommand_c3_rom_file_name,ncommand_c4_rom_file_name
+
+ncommand_game_name:
+	.asciz	"Ninja Commando"
+
+ncommand_compiled_tiles_file_name:
+	.asciz	"ncommand\\ncommand.tls"
+
+ncommand_tiles_usage_bitmap_file_name:
+	.asciz	"ncommand\\ncommand.ubm"
+
+ncommand_p1_rom_file_name:
+	.asciz	"ncommand\\050-p1.p1"
+
+ncommand_c1_rom_file_name:
+	.asciz	"ncommand\\050-c1.c1"
+
+ncommand_c2_rom_file_name:
+	.asciz	"ncommand\\050-c2.c2"
+
+ncommand_c3_rom_file_name:
+	.asciz	"ncommand\\050-c3.c3"
+
+ncommand_c4_rom_file_name:
+	.asciz	"ncommand\\050-c4.c4"
 
 .even
 

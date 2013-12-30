@@ -70,7 +70,7 @@ start:
 emulator_text:
 	.ascii	"Neo Geo Emulator for the Atari Falcon.\r\n"
 	.ascii	"Programmed by Sascha Springer.\r\n"
-	.ascii	"Pre-Alpha Version 20131215.\r\n"
+	.ascii	"Pre-Alpha Version 20131230.\r\n"
 	.ascii	"Greetings to all Atari fans.\r\n"
 	.asciz	"\r\n"
 
