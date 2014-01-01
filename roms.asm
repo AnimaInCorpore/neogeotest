@@ -355,6 +355,7 @@ game_info_list:
 	dc.l	neobombe_info
 	dc.l	neomrdo_info
 	dc.l	nitdbl_info
+	dc.l	panicbom_info
 	dc.l	pbobblen_info
 	dc.l	pulstar_info
 	dc.l	roboarmy_info
@@ -2009,6 +2010,33 @@ ncommand_c3_rom_file_name:
 
 ncommand_c4_rom_file_name:
 	.asciz	"ncommand\\050-c4.c4"
+
+.even
+
+panicbom_info:
+	dc.l	panicbom_game_name
+	dc.l	panicbom_compiled_tiles_file_name,panicbom_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,panicbom_p1_rom_file_name,0
+	dc.l	0x200000
+	dc.l	0x200000,panicbom_c1_rom_file_name,panicbom_c2_rom_file_name
+
+panicbom_game_name:
+	.asciz	"Panic Bomber"
+
+panicbom_compiled_tiles_file_name:
+	.asciz	"panicbom\\panicbom.tls"
+
+panicbom_tiles_usage_bitmap_file_name:
+	.asciz	"panicbom\\panicbom.ubm"
+
+panicbom_p1_rom_file_name:
+	.asciz	"panicbom\\073-p1.p1"
+
+panicbom_c1_rom_file_name:
+	.asciz	"panicbom\\073-c1.c1"
+
+panicbom_c2_rom_file_name:
+	.asciz	"panicbom\\073-c2.c2"
 
 .even
 
