@@ -411,10 +411,21 @@ compile_tiles:
 
 	movem.l	(sp)+,d0/a0
 3:
+	cmp.l	#COMPILED_TILES_ADDRESS+6800000,a1									| Limit the RAM usage for compiled tiles in an awkward way.
+	jlt		3f
+4:
+	addq.l	#1,d0
+	cmp.l	max_compiled_tiles_index,d0
+	jeq		4f
+
+	clr.l	(a0)+
+
+	jra		4b
+3:
 	addq.l	#1,d0
 	cmp.l	max_compiled_tiles_index,d0
 	jlt		1b
-
+4:
 	movem.l	a0-a1,-(sp)
 
 	Cconws	saving_compiled_tiles_text
