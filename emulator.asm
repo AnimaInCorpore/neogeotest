@@ -1209,7 +1209,7 @@ build_tile_infos:
 	move	#304,X_Count.w
 	move	#224,Y_Count.w
 
-	move.l	work_screen_address(pc),d0
+	move.l	clear_screen_address(pc),d0
 	add.l	#512*2*16+8*2,d0
 	move.l	d0,Dst_Addr.w
 
@@ -1286,6 +1286,9 @@ build_tile_infos:
 
 	cmp		#-16+8,d0 															| Left screen border.
 	jle		2f
+
+	cmp		#320-8,d0 															| Right screen border.
+	jge		2f
 6:
 	move.l	a1,-(sp)
 
@@ -1493,12 +1496,11 @@ build_tile_infos:
 1:
 	clr.l	(a1)																| End marker.
 
-	| Keep the Blitter running.
-
 |	move.l	#0xff000000,0x9800.w												| Fixme: debugging!
+
+	| Keep the Blitter running.
 1:
 	tas		Line_Num.w															| Restart the blitter.
-	nop
 	jmi		1b
 
    	movem.l	(sp)+,d0-a6
@@ -1622,10 +1624,11 @@ hbl_handler:
 |-------------------------------------------------------------------------------
 
 vbl_handler:
-	movem.l	d0-d1/a0-a1,-(sp)
+	movem.l	d0-d1/a0,-(sp)
 
 	move.l	display_screen_address(pc),d0
 	add.l	#512*2*16+8*2,d0
+|	add.l	#512*2*16+(512-304)*2,d0
 |	move.l	#0x400000,d0														| Fixme: only for debugging.
 |	move.l	#PALETTES_ADDRESS,d0												| Fixme: only for debugging.
 	swap	d0
@@ -1651,12 +1654,12 @@ vbl_handler:
 	jbsr	draw_tiles
 
 	lea		display_screen_address(pc),a0
-	lea		work_screen_address(pc),a1
 	move.l	(a0),d0
-	move.l	(a1),(a0)
-	move.l	d0,(a1)
+	move.l	4(a0),(a0)
+	move.l	8(a0),4(a0)
+	move.l	d0,8(a0)
 1:
-	movem.l	(sp)+,d0-d1/a0-a1
+	movem.l	(sp)+,d0-d1/a0
 
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
@@ -1668,10 +1671,13 @@ vbl_handler:
 	rts
 
 display_screen_address:
-	dc.l	SCREEN_ADDRESS_2
+	dc.l	SCREEN_ADDRESS
 
 work_screen_address:
-	dc.l	SCREEN_ADDRESS
+	dc.l	SCREEN_ADDRESS_2
+
+clear_screen_address:
+	dc.l	SCREEN_ADDRESS_3
 
 |-------------------------------------------------------------------------------
 |
