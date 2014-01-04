@@ -242,6 +242,8 @@ mmu_data:
 |-------------------------------------------------------------------------------
 
 address_error_handler:
+	move	#0x2700,sr
+
 	movem.l	d0-a6,-(sp)
 
 	move	#0xffff,d2
@@ -457,6 +459,98 @@ bus_error_handler:
 	cmp		#0x0001,ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
 
+	btst	#6,SSW_OFFSET+1(sp)													| Read access?
+	jne		3f
+
+	move.l	#0x000000ff,0x9800.w												| Fixme: debugging!
+
+	movem.l	d0/a0,-(sp)
+
+	move.l	2*4+2(sp),a0														| Return address.
+
+	| "move.b dx,0x300001"?
+
+	move	(a0),d0
+	and		#0xfff0,d0
+	cmp		#0x13c0,d0
+	jne		4f
+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+
+	jra		5f
+4:
+	| "move.b dx,(ax)"?
+
+	move	-2(a0),d0
+	and		#0xf1f0,d0
+	cmp		#0x1080,d0
+	jne		4f
+
+	move	#0x4e71,-2(a0)
+
+	jra		5f
+4:
+	| "move.b dx,(ax)"?
+
+	move	-4(a0),d0
+	and		#0xf1f0,d0
+	cmp		#0x1080,d0
+	jne		4f
+
+	move	#0x4e71,-4(a0)
+
+	jra		5f
+4:
+	movem.l	(sp)+,d0/a0
+
+	movem.l	a0-a1,-(sp)
+
+	lea		debugger_data(pc),a0
+	move.l	2*4+2(sp),a1
+
+	move.l	a1,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+
+	move.l	2*4(sp),(a0)+
+	move.l	2*4+4(sp),(a0)+
+	move.l	2*4+8(sp),(a0)+
+
+	move.l	2*4+12(sp),(a0)+
+	move.l	2*4+16(sp),(a0)+
+	move.l	2*4+20(sp),(a0)+
+
+	move.l	2*4+24(sp),(a0)+
+	move.l	2*4+28(sp),(a0)+
+	move.l	2*4+32(sp),(a0)+
+
+	move.l	2*4+36(sp),(a0)+
+	move.l	2*4+40(sp),(a0)+
+	move.l	2*4+44(sp),(a0)+
+
+	move.l	2*4+48(sp),(a0)+
+	move.l	2*4+52(sp),(a0)+
+	move.l	2*4+56(sp),(a0)+
+
+	movem.l	(sp)+,a0-a1
+
+	jra		debugger
+5:
+	movec	cacr,d0
+	bset	#11,d0
+	bset	#3,d0
+	movec	d0,cacr
+
+	movem.l	(sp)+,d0/a0
+
+	clr.l	0x9800.w															| Fixme: debugging!
+
+	rte
+3:
 	move.l	d0,-(sp)
 
 	move.b	keyboard_value(pc),d0
@@ -697,6 +791,78 @@ sprite_draw_counter:
 
 input_player_1:
 	dc.w	0xff00
+
+|-------------------------------------------------------------------------------
+|
+|	Debugger.
+|
+|-------------------------------------------------------------------------------
+
+debugger:
+	move	#0x2700,sr
+
+	movem.l	d0-a6,-(sp)
+
+	move	#0xffff,d2
+
+	jbsr	write_home
+
+	lea		debugger_data(pc),a0
+
+	move	#8-1,d7
+2:
+	move	#6-1,d6
+3:
+	move	(a0)+,d0
+	jbsr	write_word_data
+
+	jbsr	write_space
+
+	dbf		d6,3b
+
+	jbsr	write_new_line
+
+	dbf		d7,2b
+
+	clr		d1
+
+	move	#4-1,d7
+2:
+	move	#4-1,d6
+3:
+	move.l	(sp,d1.w*4),d0
+	jbsr	write_long_data
+
+	jbsr	write_space
+
+	addq	#1,d1
+
+	dbf		d6,3b
+
+	jbsr	write_new_line
+
+	dbf		d7,2b
+
+	jbsr	write_home
+
+	move.l	#SCREEN_ADDRESS,d0
+	swap	d0
+	move.b	d0,0x8201.w
+	swap	d0
+	move	d0,d1
+	ror		#8,d0
+	move.b	d0,0x8203.w
+	move.b	d1,0x820d.w
+
+	movem.l	(sp)+,d0-a6
+1:
+	cmp.b	#0x39,0xfc02.w
+	jne		1b
+
+	jra		emulator_exit
+
+debugger_data:
+	ds.w	6*8
 
 |-------------------------------------------------------------------------------
 |

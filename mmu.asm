@@ -236,13 +236,13 @@ build_mmu_tables:
 	| TIC 0.
 
 	move.l	d1,(a0)
-	add.l	#PROGRAM_ROM_1_OFFSET+0x05,(a0)+									| Program ROM 1.
+	add.l	#PROGRAM_ROM_1_OFFSET+0x01,(a0)+									| Program ROM 1.
 
 	move.l	d0,(a0)
 	add.l	#16*4*5+0x02,(a0)+													| Reference to TID 0.
 
 	move.l	d1,(a0)
-	add.l	#PROGRAM_ROM_2_OFFSET+0x05,(a0)+									| Program ROM 2.
+	add.l	#PROGRAM_ROM_2_OFFSET+0x01,(a0)+									| Program ROM 2.
 
 	clr.l	(a0)+
 
@@ -320,16 +320,16 @@ build_mmu_tables:
 	| TID 2.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x05,(a0)+											| BIOS ROM.
+	add.l	#BIOS_ROM_OFFSET+0x01,(a0)+											| BIOS ROM.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x8000+0x05,(a0)+									| BIOS ROM + 32k.
+	add.l	#BIOS_ROM_OFFSET+0x8000+0x01,(a0)+									| BIOS ROM + 32k.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x8000*2+0x05,(a0)+								| BIOS ROM + 64k.
+	add.l	#BIOS_ROM_OFFSET+0x8000*2+0x01,(a0)+								| BIOS ROM + 64k.
 
 	move.l	d1,(a0)
-	add.l	#BIOS_ROM_OFFSET+0x8000*3+0x05,(a0)+								| BIOS ROM + 96k.
+	add.l	#BIOS_ROM_OFFSET+0x8000*3+0x01,(a0)+								| BIOS ROM + 96k.
 
 .rept 32-4
 	clr.l	(a0)+
