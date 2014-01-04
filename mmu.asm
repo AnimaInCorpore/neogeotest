@@ -242,7 +242,7 @@ build_mmu_tables:
 	add.l	#16*4*5+0x02,(a0)+													| Reference to TID 0.
 
 	move.l	d1,(a0)
-	add.l	#PROGRAM_ROM_2_OFFSET+0x01,(a0)+									| Program ROM 2.
+	add.l	#PROGRAM_ROM_2_OFFSET+0x05,(a0)+									| Program ROM 2.
 
 	clr.l	(a0)+
 
