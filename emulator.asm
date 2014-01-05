@@ -323,6 +323,8 @@ address_error_data:
 bus_error_handler:
 	move	#0x2700,sr
 
+|	eor.l	#0x3f000000,0x9800.w												| Fixme: debugging!
+
 	bclr	#8,SSW_OFFSET(sp)													| Data fault processed.
 |	or		#0x8000,(sp)														| Reenable tracing.
 
@@ -335,7 +337,42 @@ bus_error_handler:
 
 	tst		ACCESS_ADDRESS_OFFSET+2(sp)
 	jne		2f
+/*
+	movem.l	a0-a1,-(sp)
 
+	lea		debugger_data(pc),a0
+	move.l	2*4+2(sp),a1
+
+	move.l	a1,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+
+	move.l	2*4(sp),(a0)+
+	move.l	2*4+4(sp),(a0)+
+	move.l	2*4+8(sp),(a0)+
+
+	move.l	2*4+12(sp),(a0)+
+	move.l	2*4+16(sp),(a0)+
+	move.l	2*4+20(sp),(a0)+
+
+	move.l	2*4+24(sp),(a0)+
+	move.l	2*4+28(sp),(a0)+
+	move.l	2*4+32(sp),(a0)+
+
+	move.l	2*4+36(sp),(a0)+
+	move.l	2*4+40(sp),(a0)+
+	move.l	2*4+44(sp),(a0)+
+
+	move.l	2*4+48(sp),(a0)+
+	move.l	2*4+52(sp),(a0)+
+	move.l	2*4+56(sp),(a0)+
+
+	movem.l	(sp)+,a0-a1
+
+	jra		debugger
+*/
 	movem.l	d0-d1/a0-a1,-(sp)
 
 	move	4*4+SSW_OFFSET(sp),d0												| "Special Status Word".
@@ -468,6 +505,19 @@ bus_error_handler:
 
 	move.l	2*4+2(sp),a0														| Return address.
 
+	| "move.b #x,0x300001"?
+
+	move	(a0),d0
+	cmp		#0x13fc,d0
+	jne		4f
+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+
+	jra		5f
+4:
 	| "move.b dx,0x300001"?
 
 	move	(a0),d0
@@ -1402,7 +1452,7 @@ build_tile_infos:
 
 	lea.l	TILE_TEMP_INFOS_ADDRESS,a3
 
-	clr		d4 																	| Previous sprite height.
+	moveq	#-1,d4 																| Previous sprite height.
 	clr		d5 																	| Previous sprite X position.
 	clr		d6 																	| Previous sprite Y position.
 
@@ -1415,7 +1465,7 @@ build_tile_infos:
 	jeq		3f
 
 	move	d4,d3 																| Use previous height.
-	jeq		2f 																	| Avoid having 0 as the height.
+	jle		2f 																	| Avoid height <= 0.
 
 	add		#16,d5
 	move	d5,d0 																| Use previous X position + 16.
@@ -1427,11 +1477,11 @@ build_tile_infos:
 	move	d1,d3
 	and		#0x3f,d3 															| Sprite height.
 
-|	cmp		#32,d3
-|	jle		3f
+	cmp		#32,d3
+	jle		3f
 
-|	move	#32,d3
-|3:
+	move	#32,d3
+3:
 	move	d3,d4 																| Save sprite height.
 	jeq		2f
 
