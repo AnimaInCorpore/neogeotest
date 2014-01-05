@@ -1007,21 +1007,29 @@ draw_dummy_sprites:
 /*
 	| Sprite zoom test (just an idea and not for use).
 
-	clr.l	d3
+	clr.l	d3																	| Pixel colour.
+	clr		d4																	| Pixel cache.
+	move	#0xff,d5															| Pixel palette index mask.
 
 	move.l	(a0)+,d0
 
 	moveq	#8-1,d7
 1:
-	add.b	d2,d2
+	add.w	d2,d2																| 16 scaling bits.
 	jcc		3f
 
 	move	d0,d1
-	and		d2,d1
+	and		d5,d1
 	jeq		2f
 
+	cmp		d1,d4																| Pixel colour cached?
+	jeq		4f
+
+	move	d1,d4
 	move	(a1,d1.w*2),d3
-	move	(a2,d3.l*2),(a6)
+	lea		(a2,d3.l*2),a3
+4:
+	move	(a3),(a6)
 2:
 	addq	#2,a6
 3:
@@ -1357,6 +1365,8 @@ draw_tiles:
 	move.l	(a1)+,a6															| Screen address.
 
 	move.l	(a1)+,d0															| Sprite drawing code address.
+	jeq		1b
+/*
 	jne		3f
 
 	moveq.l	#-1,d0
@@ -1381,10 +1391,7 @@ draw_tiles:
 
 	jra		1b
 3:
-|	lea		address_error_data(pc),a0											| Fixme: debugging.
-|	move.l	a6,(a0)
-|	move.l	d0,4(a0)
-
+*/
 	lea		3f(pc),a0															| Return address.
 	movem.l	d0/a0-a1,-(sp)
 	movem.l	(a2),d0-a5															| Load palette colors.

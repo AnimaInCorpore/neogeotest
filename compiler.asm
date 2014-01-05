@@ -410,8 +410,14 @@ compile_tiles:
 	move	#0x4e75,(a1)+														| "rts".
 
 	movem.l	(sp)+,d0/a0
+
+	cmp		#0x4e75,-4(a1)														| Is the compiled tile empty?
+	jne		3f
+
+	subq	#2,a1
+	clr.l	-4(a0)
 3:
-	cmp.l	#COMPILED_TILES_ADDRESS+6800000,a1									| Limit the RAM usage for compiled tiles in an awkward way.
+	cmp.l	#COMPILED_TILES_ADDRESS+6800000,a1									| Fixme: limit the RAM usage for compiled tiles in an awkward way.
 	jlt		3f
 4:
 	addq.l	#1,d0
