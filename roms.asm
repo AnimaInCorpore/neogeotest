@@ -330,10 +330,12 @@ loading_game_text_2:
 game_info_list:
 	dc.l	alpham2_info
 	dc.l	androdun_info
+	dc.l	bangbead_info
 	dc.l	bjourney_info
 	dc.l	blazstar_info
 	dc.l	burningf_info
 	dc.l	ctomaday_info
+	dc.l	doubledr_info
 	dc.l	eightman_info
 	dc.l	fatfury1_info
 	dc.l	fatfury2_info
@@ -345,6 +347,7 @@ game_info_list:
 	dc.l	kabukikl_info
 	dc.l	kizuna_info
 	dc.l	kof94_info
+	dc.l	kof95_info
 	dc.l	kotm_info
 	dc.l	kotm2_info
 	dc.l	lresort_info
@@ -2074,6 +2077,129 @@ panicbom_c1_rom_file_name:
 
 panicbom_c2_rom_file_name:
 	.asciz	"panicbom\\073-c2.c2"
+
+.even
+
+doubledr_info:
+	dc.l	doubledr_game_name
+	dc.l	doubledr_compiled_tiles_file_name,doubledr_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,doubledr_p1_rom_file_name,0
+	dc.l	0x00e00000
+	dc.l	0x00000000,0x00000000,0x00400000,doubledr_c1_rom_file_name,doubledr_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,doubledr_c3_rom_file_name,doubledr_c4_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00400000,doubledr_c5_rom_file_name,doubledr_c6_rom_file_name
+	dc.l	0x00c00000,0x00000000,0x00200000,doubledr_c7_rom_file_name,doubledr_c8_rom_file_name
+
+doubledr_game_name:
+	.asciz	"Double Dragon"
+
+doubledr_compiled_tiles_file_name:
+	.asciz	"doubledr\\doubledr.tls"
+
+doubledr_tiles_usage_bitmap_file_name:
+	.asciz	"doubledr\\doubledr.ubm"
+
+doubledr_p1_rom_file_name:
+	.asciz	"doubledr\\082-p1.p1"
+
+doubledr_c1_rom_file_name:
+	.asciz	"doubledr\\082-c1.c1"
+
+doubledr_c2_rom_file_name:
+	.asciz	"doubledr\\082-c2.c2"
+
+doubledr_c3_rom_file_name:
+	.asciz	"doubledr\\082-c3.c3"
+
+doubledr_c4_rom_file_name:
+	.asciz	"doubledr\\082-c4.c4"
+
+doubledr_c5_rom_file_name:
+	.asciz	"doubledr\\082-c5.c5"
+
+doubledr_c6_rom_file_name:
+	.asciz	"doubledr\\082-c6.c6"
+
+doubledr_c7_rom_file_name:
+	.asciz	"doubledr\\082-c7.c7"
+
+doubledr_c8_rom_file_name:
+	.asciz	"doubledr\\082-c8.c8"
+
+.even
+
+bangbead_info:
+	dc.l	bangbead_game_name
+	dc.l	bangbead_compiled_tiles_file_name,bangbead_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,bangbead_p1_rom_file_name,0
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x01000000,bangbead_c1_rom_file_name,bangbead_c2_rom_file_name
+
+bangbead_game_name:
+	.asciz	"Bang Bead"
+
+bangbead_compiled_tiles_file_name:
+	.asciz	"bangbead\\bangbead.tls"
+
+bangbead_tiles_usage_bitmap_file_name:
+	.asciz	"bangbead\\bangbead.ubm"
+
+bangbead_p1_rom_file_name:
+	.asciz	"bangbead\\259-p1.p1"
+
+bangbead_c1_rom_file_name:
+	.asciz	"bangbead\\bgn_c1.rom"
+
+bangbead_c2_rom_file_name:
+	.asciz	"bangbead\\bgn_c2.rom"
+
+.even
+
+kof95_info:
+	dc.l	kof95_game_name
+	dc.l	kof95_compiled_tiles_file_name,kof95_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_2,kof95_p1_rom_file_name,0
+	dc.l	0x01a00000
+	dc.l	0x00000000,0x00000000,0x00800000,kof95_c1_rom_file_name,kof95_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00800000,kof95_c3_rom_file_name,kof95_c4_rom_file_name
+	dc.l	0x01000000,0x00000000,0x00400000,kof95_c5_rom_file_name,kof95_c6_rom_file_name
+	dc.l	0x01800000,0x00000000,0x00200000,kof95_c7_rom_file_name,kof95_c8_rom_file_name
+
+kof95_game_name:
+	.asciz	"The King of Fighters '95"
+
+kof95_compiled_tiles_file_name:
+	.asciz	"kof95\\kof95.tls"
+
+kof95_tiles_usage_bitmap_file_name:
+	.asciz	"kof95\\kof95.ubm"
+
+kof95_p1_rom_file_name:
+	.asciz	"kof95\\084-p1.p1"
+
+kof95_c1_rom_file_name:
+	.asciz	"kof95\\084-c1.c1"
+
+kof95_c2_rom_file_name:
+	.asciz	"kof95\\084-c2.c2"
+
+kof95_c3_rom_file_name:
+	.asciz	"kof95\\084-c3.c3"
+
+kof95_c4_rom_file_name:
+	.asciz	"kof95\\084-c4.c4"
+
+kof95_c5_rom_file_name:
+	.asciz	"kof95\\084-c5.c5"
+
+kof95_c6_rom_file_name:
+	.asciz	"kof95\\084-c6.c6"
+
+kof95_c7_rom_file_name:
+	.asciz	"kof95\\084-c7.c7"
+
+kof95_c8_rom_file_name:
+	.asciz	"kof95\\084-c8.c8"
 
 .even
 
