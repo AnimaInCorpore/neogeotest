@@ -336,6 +336,7 @@ game_info_list:
 	dc.l	ctomaday_info
 	dc.l	eightman_info
 	dc.l	fatfury1_info
+	dc.l	fatfury2_info
 	dc.l	flipshot_info
 	dc.l	ganryu_info
 	dc.l	gowcaizr_info
@@ -382,9 +383,9 @@ mslug_info:
 	dc.l	mslug_game_name
 	dc.l	mslug_compiled_tiles_file_name,mslug_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,mslug_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x800000,mslug_c1_rom_file_name,mslug_c2_rom_file_name
-	dc.l	0x800000,mslug_c3_rom_file_name,mslug_c4_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x00800000,mslug_c1_rom_file_name,mslug_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00800000,mslug_c3_rom_file_name,mslug_c4_rom_file_name
 
 mslug_game_name:
 	.asciz	"Metal Slug"
@@ -416,9 +417,9 @@ mslug2_info:
 	dc.l	mslug2_game_name
 	dc.l	mslug2_compiled_tiles_file_name,mslug2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,mslug2_p1_rom_file_name,mslug2_p2_rom_file_name
-	dc.l	0x2000000
-	dc.l	0x1000000,mslug2_c1_rom_file_name,mslug2_c2_rom_file_name
-	dc.l	0x1000000,mslug2_c3_rom_file_name,mslug2_c4_rom_file_name
+	dc.l	0x02000000
+	dc.l	0x00000000,0x00000000,0x01000000,mslug2_c1_rom_file_name,mslug2_c2_rom_file_name
+	dc.l	0x01000000,0x00000000,0x01000000,mslug2_c3_rom_file_name,mslug2_c4_rom_file_name
 
 mslug2_game_name:
 	.asciz	"Metal Slug 2"
@@ -453,9 +454,9 @@ neobombe_info:
 	dc.l	neobombe_game_name
 	dc.l	neobombe_compiled_tiles_file_name,neobombe_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,neobombe_p1_rom_file_name,0
-	dc.l	0x900000
-	dc.l	0x800000,neobombe_c1_rom_file_name,neobombe_c2_rom_file_name
-	dc.l	0x100000,neobombe_c3_rom_file_name,neobombe_c4_rom_file_name
+	dc.l	0x00900000
+	dc.l	0x00000000,0x00000000,0x00800000,neobombe_c1_rom_file_name,neobombe_c2_rom_file_name
+	dc.l	0x00000000,0x00800000,0x00100000,neobombe_c3_rom_file_name,neobombe_c4_rom_file_name
 
 neobombe_game_name:
 	.asciz	"Neo Bomberman"
@@ -487,11 +488,11 @@ kof94_info:
 	dc.l	kof94_game_name
 	dc.l	kof94_compiled_tiles_file_name,kof94_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,kof94_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x400000,kof94_c1_rom_file_name,kof94_c2_rom_file_name
-	dc.l	0x400000,kof94_c3_rom_file_name,kof94_c4_rom_file_name
-	dc.l	0x400000,kof94_c5_rom_file_name,kof94_c6_rom_file_name
-	dc.l	0x400000,kof94_c7_rom_file_name,kof94_c8_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x00400000,kof94_c1_rom_file_name,kof94_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,kof94_c3_rom_file_name,kof94_c4_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00400000,kof94_c5_rom_file_name,kof94_c6_rom_file_name
+	dc.l	0x00c00000,0x00000000,0x00400000,kof94_c7_rom_file_name,kof94_c8_rom_file_name
 
 kof94_game_name:
 	.asciz	"The King of Fighters '94"
@@ -535,11 +536,11 @@ pulstar_info:
 	dc.l	pulstar_game_name
 	dc.l	pulstar_compiled_tiles_file_name,pulstar_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,pulstar_p1_rom_file_name,pulstar_p2_rom_file_name
-	dc.l	0x1c00000
-	dc.l	0x800000,pulstar_c1_rom_file_name,pulstar_c2_rom_file_name
-	dc.l	0x800000,pulstar_c3_rom_file_name,pulstar_c4_rom_file_name
-	dc.l	0x800000,pulstar_c5_rom_file_name,pulstar_c6_rom_file_name
-	dc.l	0x400000,pulstar_c7_rom_file_name,pulstar_c8_rom_file_name
+	dc.l	0x01c00000
+	dc.l	0x00000000,0x00000000,0x00800000,pulstar_c1_rom_file_name,pulstar_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00800000,pulstar_c3_rom_file_name,pulstar_c4_rom_file_name
+	dc.l	0x01000000,0x00000000,0x00800000,pulstar_c5_rom_file_name,pulstar_c6_rom_file_name
+	dc.l	0x01800000,0x00000000,0x00400000,pulstar_c7_rom_file_name,pulstar_c8_rom_file_name
 
 pulstar_game_name:
 	.asciz	"Pulstar"
@@ -586,8 +587,8 @@ viewpoin_info:
 	dc.l	viewpoin_game_name
 	dc.l	viewpoin_compiled_tiles_file_name,viewpoin_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,viewpoin_p1_rom_file_name,0
-	dc.l	0x400000
-	dc.l	0x400000,viewpoin_c1_rom_file_name,viewpoin_c2_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00400000,viewpoin_c1_rom_file_name,viewpoin_c2_rom_file_name
 
 viewpoin_game_name:
 	.asciz	"Viewpoint"
@@ -613,9 +614,9 @@ nitdbl_info:
 	dc.l	nitdbl_game_name
 	dc.l	nitdbl_compiled_tiles_file_name,nitdbl_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,nitdbl_p1_rom_file_name,0
-	dc.l	0x800000
-	dc.l	0x400000,nitdbl_c1_rom_file_name,nitdbl_c2_rom_file_name
-	dc.l	0x400000,nitdbl_c3_rom_file_name,nitdbl_c4_rom_file_name
+	dc.l	0x00800000
+	dc.l	0x00000000,0x00000000,0x00400000,nitdbl_c1_rom_file_name,nitdbl_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,nitdbl_c3_rom_file_name,nitdbl_c4_rom_file_name
 
 nitdbl_game_name:
 	.asciz	"Nightmare in the Dark (bootleg)"
@@ -647,10 +648,10 @@ pbobblen_info:
 	dc.l	pbobblen_game_name
 	dc.l	pbobblen_compiled_tiles_file_name,pbobblen_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,pbobblen_p1_rom_file_name,0
-	dc.l	0x500000
-	dc.l	0x200000,pbobblen_c1_rom_file_name,pbobblen_c2_rom_file_name
-	dc.l	0x200000,pbobblen_c3_rom_file_name,pbobblen_c4_rom_file_name
-	dc.l	0x100000,pbobblen_c5_rom_file_name,pbobblen_c6_rom_file_name
+	dc.l	0x00500000
+	dc.l	0x00000000,0x00000000,0x200000,pbobblen_c1_rom_file_name,pbobblen_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x200000,pbobblen_c3_rom_file_name,pbobblen_c4_rom_file_name
+	dc.l	0x00400000,0x00000000,0x100000,pbobblen_c5_rom_file_name,pbobblen_c6_rom_file_name
 
 pbobblen_game_name:
 	.asciz	"Puzzle Bobble"
@@ -688,11 +689,11 @@ tophuntr_info:
 	dc.l	tophuntr_game_name
 	dc.l	tophuntr_compiled_tiles_file_name,tophuntr_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,tophuntr_p1_rom_file_name,tophuntr_p2_rom_file_name
-	dc.l	0x800000
-	dc.l	0x200000,tophuntr_c1_rom_file_name,tophuntr_c2_rom_file_name
-	dc.l	0x200000,tophuntr_c3_rom_file_name,tophuntr_c4_rom_file_name
-	dc.l	0x200000,tophuntr_c5_rom_file_name,tophuntr_c6_rom_file_name
-	dc.l	0x200000,tophuntr_c7_rom_file_name,tophuntr_c8_rom_file_name
+	dc.l	0x00800000
+	dc.l	0x00000000,0x00000000,0x00200000,tophuntr_c1_rom_file_name,tophuntr_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,tophuntr_c3_rom_file_name,tophuntr_c4_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00200000,tophuntr_c5_rom_file_name,tophuntr_c6_rom_file_name
+	dc.l	0x00600000,0x00000000,0x00200000,tophuntr_c7_rom_file_name,tophuntr_c8_rom_file_name
 
 tophuntr_game_name:
 	.asciz	"Top Hunter"
@@ -739,9 +740,9 @@ sengoku_info:
 	dc.l	sengoku_game_name
 	dc.l	sengoku_compiled_tiles_file_name,sengoku_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_4,sengoku_p1_rom_file_name,sengoku_p2_rom_file_name
-	dc.l	0x400000
-	dc.l	0x200000,sengoku_c1_rom_file_name,sengoku_c2_rom_file_name
-	dc.l	0x200000,sengoku_c3_rom_file_name,sengoku_c4_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00200000,sengoku_c1_rom_file_name,sengoku_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,sengoku_c3_rom_file_name,sengoku_c4_rom_file_name
 
 sengoku_game_name:
 	.asciz	"Sengoku"
@@ -772,14 +773,14 @@ sengoku_c4_rom_file_name:
 
 .even
 
-sengoku2_info:																	| Note the strange C-ROM order!
+sengoku2_info:
 	dc.l	sengoku2_game_name
 	dc.l	sengoku2_compiled_tiles_file_name,sengoku2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,sengoku2_p1_rom_file_name,0
-	dc.l	0x500000
-	dc.l	0x200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
-	dc.l	0x100000,sengoku2_c3_rom_file_name,sengoku2_c4_rom_file_name
-	dc.l	0x200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
+	dc.l	0x00600000
+	dc.l	0x00000000,0x00000000,0x00200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,sengoku2_c3_rom_file_name,sengoku2_c4_rom_file_name
+	dc.l	0x00400000,0x00200000,0x00200000,sengoku2_c1_rom_file_name,sengoku2_c2_rom_file_name
 
 sengoku2_game_name:
 	.asciz	"Sengoku 2"
@@ -811,11 +812,11 @@ blazstar_info:
 	dc.l	blazstar_game_name
 	dc.l	blazstar_compiled_tiles_file_name,blazstar_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,blazstar_p1_rom_file_name,blazstar_p2_rom_file_name
-	dc.l	0x2000000
-	dc.l	0x800000,blazstar_c1_rom_file_name,blazstar_c2_rom_file_name
-	dc.l	0x800000,blazstar_c3_rom_file_name,blazstar_c4_rom_file_name
-	dc.l	0x800000,blazstar_c5_rom_file_name,blazstar_c6_rom_file_name
-	dc.l	0x800000,blazstar_c7_rom_file_name,blazstar_c8_rom_file_name
+	dc.l	0x02000000
+	dc.l	0x00000000,0x00000000,0x00800000,blazstar_c1_rom_file_name,blazstar_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00800000,blazstar_c3_rom_file_name,blazstar_c4_rom_file_name
+	dc.l	0x01000000,0x00000000,0x00800000,blazstar_c5_rom_file_name,blazstar_c6_rom_file_name
+	dc.l	0x01800000,0x00000000,0x00800000,blazstar_c7_rom_file_name,blazstar_c8_rom_file_name
 
 blazstar_game_name:
 	.asciz	"Blazing Star"
@@ -862,9 +863,9 @@ lresort_info:
 	dc.l	lresort_game_name
 	dc.l	lresort_compiled_tiles_file_name,lresort_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,lresort_p1_rom_file_name,0
-	dc.l	0x300000
-	dc.l	0x200000,lresort_c1_rom_file_name,lresort_c2_rom_file_name
-	dc.l	0x100000,lresort_c3_rom_file_name,lresort_c4_rom_file_name
+	dc.l	0x00300000
+	dc.l	0x00000000,0x00000000,0x00200000,lresort_c1_rom_file_name,lresort_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,lresort_c3_rom_file_name,lresort_c4_rom_file_name
 
 lresort_game_name:
 	.asciz	"Last Resort"
@@ -896,9 +897,9 @@ sonicwi2_info:
 	dc.l	sonicwi2_game_name
 	dc.l	sonicwi2_compiled_tiles_file_name,sonicwi2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,sonicwi2_p1_rom_file_name,0
-	dc.l	0x800000
-	dc.l	0x400000,sonicwi2_c1_rom_file_name,sonicwi2_c2_rom_file_name
-	dc.l	0x400000,sonicwi2_c3_rom_file_name,sonicwi2_c4_rom_file_name
+	dc.l	0x00800000
+	dc.l	0x00000000,0x00000000,0x00400000,sonicwi2_c1_rom_file_name,sonicwi2_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,sonicwi2_c3_rom_file_name,sonicwi2_c4_rom_file_name
 
 sonicwi2_game_name:
 	.asciz	"Aero Fighters 2 / Sonic Wings 2"
@@ -930,9 +931,9 @@ sonicwi3_info:
 	dc.l	sonicwi3_game_name
 	dc.l	sonicwi3_compiled_tiles_file_name,sonicwi3_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,sonicwi3_p1_rom_file_name,0
-	dc.l	0xc00000
-	dc.l	0x800000,sonicwi3_c1_rom_file_name,sonicwi3_c2_rom_file_name
-	dc.l	0x400000,sonicwi3_c3_rom_file_name,sonicwi3_c4_rom_file_name
+	dc.l	0x00c00000
+	dc.l	0x00000000,0x00000000,0x00800000,sonicwi3_c1_rom_file_name,sonicwi3_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00400000,sonicwi3_c3_rom_file_name,sonicwi3_c4_rom_file_name
 
 sonicwi3_game_name:
 	.asciz	"Aero Fighters 3 / Sonic Wings 3"
@@ -998,11 +999,11 @@ kizuna_info:
 	dc.l	kizuna_game_name
 	dc.l	kizuna_compiled_tiles_file_name,kizuna_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,kizuna_p1_rom_file_name,0
-	dc.l	0x1c00000
-	dc.l	0x800000,kizuna_c1_rom_file_name,kizuna_c2_rom_file_name
-	dc.l	0x800000,kizuna_c3_rom_file_name,kizuna_c4_rom_file_name
-	dc.l	0x800000,kizuna_c5_rom_file_name,kizuna_c6_rom_file_name
-	dc.l	0x400000,kizuna_c7_rom_file_name,kizuna_c8_rom_file_name
+	dc.l	0x01c00000
+	dc.l	0x00000000,0x00000000,0x00400000,kizuna_c1_rom_file_name,kizuna_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00800000,kizuna_c3_rom_file_name,kizuna_c4_rom_file_name
+	dc.l	0x01000000,0x00000000,0x00400000,kizuna_c5_rom_file_name,kizuna_c6_rom_file_name
+	dc.l	0x01800000,0x00000000,0x00400000,kizuna_c7_rom_file_name,kizuna_c8_rom_file_name
 
 kizuna_game_name:
 	.asciz	"Kizuna Encounter: Super Tag Battle"
@@ -1046,9 +1047,9 @@ kotm_info:
 	dc.l	kotm_game_name
 	dc.l	kotm_compiled_tiles_file_name,kotm_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_4,kotm_p1_rom_file_name,kotm_p2_rom_file_name
-	dc.l	0x400000
-	dc.l	0x200000,kotm_c1_rom_file_name,kotm_c2_rom_file_name
-	dc.l	0x200000,kotm_c3_rom_file_name,kotm_c4_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x200000,kotm_c1_rom_file_name,kotm_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x200000,kotm_c3_rom_file_name,kotm_c4_rom_file_name
 
 kotm_game_name:
 	.asciz	"King of the Monsters"
@@ -1083,10 +1084,10 @@ kotm2_info:
 	dc.l	kotm2_game_name
 	dc.l	kotm2_compiled_tiles_file_name,kotm2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,kotm2_p1_rom_file_name,kotm2_p2_rom_file_name
-	dc.l	0x600000
-	dc.l	0x200000,kotm2_c1_rom_file_name,kotm2_c2_rom_file_name
-	dc.l	0x100000,kotm2_c3_rom_file_name,kotm2_c4_rom_file_name
-	dc.l	0x200000,kotm2_c1_rom_file_name,kotm2_c2_rom_file_name
+	dc.l	0x00600000
+	dc.l	0x00000000,0x00000000,0x00200000,kotm2_c1_rom_file_name,kotm2_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,kotm2_c3_rom_file_name,kotm2_c4_rom_file_name
+	dc.l	0x00400000,0x00200000,0x00200000,kotm2_c1_rom_file_name,kotm2_c2_rom_file_name
 
 kotm2_game_name:
 	.asciz	"King of the Monsters 2"
@@ -1121,9 +1122,9 @@ burningf_info:
 	dc.l	burningf_game_name
 	dc.l	burningf_compiled_tiles_file_name,burningf_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,burningf_p1_rom_file_name,0
-	dc.l	0x400000
-	dc.l	0x200000,burningf_c1_rom_file_name,burningf_c2_rom_file_name
-	dc.l	0x200000,burningf_c3_rom_file_name,burningf_c4_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00200000,burningf_c1_rom_file_name,burningf_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,burningf_c3_rom_file_name,burningf_c4_rom_file_name
 
 burningf_game_name:
 	.asciz	"Burning Fight"
@@ -1155,9 +1156,9 @@ gpilots_info:
 	dc.l	gpilots_game_name
 	dc.l	gpilots_compiled_tiles_file_name,gpilots_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_4,gpilots_p1_rom_file_name,gpilots_p2_rom_file_name
-	dc.l	0x400000
-	dc.l	0x200000,gpilots_c1_rom_file_name,gpilots_c2_rom_file_name
-	dc.l	0x200000,gpilots_c3_rom_file_name,gpilots_c4_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x200000,gpilots_c1_rom_file_name,gpilots_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x200000,gpilots_c3_rom_file_name,gpilots_c4_rom_file_name
 
 gpilots_game_name:
 	.asciz	"Ghost Pilots"
@@ -1192,11 +1193,11 @@ samsho2_info:
 	dc.l	samsho2_game_name
 	dc.l	samsho2_compiled_tiles_file_name,samsho2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,samsho2_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x400000,samsho2_c1_rom_file_name,samsho2_c2_rom_file_name
-	dc.l	0x400000,samsho2_c3_rom_file_name,samsho2_c4_rom_file_name
-	dc.l	0x400000,samsho2_c5_rom_file_name,samsho2_c6_rom_file_name
-	dc.l	0x400000,samsho2_c7_rom_file_name,samsho2_c8_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x00400000,samsho2_c1_rom_file_name,samsho2_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,samsho2_c3_rom_file_name,samsho2_c4_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00400000,samsho2_c5_rom_file_name,samsho2_c6_rom_file_name
+	dc.l	0x00c00000,0x00000000,0x00400000,samsho2_c7_rom_file_name,samsho2_c8_rom_file_name
 
 samsho2_game_name:
 	.asciz	"Samurai Shodown 2"
@@ -1240,10 +1241,10 @@ samsho_info:
 	dc.l	samsho_game_name
 	dc.l	samsho_compiled_tiles_file_name,samsho_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,samsho_p1_rom_file_name,samsho_p2_rom_file_name
-	dc.l	0x1000000
-	dc.l	0x400000,samsho_c1_rom_file_name,samsho_c2_rom_file_name
-	dc.l	0x400000,samsho_c3_rom_file_name,samsho_c4_rom_file_name
-	dc.l	0x200000,samsho_c5_rom_file_name,samsho_c6_rom_file_name
+	dc.l	0x00a00000
+	dc.l	0x00000000,0x00000000,0x00400000,samsho_c1_rom_file_name,samsho_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,samsho_c3_rom_file_name,samsho_c4_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00200000,samsho_c5_rom_file_name,samsho_c6_rom_file_name
 
 samsho_game_name:
 	.asciz	"Samurai Shodown"
@@ -1284,9 +1285,9 @@ mutnat_info:
 	dc.l	mutnat_game_name
 	dc.l	mutnat_compiled_tiles_file_name,mutnat_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,mutnat_p1_rom_file_name,0
-	dc.l	0x400000
-	dc.l	0x200000,mutnat_c1_rom_file_name,mutnat_c2_rom_file_name
-	dc.l	0x200000,mutnat_c3_rom_file_name,mutnat_c4_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00200000,mutnat_c1_rom_file_name,mutnat_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,mutnat_c3_rom_file_name,mutnat_c4_rom_file_name
 
 mutnat_game_name:
 	.asciz	"Mutation Nation"
@@ -1318,9 +1319,9 @@ twinspri_info:
 	dc.l	twinspri_game_name
 	dc.l	twinspri_compiled_tiles_file_name,twinspri_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,twinspri_p1_rom_file_name,0
-	dc.l	0xa00000
-	dc.l	0x800000,twinspri_c1_rom_file_name,twinspri_c2_rom_file_name
-	dc.l	0x200000,twinspri_c3_rom_file_name,twinspri_c4_rom_file_name
+	dc.l	0x00a00000
+	dc.l	0x00000000,0x00000000,0x00800000,twinspri_c1_rom_file_name,twinspri_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00200000,twinspri_c3_rom_file_name,twinspri_c4_rom_file_name
 
 twinspri_game_name:
 	.asciz	"Twinkle Star Sprites"
@@ -1352,8 +1353,8 @@ ctomaday_info:
 	dc.l	ctomaday_game_name
 	dc.l	ctomaday_compiled_tiles_file_name,ctomaday_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,ctomaday_p1_rom_file_name,0
-	dc.l	0x800000
-	dc.l	0x800000,ctomaday_c1_rom_file_name,ctomaday_c2_rom_file_name
+	dc.l	0x00800000
+	dc.l	0x00000000,0x00000000,0x00800000,ctomaday_c1_rom_file_name,ctomaday_c2_rom_file_name
 
 ctomaday_game_name:
 	.asciz	"Captain Tomaday"
@@ -1379,9 +1380,9 @@ alpham2_info:
 	dc.l	alpham2_game_name
 	dc.l	alpham2_compiled_tiles_file_name,alpham2_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_4,alpham2_p1_rom_file_name,alpham2_p2_rom_file_name
-	dc.l	0x300000
-	dc.l	0x200000,alpham2_c1_rom_file_name,alpham2_c2_rom_file_name
-	dc.l	0x100000,alpham2_c3_rom_file_name,alpham2_c4_rom_file_name
+	dc.l	0x00300000
+	dc.l	0x00000000,0x00000000,0x00200000,alpham2_c1_rom_file_name,alpham2_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,alpham2_c3_rom_file_name,alpham2_c4_rom_file_name
 
 alpham2_game_name:
 	.asciz	"Alpha Mission 2"
@@ -1416,9 +1417,9 @@ ironclad_info:
 	dc.l	ironclad_game_name
 	dc.l	ironclad_compiled_tiles_file_name,ironclad_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,ironclad_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x800000,ironclad_c1_rom_file_name,ironclad_c2_rom_file_name
-	dc.l	0x800000,ironclad_c3_rom_file_name,ironclad_c4_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x00800000,ironclad_c1_rom_file_name,ironclad_c2_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00800000,ironclad_c3_rom_file_name,ironclad_c4_rom_file_name
 
 ironclad_game_name:
 	.asciz	"Iron Clad"
@@ -1450,9 +1451,9 @@ zedblade_info:
 	dc.l	zedblade_game_name
 	dc.l	zedblade_compiled_tiles_file_name,zedblade_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,zedblade_p1_rom_file_name,0
-	dc.l	0x800000
-	dc.l	0x400000,zedblade_c1_rom_file_name,zedblade_c2_rom_file_name
-	dc.l	0x400000,zedblade_c3_rom_file_name,zedblade_c4_rom_file_name
+	dc.l	0x00800000
+	dc.l	0x00000000,0x00000000,0x00400000,zedblade_c1_rom_file_name,zedblade_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,zedblade_c3_rom_file_name,zedblade_c4_rom_file_name
 
 zedblade_game_name:
 	.asciz	"Zed Blade"
@@ -1484,8 +1485,8 @@ neomrdo_info:
 	dc.l	neomrdo_game_name
 	dc.l	neomrdo_compiled_tiles_file_name,neomrdo_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,neomrdo_p1_rom_file_name,0
-	dc.l	0x400000
-	dc.l	0x400000,neomrdo_c1_rom_file_name,neomrdo_c2_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00400000,neomrdo_c1_rom_file_name,neomrdo_c2_rom_file_name
 
 neomrdo_game_name:
 	.asciz	"Neo Mr. Do!"
@@ -1511,11 +1512,11 @@ savagere_info:
 	dc.l	savagere_game_name
 	dc.l	savagere_compiled_tiles_file_name,savagere_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,savagere_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x400000,savagere_c1_rom_file_name,savagere_c2_rom_file_name
-	dc.l	0x400000,savagere_c3_rom_file_name,savagere_c4_rom_file_name
-	dc.l	0x400000,savagere_c5_rom_file_name,savagere_c6_rom_file_name
-	dc.l	0x400000,savagere_c7_rom_file_name,savagere_c8_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x00400000,savagere_c1_rom_file_name,savagere_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,savagere_c3_rom_file_name,savagere_c4_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00400000,savagere_c5_rom_file_name,savagere_c6_rom_file_name
+	dc.l	0x00c00000,0x00000000,0x00400000,savagere_c7_rom_file_name,savagere_c8_rom_file_name
 
 savagere_game_name:
 	.asciz	"Savage Reign"
@@ -1559,11 +1560,11 @@ gowcaizr_info:
 	dc.l	gowcaizr_game_name
 	dc.l	gowcaizr_compiled_tiles_file_name,gowcaizr_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,gowcaizr_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x400000,gowcaizr_c1_rom_file_name,gowcaizr_c2_rom_file_name
-	dc.l	0x400000,gowcaizr_c3_rom_file_name,gowcaizr_c4_rom_file_name
-	dc.l	0x400000,gowcaizr_c5_rom_file_name,gowcaizr_c6_rom_file_name
-	dc.l	0x400000,gowcaizr_c7_rom_file_name,gowcaizr_c8_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x00400000,gowcaizr_c1_rom_file_name,gowcaizr_c2_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00400000,gowcaizr_c3_rom_file_name,gowcaizr_c4_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00400000,gowcaizr_c5_rom_file_name,gowcaizr_c6_rom_file_name
+	dc.l	0x00c00000,0x00000000,0x00400000,gowcaizr_c7_rom_file_name,gowcaizr_c8_rom_file_name
 
 gowcaizr_game_name:
 	.asciz	"Voltage Fighter - Gowcaizer"
@@ -1607,8 +1608,8 @@ ganryu_info:
 	dc.l	ganryu_game_name
 	dc.l	ganryu_compiled_tiles_file_name,ganryu_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,ganryu_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x1000000,ganryu_c1_rom_file_name,ganryu_c2_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x01000000,ganryu_c1_rom_file_name,ganryu_c2_rom_file_name
 
 ganryu_game_name:
 	.asciz	"Ganryu"
@@ -1634,9 +1635,9 @@ sengoku3_info:
 	dc.l	sengoku3_game_name
 	dc.l	sengoku3_compiled_tiles_file_name,sengoku3_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_2,sengoku3_p1_rom_file_name,0
-	dc.l	0x2000000
-	dc.l	0x1000000,sengoku3_c1_rom_file_name,sengoku3_c2_rom_file_name
-	dc.l	0x1000000,sengoku3_c3_rom_file_name,sengoku3_c4_rom_file_name
+	dc.l	0x02000000
+	dc.l	0x00000000,0x00000000,0x01000000,sengoku3_c1_rom_file_name,sengoku3_c2_rom_file_name
+	dc.l	0x01000000,0x00000000,0x01000000,sengoku3_c3_rom_file_name,sengoku3_c4_rom_file_name
 
 sengoku3_game_name:
 	.asciz	"Sengoku 3"
@@ -1668,8 +1669,8 @@ zupapa_info:
 	dc.l	zupapa_game_name
 	dc.l	zupapa_compiled_tiles_file_name,zupapa_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,zupapa_p1_rom_file_name,0
-	dc.l	0x1000000
-	dc.l	0x1000000,zupapa_c1_rom_file_name,zupapa_c2_rom_file_name
+	dc.l	0x01000000
+	dc.l	0x00000000,0x00000000,0x01000000,zupapa_c1_rom_file_name,zupapa_c2_rom_file_name
 
 zupapa_game_name:
 	.asciz	"Zupapa!"
@@ -1695,10 +1696,10 @@ maglord_info:
 	dc.l	maglord_game_name
 	dc.l	maglord_compiled_tiles_file_name,maglord_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,maglord_p1_rom_file_name,0
-	dc.l	0x300000
-	dc.l	0x100000,maglord_c1_rom_file_name,maglord_c2_rom_file_name
-	dc.l	0x100000,maglord_c3_rom_file_name,maglord_c4_rom_file_name
-	dc.l	0x100000,maglord_c5_rom_file_name,maglord_c6_rom_file_name
+	dc.l	0x00300000
+	dc.l	0x00000000,0x00000000,0x00100000,maglord_c1_rom_file_name,maglord_c2_rom_file_name
+	dc.l	0x00100000,0x00000000,0x00100000,maglord_c3_rom_file_name,maglord_c4_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,maglord_c5_rom_file_name,maglord_c6_rom_file_name
 
 maglord_game_name:
 	.asciz	"Magician Lord"
@@ -1736,9 +1737,9 @@ roboarmy_info:
 	dc.l	roboarmy_game_name
 	dc.l	roboarmy_compiled_tiles_file_name,roboarmy_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,roboarmy_p1_rom_file_name,0
-	dc.l	0x300000
-	dc.l	0x200000,roboarmy_c1_rom_file_name,roboarmy_c2_rom_file_name
-	dc.l	0x100000,roboarmy_c3_rom_file_name,roboarmy_c4_rom_file_name
+	dc.l	0x00300000
+	dc.l	0x00000000,0x00000000,0x00200000,roboarmy_c1_rom_file_name,roboarmy_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,roboarmy_c3_rom_file_name,roboarmy_c4_rom_file_name
 
 roboarmy_game_name:
 	.asciz	"Robo Army"
@@ -1770,8 +1771,8 @@ androdun_info:
 	dc.l	androdun_game_name
 	dc.l	androdun_compiled_tiles_file_name,androdun_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_4,androdun_p1_rom_file_name,androdun_p2_rom_file_name
-	dc.l	0x200000
-	dc.l	0x200000,androdun_c1_rom_file_name,androdun_c2_rom_file_name
+	dc.l	0x00200000
+	dc.l	0x00000000,0x00000000,0x00200000,androdun_c1_rom_file_name,androdun_c2_rom_file_name
 
 androdun_game_name:
 	.asciz	"Andro Dunos"
@@ -1800,8 +1801,8 @@ flipshot_info:
 	dc.l	flipshot_game_name
 	dc.l	flipshot_compiled_tiles_file_name,flipshot_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,flipshot_p1_rom_file_name,0
-	dc.l	0x400000
-	dc.l	0x400000,flipshot_c1_rom_file_name,flipshot_c2_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00400000,flipshot_c1_rom_file_name,flipshot_c2_rom_file_name
 
 flipshot_game_name:
 	.asciz	"Flipshot"
@@ -1827,11 +1828,11 @@ spinmast_info:
 	dc.l	spinmast_game_name
 	dc.l	spinmast_compiled_tiles_file_name,spinmast_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_3,spinmast_p1_rom_file_name,spinmast_p2_rom_file_name
-	dc.l	0x800000
-	dc.l	0x200000,spinmast_c1_rom_file_name,spinmast_c2_rom_file_name
-	dc.l	0x200000,spinmast_c3_rom_file_name,spinmast_c4_rom_file_name
-	dc.l	0x200000,spinmast_c5_rom_file_name,spinmast_c6_rom_file_name
-	dc.l	0x200000,spinmast_c7_rom_file_name,spinmast_c8_rom_file_name
+	dc.l	0x00800000
+	dc.l	0x00000000,0x00000000,0x00200000,spinmast_c1_rom_file_name,spinmast_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,spinmast_c3_rom_file_name,spinmast_c4_rom_file_name
+	dc.l	0x00400000,0x00000000,0x00200000,spinmast_c5_rom_file_name,spinmast_c6_rom_file_name
+	dc.l	0x00600000,0x00000000,0x00200000,spinmast_c7_rom_file_name,spinmast_c8_rom_file_name
 
 spinmast_game_name:
 	.asciz	"Spin Master"
@@ -1878,9 +1879,9 @@ bjourney_info:
 	dc.l	bjourney_game_name
 	dc.l	bjourney_compiled_tiles_file_name,bjourney_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,bjourney_p1_rom_file_name,0
-	dc.l	0x300000
-	dc.l	0x200000,bjourney_c1_rom_file_name,bjourney_c2_rom_file_name
-	dc.l	0x100000,bjourney_c3_rom_file_name,bjourney_c4_rom_file_name
+	dc.l	0x00300000
+	dc.l	0x00000000,0x00000000,0x00200000,bjourney_c1_rom_file_name,bjourney_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,bjourney_c3_rom_file_name,bjourney_c4_rom_file_name
 
 bjourney_game_name:
 	.asciz	"Blue's Journey"
@@ -1912,9 +1913,9 @@ eightman_info:
 	dc.l	eightman_game_name
 	dc.l	eightman_compiled_tiles_file_name,eightman_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,eightman_p1_rom_file_name,0
-	dc.l	0x300000
-	dc.l	0x200000,eightman_c1_rom_file_name,eightman_c2_rom_file_name
-	dc.l	0x100000,eightman_c3_rom_file_name,eightman_c4_rom_file_name
+	dc.l	0x00300000
+	dc.l	0x00000000,0x00000000,0x00200000,eightman_c1_rom_file_name,eightman_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00100000,eightman_c3_rom_file_name,eightman_c4_rom_file_name
 
 eightman_game_name:
 	.asciz	"Eight Man"
@@ -1946,9 +1947,9 @@ fatfury1_info:
 	dc.l	fatfury1_game_name
 	dc.l	fatfury1_compiled_tiles_file_name,fatfury1_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_4,fatfury1_p1_rom_file_name,fatfury1_p2_rom_file_name
-	dc.l	0x400000
-	dc.l	0x200000,fatfury1_c1_rom_file_name,fatfury1_c2_rom_file_name
-	dc.l	0x200000,fatfury1_c3_rom_file_name,fatfury1_c4_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00200000,fatfury1_c1_rom_file_name,fatfury1_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,fatfury1_c3_rom_file_name,fatfury1_c4_rom_file_name
 
 fatfury1_game_name:
 	.asciz	"Fatal Fury - King of Fighters"
@@ -1979,13 +1980,49 @@ fatfury1_c4_rom_file_name:
 
 .even
 
+fatfury2_info:
+	dc.l	fatfury2_game_name
+	dc.l	fatfury2_compiled_tiles_file_name,fatfury2_tiles_usage_bitmap_file_name
+	dc.l	load_program_rom_1,fatfury2_p1_rom_file_name,0
+	dc.l	0x00800000
+	dc.l	0x00000000,0x00000000,0x00200000,fatfury2_c1_rom_file_name,fatfury2_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,fatfury2_c3_rom_file_name,fatfury2_c4_rom_file_name
+	dc.l	0x00400000,0x00200000,0x00200000,fatfury2_c1_rom_file_name,fatfury2_c2_rom_file_name
+	dc.l	0x00600000,0x00200000,0x00200000,fatfury2_c3_rom_file_name,fatfury2_c4_rom_file_name
+
+fatfury2_game_name:
+	.asciz	"Fatal Fury 2"
+
+fatfury2_compiled_tiles_file_name:
+	.asciz	"fatfury2\\fatfury2.tls"
+
+fatfury2_tiles_usage_bitmap_file_name:
+	.asciz	"fatfury2\\fatfury2.ubm"
+
+fatfury2_p1_rom_file_name:
+	.asciz	"fatfury2\\047-p1.p1"
+
+fatfury2_c1_rom_file_name:
+	.asciz	"fatfury2\\047-c1.c1"
+
+fatfury2_c2_rom_file_name:
+	.asciz	"fatfury2\\047-c2.c2"
+
+fatfury2_c3_rom_file_name:
+	.asciz	"fatfury2\\047-c3.c3"
+
+fatfury2_c4_rom_file_name:
+	.asciz	"fatfury2\\047-c4.c4"
+
+.even
+
 ncommand_info:
 	dc.l	ncommand_game_name
 	dc.l	ncommand_compiled_tiles_file_name,ncommand_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,ncommand_p1_rom_file_name,0
-	dc.l	0x400000
-	dc.l	0x200000,ncommand_c1_rom_file_name,ncommand_c2_rom_file_name
-	dc.l	0x200000,ncommand_c3_rom_file_name,ncommand_c4_rom_file_name
+	dc.l	0x00400000
+	dc.l	0x00000000,0x00000000,0x00200000,ncommand_c1_rom_file_name,ncommand_c2_rom_file_name
+	dc.l	0x00200000,0x00000000,0x00200000,ncommand_c3_rom_file_name,ncommand_c4_rom_file_name
 
 ncommand_game_name:
 	.asciz	"Ninja Commando"
@@ -2017,8 +2054,8 @@ panicbom_info:
 	dc.l	panicbom_game_name
 	dc.l	panicbom_compiled_tiles_file_name,panicbom_tiles_usage_bitmap_file_name
 	dc.l	load_program_rom_1,panicbom_p1_rom_file_name,0
-	dc.l	0x200000
-	dc.l	0x200000,panicbom_c1_rom_file_name,panicbom_c2_rom_file_name
+	dc.l	0x00200000
+	dc.l	0x00000000,0x00000000,0x00200000,panicbom_c1_rom_file_name,panicbom_c2_rom_file_name
 
 panicbom_game_name:
 	.asciz	"Panic Bomber"

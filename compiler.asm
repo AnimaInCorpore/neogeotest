@@ -63,30 +63,38 @@ compile_tiles:
 	movem.l	d0/a0-a1,-(sp)
 
 	move.l	d1,d0
-	and.l	#0x00030000,d0
+	and.l	#0x00070000,d0
 	jne		5f
 
 	Cconws	progress_text
 5:
-	clr.l	d0
 	move.l	game_info_pointer,a0
 	add		#7*4,a0
 4:
+	move.l	(a0)+,d0															| ROM start address.
+	move.l	(a0)+,d6															| ROM data offset.
 	move.l	d0,d2
-	add.l	(a0)+,d0
+	add.l	(a0)+,d2															| ROM size.
+
 	cmp.l	d0,d1
 	jlt		5f
 
-	addq.l	#8,a0
-	jra		4b
+	cmp.l	d2,d1
+	jlt		4f
 5:
+	addq.l	#8,a0
+
+	jra		4b
+4:
 	| Refresh tiles ROM buffers.
+
+	move.l	d1,d2
+	sub.l	d0,d2
+	add.l	d2,d6
+	lsr.l	#1,d6																| File seek position = ROM data offset / 2.
 
 	move.l	(a0)+,a5															| Odd tiles ROM filename.
 	move.l	(a0)+,a6															| Even tiles ROM filename.
-	move.l	d1,d6
-	sub.l	d2,d6
-	lsr.l	#1,d6																| Tiles ROM seek position.
 
 	Fopen	(a5),#0
 	move	d0,d7
