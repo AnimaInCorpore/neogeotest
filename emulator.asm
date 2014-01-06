@@ -1009,7 +1009,7 @@ draw_dummy_sprites:
 
 	clr.l	d3																	| Pixel colour.
 	clr		d4																	| Pixel cache.
-	move	#0xff,d5															| Pixel palette index mask.
+	move	#0xf,d5																| Pixel palette index mask.
 
 	move.l	(a0)+,d0
 
@@ -1026,10 +1026,10 @@ draw_dummy_sprites:
 	jeq		4f
 
 	move	d1,d4
-	move	(a1,d1.w*2),d3
-	lea		(a2,d3.l*2),a3
+	move	(a1,d1.w*2),d3														| Get original pixel colour.
+	move	(a2,d3.l*2),a5														| Get converted pixel colour.
 4:
-	move	(a3),(a6)
+	move	a5,(a6)
 2:
 	addq	#2,a6
 3:
