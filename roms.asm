@@ -459,7 +459,7 @@ neobombe_info:
 	dc.l	load_program_rom_1,neobombe_p1_rom_file_name,0
 	dc.l	0x00900000
 	dc.l	0x00000000,0x00000000,0x00800000,neobombe_c1_rom_file_name,neobombe_c2_rom_file_name
-	dc.l	0x00000000,0x00800000,0x00100000,neobombe_c3_rom_file_name,neobombe_c4_rom_file_name
+	dc.l	0x00800000,0x00000000,0x00100000,neobombe_c3_rom_file_name,neobombe_c4_rom_file_name
 
 neobombe_game_name:
 	.asciz	"Neo Bomberman"

@@ -836,9 +836,6 @@ palette_bank_offset:
 reg_status_a_counter:
 	dc.w	0x007f
 
-sprite_draw_counter:
-	dc.w	1
-
 input_player_1:
 	dc.w	0xff00
 
@@ -1012,11 +1009,10 @@ draw_dummy_sprites:
 	move	#0xf,d5																| Pixel palette index mask.
 
 	move.l	(a0)+,d0
-
-	moveq	#8-1,d7
 1:
 	add.w	d2,d2																| 16 scaling bits.
 	jcc		3f
+	jeq		5f
 
 	move	d0,d1
 	and		d5,d1
@@ -1035,7 +1031,315 @@ draw_dummy_sprites:
 3:
 	lsr.l	#4,d0
 
-	dbf		d7,1b
+	jra		1b
+5:
+
+
+
+
+	| Sprite zoom test 2 (just an idea and not for use).
+
+	move.l	(a0)+,d0
+	move.l	(a1)+,d1
+	move.l	(a2)+,d2
+	move.l	(a3)+,d3
+
+	lea		PALETTE_ADDRESS,a0
+	lea		SCREEN_ADDRESS,a1
+
+	clr.l	d4
+	move	#0xf,d5
+
+	tst.b	d7
+	jeq		4f
+1:
+	jpl		3f
+
+	move	d0,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),(a1)
+2:
+	move	d1,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2(a1)
+2:
+	move	d2,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*2(a1)
+2:
+	move	d3,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*3(a1)
+2:
+	addq.l	#2,a1
+3:
+	lsr.l	#4,d0
+	lsr.l	#4,d1
+	lsr.l	#4,d2
+	lsr.l	#4,d3
+
+	add.b	d7,d7
+	jne		1b
+4:
+
+
+
+	| Sprite zoom test 3 (just an idea and not for use).
+
+	move.l	(a0)+,d0
+	move.l	(a1)+,d1
+	move.l	(a2)+,d2
+	move.l	(a3)+,d3
+
+	lea		PALETTE_ADDRESS,a0
+	lea		SCREEN_ADDRESS,a1
+
+	clr.l	d4
+	move	#0xf,d5
+
+	tst.b	d7
+	jeq		4f
+1:
+	jpl		3f
+
+	move	d0,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),(a1)
+2:
+	move	d1,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2(a1)
+2:
+	move	d2,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*2(a1)
+2:
+	move	d3,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*3(a1)
+2:
+	move	a2,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*4(a1)
+2:
+	move	a3,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*5(a1)
+2:
+	move	a4,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*6(a1)
+2:
+	move	a5,d4
+	and		d5,d4
+	jeq		2f
+
+	move	(a0,d4.l*2),512*2*7(a1)
+2:
+	addq.l	#2,a1
+3:
+	lsr.l	#4,d0
+	lsr.l	#4,d1
+	lsr.l	#4,d2
+	lsr.l	#4,d3
+
+	move.l	a2,d6
+	lsr.l	#4,d6
+	move.l	d6,a2
+
+	move.l	a3,d6
+	lsr.l	#4,d6
+	move.l	d6,a3
+
+	move.l	a4,d6
+	lsr.l	#4,d6
+	move.l	d6,a4
+
+	move.l	a5,d6
+	lsr.l	#4,d6
+	move.l	d6,a5
+
+	add.b	d7,d7
+	jne		1b
+4:
+
+
+	| Sprite zoom test 4 (just an idea and not for use).
+
+	move.l	(a0)+,d0
+	move.l	(a1)+,d1
+	move.l	(a2)+,d2
+	move.l	(a3)+,d3
+	move.l	(a4)+,d4
+	move.l	(a5)+,d5
+
+	lea		PALETTE_ADDRESS,a0
+	lea		SCREEN_ADDRESS,a1
+
+	clr.l	d6
+
+	tst.b	d7
+	jeq		4f
+1:
+	jpl		3f
+
+	move	d0,d6
+	and		#0xf,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),(a1)
+2:
+	lsr.l	#4,d0
+
+	move	d1,d6
+	and		#0xf,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2(a1)
+2:
+	lsr.l	#4,d1
+
+	move	d2,d6
+	and		#0xf,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*2(a1)
+2:
+	lsr.l	#4,d2
+
+	move	d3,d4
+	and		#0xf,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*3(a1)
+2:
+	lsr.l	#4,d3
+
+	move	d4,d6
+	and		#0xf,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*4(a1)
+2:
+	lsr.l	#4,d4
+
+	move	d5,d6
+	and		#0xf,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*5(a1)
+2:
+	lsr.l	#4,d5
+
+	addq.l	#2,a1
+3:
+	add.b	d7,d7
+	jne		1b
+4:
+
+
+	| Sprite zoom test 5 (just an idea and not for use).
+
+	move.l	(a0)+,d0
+	move.l	(a1)+,d1
+	move.l	(a2)+,d2
+	move.l	(a3)+,d3
+	move.l	(a4)+,d4
+	move.l	(a5)+,d5
+
+	lea		PALETTE_ADDRESS,a0
+	lea		SCREEN_ADDRESS,a1
+
+	clr.l	d6
+
+	tst.b	d7
+	jeq		4f
+1:
+	jpl		3f
+
+	move.b	(a2)+,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),(a1)
+2:
+	move.b	(a3)+,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2(a1)
+2:
+	move.b	(a4)+,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*2(a1)
+2:
+	move.b	(a5)+,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*3(a1)
+2:
+	move.b	(a6)+,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*4(a1)
+2:
+	lsr.l	#4,d4
+
+	move	d5,d6
+	and		#0xf,d6
+	jeq		2f
+
+	move	(a0,d6.l*2),512*2*5(a1)
+2:
+	lsr.l	#4,d5
+
+	addq.l	#2,a1
+3:
+	add.b	d7,d7
+	jne		1b
+4:
+
+
+	| Scale bitmap table.
+
+	dc.w	0b0000000010000000
+	dc.w	0b0000100010000000
+	dc.w	0b0000100010001000
+	dc.w	0b0010100010001000
+	dc.w	0b0010100010001010
+	dc.w	0b0010101010001010
+	dc.w	0b0010101010101010
+	dc.w	0b1010101010101010
+	dc.w	0b1010101011101010
+	dc.w	0b1011101011101010
+	dc.w	0b1011101011101011
+	dc.w	0b1011101111101011
+	dc.w	0b1011101111101111
+	dc.w	0b1111101111101111
+	dc.w	0b1111101111111111
+	dc.w	0b1111111111111111
+
 */
 
 
@@ -1356,7 +1660,9 @@ draw_tiles:
 |	cmp.b	#0x39,0xfc02.w
 |	jeq		2f
 
-	lea		TILE_INFOS_ADDRESS,a1
+	move.l	tile_infos_address(pc),a1
+
+	move	#30-1,d7
 1:
 	move.l	(a1)+,d0															| Palette address.
 	jeq		2f
@@ -1366,56 +1672,48 @@ draw_tiles:
 
 	move.l	(a1)+,d0															| Sprite drawing code address.
 	jeq		1b
-/*
-	jne		3f
+|	jne		4f
 
-	moveq.l	#-1,d0
-	move.l	d0,(a6)+
-	add		#12*2,a6
-	move.l	d0,(a6)+
-	add		#512*2-16*2,a6
+	move	d7,-(sp)
 
-	move	d0,(a6)+
-	add		#14*2,a6
-	move	d0,(a6)+
-	add		#512*2-16*2+512*2*12,a6
-
-	move	d0,(a6)+
-	add		#14*2,a6
-	move	d0,(a6)+
-	add		#512*2-16*2,a6
-
-	move.l	d0,(a6)+
-	add		#12*2,a6
-	move.l	d0,(a6)+
-
-	jra		1b
-3:
-*/
 	lea		3f(pc),a0															| Return address.
 	movem.l	d0/a0-a1,-(sp)
 	movem.l	(a2),d0-a5															| Load palette colors.
 	rts																			| Jump to sprite drawing code.
 3:
 	move.l	(sp)+,a1
-	jra		1b
+
+	move	(sp)+,d7
+4:
+	dbf		d7,1b
+
+	lea		tile_infos_address(pc),a0
+	move.l	a1,(a0)
+
+	movem.l	(sp)+,d0-a6
+
+	rts
 2:
+	lea		tile_infos_address(pc),a0
+	move.l	#TILE_INFOS_ADDRESS,(a0)
+
+	lea		sprite_draw_flag(pc),a0
+	clr		(a0)
+
 	movem.l	(sp)+,d0-a6
 
 	rts
 
+tile_infos_address:
+	dc.l	TILE_INFOS_ADDRESS
+
 |-------------------------------------------------------------------------------
 |
-|	Build tile infos.
-|
-|	Each entry consists of the palette address, the screen address and the
-|	drawing address.
-|
-|	Two passes for cache usage efficiency.
+|	Prepare tile infos.
 |
 |-------------------------------------------------------------------------------
 
-build_tile_infos:
+prepare_tile_infos:
 |	move.l	#0x000000ff,0x9800.w												| Fixme: debugging!
 
 	movem.l	d0-a6,-(sp)
@@ -1557,9 +1855,22 @@ build_tile_infos:
 
 	clr.l	(a3)																| End marker.
 
-|	move.l	#0xff000000,0x9800.w												| Fixme: debugging!
+   	movem.l	(sp)+,d0-a6
 
-	| Pass 2: convert the temporary infos.
+|	clr.l	0x9800.w															| Fixme: debugging!
+
+	rts
+
+|-------------------------------------------------------------------------------
+|
+|	Build tile infos.
+|
+|-------------------------------------------------------------------------------
+
+build_tile_infos:
+|	move.l	#0x000000ff,0x9800.w												| Fixme: debugging!
+
+	movem.l	d0-a6,-(sp)
 
 	| Clear the palette converted flags.
 
@@ -1722,9 +2033,9 @@ build_tile_infos:
 |	move.l	#0xff000000,0x9800.w												| Fixme: debugging!
 
 	| Keep the Blitter running.
-1:
-	tas		Line_Num.w															| Restart the blitter.
-	jmi		1b
+|1:
+|	tas		Line_Num.w															| Restart the blitter.
+|	jmi		1b
 
    	movem.l	(sp)+,d0-a6
 
@@ -1862,27 +2173,69 @@ vbl_handler:
 	move.b	d0,0x8203.w
 	move.b	d1,0x820d.w
 
+	| Sprite drawing.
+
+	lea		sprite_draw_flag(pc),a0
+
+	tst		(a0)
+	jne		1f
+
+	move	sprite_draw_counter(pc),d0
+	cmp		#8,d0
+	jlt		2f
+
+	move.l	#0x7f000000,0x9800.w
+
+	jbsr	prepare_tile_infos
+
+	clr.l	0x9800.w
+
+	not		(a0)
+
 	lea		sprite_draw_counter(pc),a0
-	addq	#1,(a0)
-	move	(a0),d0
-
-	cmp		#10,d0
-	jlt		1f
-
 	clr		(a0)
 
-|	jbsr	draw_dummy_sprites
+	jra		2f
+1:
+	move	sprite_draw_counter(pc),d0
+	cmp		#1,d0
+	jne		1f
+
+	move.l	#0x000000ff,0x9800.w
 
 	jbsr	build_tile_infos
+
+	clr.l	0x9800.w
+
+	jra		2f
+1:
+	move.l	#0x003f0000,0x9800.w
+
 	jbsr	draw_tiles
 
+	clr.l	0x9800.w
+
+	tst		(a0)
+	jne		2f
+1:
+	btst	#7,Line_Num.w
+	jeq		1f
+
+	bset	#7,Line_Num.w														| Restart the blitter.
+	jra		1b
+1:
 	lea		display_screen_address(pc),a0
 	move.l	(a0),d0
 	move.l	4(a0),(a0)
 	move.l	8(a0),4(a0)
 	move.l	d0,8(a0)
-1:
+2:
+	lea		sprite_draw_counter(pc),a0
+	addq	#1,(a0)
+
 	movem.l	(sp)+,d0-d1/a0
+
+	| Jump to the appropriate game or BIOS VBL routine.
 
 	tst		use_cartridge_vector_table(pc)
 	jne		1f
@@ -1901,6 +2254,12 @@ work_screen_address:
 
 clear_screen_address:
 	dc.l	SCREEN_ADDRESS_3
+
+sprite_draw_flag:
+	ds.w	1
+
+sprite_draw_counter:
+	ds.w	1
 
 |-------------------------------------------------------------------------------
 |
