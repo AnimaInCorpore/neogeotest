@@ -499,105 +499,7 @@ bus_error_handler:
 	btst	#6,SSW_OFFSET+1(sp)													| Read access?
 	jne		3f
 
-	move.l	#0x000000ff,0x9800.w												| Fixme: debugging!
-
-	movem.l	d0/a0,-(sp)
-
-	move.l	2*4+2(sp),a0														| Return address.
-
-	| "move.b #x,0x300001"?
-
-	move	(a0),d0
-	cmp		#0x13fc,d0
-	jne		4f
-
-	move	#0x4e71,(a0)+
-	move	#0x4e71,(a0)+
-	move	#0x4e71,(a0)+
-	move	#0x4e71,(a0)+
-
-	jra		5f
-4:
-	| "move.b dx,0x300001"?
-
-	move	(a0),d0
-	and		#0xfff0,d0
-	cmp		#0x13c0,d0
-	jne		4f
-
-	move	#0x4e71,(a0)+
-	move	#0x4e71,(a0)+
-	move	#0x4e71,(a0)+
-
-	jra		5f
-4:
-	| "move.b dx,(ax)"?
-
-	move	-2(a0),d0
-	and		#0xf1f0,d0
-	cmp		#0x1080,d0
-	jne		4f
-
-	move	#0x4e71,-2(a0)
-
-	jra		5f
-4:
-	| "move.b dx,(ax)"?
-
-	move	-4(a0),d0
-	and		#0xf1f0,d0
-	cmp		#0x1080,d0
-	jne		4f
-
-	move	#0x4e71,-4(a0)
-
-	jra		5f
-4:
-	movem.l	(sp)+,d0/a0
-
-	movem.l	a0-a1,-(sp)
-
-	lea		debugger_data(pc),a0
-	move.l	2*4+2(sp),a1
-
-	move.l	a1,(a0)+
-	move	(a1)+,(a0)+
-	move	(a1)+,(a0)+
-	move	(a1)+,(a0)+
-	move	(a1)+,(a0)+
-
-	move.l	2*4(sp),(a0)+
-	move.l	2*4+4(sp),(a0)+
-	move.l	2*4+8(sp),(a0)+
-
-	move.l	2*4+12(sp),(a0)+
-	move.l	2*4+16(sp),(a0)+
-	move.l	2*4+20(sp),(a0)+
-
-	move.l	2*4+24(sp),(a0)+
-	move.l	2*4+28(sp),(a0)+
-	move.l	2*4+32(sp),(a0)+
-
-	move.l	2*4+36(sp),(a0)+
-	move.l	2*4+40(sp),(a0)+
-	move.l	2*4+44(sp),(a0)+
-
-	move.l	2*4+48(sp),(a0)+
-	move.l	2*4+52(sp),(a0)+
-	move.l	2*4+56(sp),(a0)+
-
-	movem.l	(sp)+,a0-a1
-
-	jra		debugger
-5:
-	movec	cacr,d0
-	bset	#11,d0
-	bset	#3,d0
-	movec	d0,cacr
-
-	movem.l	(sp)+,d0/a0
-
-	clr.l	0x9800.w															| Fixme: debugging!
+	jbsr	disable_instruction
 
 	rte
 3:
@@ -699,17 +601,19 @@ bus_error_handler:
 
 	lea		keyboard_value(pc),a0
 
-	move.b	#0xff,1*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
+	move.b	#0xff,1*4+DATA_TO_BE_READ_OFFSET+3(sp)								| Read (byte sized) data from REG_STATUS_B.
 
 	cmp.b	#0x02,(a0)
 	jne		3f
 
-	move.b	#0xfe,1*4+DATA_TO_BE_READ_OFFSET+3(sp)									| Read (byte sized) data from REG_STATUS_B.
+	move.b	#0xfe,1*4+DATA_TO_BE_READ_OFFSET+3(sp)								| Read (byte sized) data from REG_STATUS_B.
 3:
 	move.l	(sp)+,a0
 
 	rte
 2:
+	jbsr	disable_instruction
+
 	rte
 1:
 	| REG_NOSHADOW, REG_SHADOW, REG_SWPBIOS, REG_SWPROM, REG_CRDUNLOCK1,
@@ -756,7 +660,7 @@ bus_error_handler:
 	move.l	a0,-(sp)
 
 	lea		palette_bank_offset(pc),a0
-|	move	#0x2000,(a0)														| Fixme: palette!
+|	move	#0x2000,(a0)														| Fixme: need real bankswitching!
 
 	move.l	(sp)+,a0
 
@@ -770,7 +674,7 @@ bus_error_handler:
 	move.l	a0,-(sp)
 
 	lea		palette_bank_offset(pc),a0
-|	clr		(a0)																| Fixme: palette!
+|	clr		(a0)																| Fixme: need real bankswitching!
 
 	move.l	(sp)+,a0
 
@@ -780,41 +684,40 @@ bus_error_handler:
 1:
 	| Unhandled addresses.
 /*
-	movem.l	d0-a6,-(sp)
+	movem.l	a0-a1,-(sp)
 
-	move.l	#SCREEN_ADDRESS,d0
-	swap	d0
-	move.b	d0,0x8201.w
-	swap	d0
-	move	d0,d1
-	ror		#8,d0
-	move.b	d0,0x8203.w
-	move.b	d1,0x820d.w
+	lea		debugger_data(pc),a0
+	move.l	2*4+2(sp),a1
 
-	move	#0b1111100000000000,d2												| Write access = red text color.
+	move.l	a1,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
 
-	btst	#6,15*4+SSW_OFFSET+1(sp)											| Read access?
-	jne		1f
+	move.l	2*4(sp),(a0)+
+	move.l	2*4+4(sp),(a0)+
+	move.l	2*4+8(sp),(a0)+
 
-	move	#0b0000011111100000,d2												| Read access = green text color.
+	move.l	2*4+12(sp),(a0)+
+	move.l	2*4+16(sp),(a0)+
+	move.l	2*4+20(sp),(a0)+
 
-	move.l	15*4+0x2(sp),d0
-	jbsr	write_long_data
+	move.l	2*4+24(sp),(a0)+
+	move.l	2*4+28(sp),(a0)+
+	move.l	2*4+32(sp),(a0)+
 
-	jbsr	write_space
+	move.l	2*4+36(sp),(a0)+
+	move.l	2*4+40(sp),(a0)+
+	move.l	2*4+44(sp),(a0)+
 
-	move.l	15*4+0x10(sp),d0
-	jbsr	write_long_data
+	move.l	2*4+48(sp),(a0)+
+	move.l	2*4+52(sp),(a0)+
+	move.l	2*4+56(sp),(a0)+
 
-	jbsr	write_space
+	movem.l	(sp)+,a0-a1
 
-	move	15*4+0xa(sp),d0
-	jbsr	write_word_data
-
-	jbsr	write_space
-	jbsr	write_new_line
-1:
-	movem.l	(sp)+,d0-a6
+	jra		debugger
 */
 	rte
 
@@ -838,6 +741,129 @@ reg_status_a_counter:
 
 input_player_1:
 	dc.w	0xff00
+
+|-------------------------------------------------------------------------------
+|
+|	Disable instruction.
+|
+|-------------------------------------------------------------------------------
+
+disable_instruction:
+	not.l	0x9800.w															| Fixme: debugging!
+
+	movem.l	d0/a0,-(sp)
+
+	move.l	4+2*4+2(sp),a0														| Return address.
+
+	| "move.b #XX,(aX)"?
+
+	move	-4(a0),d0
+	and		#0xf1ff,d0
+	cmp		#0x10bc,d0
+	jne		4f
+
+	move	#0x4e71,-4(a0)
+	move	#0x4e71,-2(a0)
+
+	jra		5f
+4:
+	| "move.b #XX,0xXXXXXXXX"?
+
+	move	(a0),d0
+	cmp		#0x13fc,d0
+	jne		4f
+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+
+	jra		5f
+4:
+	| "move.b dX,0xXXXXXXXX"?
+
+	move	(a0),d0
+	and		#0xfff0,d0
+	cmp		#0x13c0,d0
+	jne		4f
+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+	move	#0x4e71,(a0)+
+
+	jra		5f
+4:
+	| "move.b dX,(aX)"?
+
+	move	-2(a0),d0
+	and		#0xf1f0,d0
+	cmp		#0x1080,d0
+	jne		4f
+
+	move	#0x4e71,-2(a0)
+
+	jra		5f
+4:
+	| "move.b dX,(aX)"?
+
+	move	-4(a0),d0
+	and		#0xf1f0,d0
+	cmp		#0x1080,d0
+	jne		4f
+
+	move	#0x4e71,-4(a0)
+
+	jra		5f
+4:
+	movem.l	(sp)+,d0/a0
+
+	movem.l	a0-a1,-(sp)
+
+	lea		debugger_data(pc),a0
+	move.l	4+2*4+2(sp),a1
+
+	move.l	a1,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+	move	(a1)+,(a0)+
+
+	move.l	2*4(sp),(a0)+
+	move.l	2*4+4(sp),(a0)+
+	move.l	2*4+8(sp),(a0)+
+
+	move.l	2*4+12(sp),(a0)+
+	move.l	2*4+16(sp),(a0)+
+	move.l	2*4+20(sp),(a0)+
+
+	move.l	2*4+24(sp),(a0)+
+	move.l	2*4+28(sp),(a0)+
+	move.l	2*4+32(sp),(a0)+
+
+	move.l	2*4+36(sp),(a0)+
+	move.l	2*4+40(sp),(a0)+
+	move.l	2*4+44(sp),(a0)+
+
+	move.l	2*4+48(sp),(a0)+
+	move.l	2*4+52(sp),(a0)+
+	move.l	2*4+56(sp),(a0)+
+
+	movem.l	(sp)+,a0-a1
+
+	addq.l	#4,sp
+
+	jra		debugger
+5:
+	movec	cacr,d0
+	bset	#11,d0
+	bset	#3,d0
+	movec	d0,cacr
+
+	movem.l	(sp)+,d0/a0
+
+	clr.l	0x9800.w															| Fixme: debugging!
+
+	rts
 
 |-------------------------------------------------------------------------------
 |
@@ -1736,7 +1762,9 @@ prepare_tile_infos:
 
 	lea		PALETTE_DECODER_TABLE,a1
 	clr.l	d0
-	move	PALETTE_RAM+0x1ffe,d0
+	lea		PALETTE_RAM,a0
+	add		palette_bank_offset(pc),a0
+	move	0x1ffe(a0),d0
 	move	(a1,d0.l*2),d0
 
 	lea		Halftone.w,a1
@@ -1887,8 +1915,7 @@ build_tile_infos:
 	lea		TILE_INFOS_ADDRESS,a1
 
 	lea		PALETTE_RAM,a2
-	lea		palette_bank_offset(pc),a3
-	add		(a3),a2
+	add		palette_bank_offset(pc),a2
 
 	lea		PALETTES_ADDRESS,a3
 	lea		PALETTE_DECODER_TABLE,a4
