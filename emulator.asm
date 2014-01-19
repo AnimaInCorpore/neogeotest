@@ -749,7 +749,7 @@ input_player_1:
 |-------------------------------------------------------------------------------
 
 disable_instruction:
-	not.l	0x9800.w															| Fixme: debugging!
+|	not.l	0x9800.w															| Fixme: debugging!
 
 	movem.l	d0/a0,-(sp)
 
@@ -861,7 +861,7 @@ disable_instruction:
 
 	movem.l	(sp)+,d0/a0
 
-	clr.l	0x9800.w															| Fixme: debugging!
+|	clr.l	0x9800.w															| Fixme: debugging!
 
 	rts
 
@@ -2211,11 +2211,11 @@ vbl_handler:
 	cmp		#8,d0
 	jlt		2f
 
-	move.l	#0x7f000000,0x9800.w
+|	move.l	#0x7f000000,0x9800.w
 
 	jbsr	prepare_tile_infos
 
-	clr.l	0x9800.w
+|	clr.l	0x9800.w
 
 	not		(a0)
 
@@ -2228,19 +2228,19 @@ vbl_handler:
 	cmp		#1,d0
 	jne		1f
 
-	move.l	#0x000000ff,0x9800.w
+|	move.l	#0x000000ff,0x9800.w
 
 	jbsr	build_tile_infos
 
-	clr.l	0x9800.w
+|	clr.l	0x9800.w
 
 	jra		2f
 1:
-	move.l	#0x003f0000,0x9800.w
+|	move.l	#0x003f0000,0x9800.w
 
 	jbsr	draw_tiles
 
-	clr.l	0x9800.w
+|	clr.l	0x9800.w
 
 	tst		(a0)
 	jne		2f
