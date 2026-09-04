@@ -1,8 +1,10 @@
 # 68030 MMU: stale stage-B opcode executed at the interrupt vector after a frame-$B bus fault
 
 Report against Hatari's WinUAE-derived CPU core. **Root cause found and fixed**;
-the trigger site is shared UAE code, so the first patch below is believed to be
-an upstream WinUAE defect, not a Hatari divergence.
+the trigger site is shared UAE code, and the same paths were confirmed present
+unchanged in WinUAE `master`, so the first patch below fixes an upstream defect
+rather than a Hatari divergence. Filed upstream as
+[tonioni/WinUAE#485](https://github.com/tonioni/WinUAE/issues/485).
 
 The observed event is a single mis-paired instruction dispatch: an `RTE` from a
 format-$B (long) bus fault arms a retry and restores the frame's stage-B opcode;
@@ -116,8 +118,21 @@ The last line is the whole bug in one row: `regs.irc` is right, and it is not
 the value used.
 
 Neither the ordering in `insretry` nor the assignment in
-`m68k_do_rte_mmu030c()` is inside `#ifdef WINUAE_FOR_HATARI`. This one looks
-like an upstream WinUAE defect that Hatari inherits.
+`m68k_do_rte_mmu030c()` is inside `#ifdef WINUAE_FOR_HATARI`, so this is an
+upstream WinUAE defect that Hatari inherits. Checked against WinUAE `master`
+(the file is `cpummu30.cpp` there, not `cpummu030.c`), where all three sites
+are unchanged:
+
+| site | upstream | state |
+| --- | --- | --- |
+| `insretry` prefers stage B over `regs.irc` | `newcpu.cpp` ~5992 | same |
+| frame-$B restore sets the latch unconditionally | `cpummu30.cpp` ~3392 | same |
+| `Exception_mmu030()` clears the latch | `newcpu.cpp` | **absent** |
+
+Filed as [tonioni/WinUAE#485](https://github.com/tonioni/WinUAE/issues/485).
+Note what that report does *not* claim: the failure was reproduced only through
+Hatari's derived core, because the test case is an Atari Falcon program. The
+upstream code paths were verified by reading them, not by running WinUAE.
 
 ## The fix
 
