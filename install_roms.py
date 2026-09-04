@@ -18,9 +18,20 @@ Every character ROM is checked against the size roms.asm itself declares for
 it (each C row of a game_info block carries the combined size of the pair), so
 a wrong rename is caught here rather than as a corrupt screen on the Falcon.
 
+ROMs alone are not enough to see anything.  The emulator draws sprites from
+*compiled* tiles -- 68030 code generated per tile -- and compile_tiles() only
+compiles a tile whose bit is set in the tiles-usage bitmap it loads from
+"<game>\<game>.ubm".  That bitmap is a profile the emulator records while a
+game runs and writes on exit.  Without it the very first run compiles nothing,
+saves an all-zero "<game>\<game>.tls", and -- because compile_tiles() returns
+early whenever a .tls opens -- every later run loads those zeros and draws
+nothing but the backdrop.  So the caches are staged from the author's own
+distribution archive (DIST_ZIP) when it is present; see install_cache().
+
 Usage: python3 install_roms.py [<mame-rom-dir>] [game ...]
 """
 import collections
+import contextlib
 import os
 import re
 import sys
@@ -31,6 +42,12 @@ DEFAULT_MAME = 'G:/MAME/roms'
 BIOS = 'sp-s2.sp1'
 BIOS_ZIP = 'neogeo'
 GENERATED = ('.tls', '.ubm')
+
+# The author's own release.  Not a ROM set: it carries the compiled-tile
+# caches (.tls) and tiles-usage bitmaps (.ubm) that cannot be derived from the
+# ROMs, plus sfix.sfi.  Optional -- the ROMs install without it.
+DIST_ZIP = os.path.join(HERE, 'neogeo_full.zip')
+DIST_EXTRA = ('sfix.sfi', BIOS)
 
 # Clones that a merged set keeps inside another game's zip.
 SOURCE_ZIP = {'nitdbl': 'nitd'}
@@ -117,6 +134,61 @@ def members(mame, game):
                 for i in z.infolist() if not i.is_dir()}, zp
 
 
+def dist_index(archive=DIST_ZIP):
+    """game -> {lowercase basename: member name} for the distribution archive.
+
+    Preferred over the MAME set wherever it has the file: it is laid out under
+    exactly the names roms.asm asks for, so it needs no RENAMES entry, and for
+    bangbead/ganryu/sengoku3 it carries the decrypted C-ROMs that a current
+    MAME set no longer ships under those names.
+    """
+    if not os.path.exists(archive):
+        return {}
+    out = collections.defaultdict(dict)
+    with zipfile.ZipFile(archive) as z:
+        for name in z.namelist():
+            part = name.split('/')
+            if len(part) == 3:
+                out[part[1].lower()][part[2].lower()] = name
+    return out
+
+
+def install_cache(archive=DIST_ZIP, only=None):
+    """Stage .tls/.ubm caches (and sfix.sfi) from the author's distribution.
+
+    Laid out as NEOGEO/<GAME>/<GAME>.TLS; names are folded to lower case to
+    match what roms.asm opens.  A game directory that install() did not create
+    is skipped rather than invented -- the caches are useless without ROMs.
+    """
+    if not os.path.exists(archive):
+        return ['%-10s no distribution archive: %s' % ('cache', archive)]
+    problems, count = [], collections.Counter()
+    with zipfile.ZipFile(archive) as z:
+        for name in z.namelist():
+            part = name.split('/')
+            base = part[-1].lower()
+            if len(part) == 2 and base in DIST_EXTRA:
+                out = os.path.join(HERE, base)
+            elif len(part) == 3 and base.endswith(GENERATED):
+                game = part[1].lower()
+                if only and game not in only:
+                    continue
+                if not os.path.isdir(os.path.join(HERE, game)):
+                    continue
+                out = os.path.join(HERE, game, base)
+            else:
+                continue
+            with z.open(name) as fsrc, open(out, 'wb') as fdst:
+                while True:
+                    chunk = fsrc.read(1 << 20)
+                    if not chunk:
+                        break
+                    fdst.write(chunk)
+            count[os.path.splitext(base)[1]] += 1
+    print('staged caches: %s' % (dict(count) or 'none'))
+    return problems
+
+
 def install(mame, only=None):
     games = read_roms_asm()
     if only:
@@ -125,21 +197,38 @@ def install(mame, only=None):
             sys.exit('not games in roms.asm: %s' % ', '.join(unknown))
         games = {g: v for g, v in games.items() if g in only}
 
-    done, problems = [], []
+    dist = dist_index()
+    done, problems, from_dist = [], [], 0
     for game in sorted(games):
         have, zp = members(mame, game)
-        if have is None:
+        if have is None and game not in dist:
             problems.append('%-10s no such zip: %s' % (game, zp))
             continue
         outdir = os.path.join(HERE, game)
         os.makedirs(outdir, exist_ok=True)
         count = 0
-        with zipfile.ZipFile(zp) as z:
+        mz = zipfile.ZipFile(zp) if have is not None else None
+        with contextlib.ExitStack() as stack:
+            if mz is not None:
+                stack.enter_context(mz)
+            dz = None
+            if game in dist:
+                dz = stack.enter_context(zipfile.ZipFile(DIST_ZIP))
             for name, expect in sorted(games[game].items()):
-                src = RENAMES.get(game, {}).get(name, name)
-                info = have.get(src.lower())
+                # The distribution wins: it stores files under the names
+                # roms.asm uses, so no rename can go wrong there.
+                z, member = None, dist.get(game, {}).get(name.lower())
+                if member is not None:
+                    z, info = dz, dz.getinfo(member)
+                    from_dist += 1
+                elif have is not None:
+                    src = RENAMES.get(game, {}).get(name, name)
+                    info = have.get(src.lower())
+                    z = mz
+                else:
+                    info = None
                 if info is None:
-                    problems.append('%-10s %s: not in %s' %
+                    problems.append('%-10s %s: in neither %s nor the archive' %
                                     (game, name, os.path.basename(zp)))
                     continue
                 if expect is not None and info.file_size != expect:
@@ -158,8 +247,14 @@ def install(mame, only=None):
                 count += 1
         done.append((game, count, len(games[game])))
 
+    # Before the BIOS check: the archive carries sp-s2.sp1 and sfix.sfi at its
+    # root, so a tree staged from it needs no MAME neogeo.zip at all.
+    problems += install_cache(only=only)
+
     zp = os.path.join(mame, BIOS_ZIP + '.zip')
-    if os.path.exists(zp):
+    if os.path.exists(os.path.join(HERE, BIOS)):
+        pass                      # already staged, from the archive or before
+    elif os.path.exists(zp):
         with zipfile.ZipFile(zp) as z:
             info = next((i for i in z.infolist()
                          if os.path.basename(i.filename).lower() == BIOS), None)
@@ -173,9 +268,9 @@ def install(mame, only=None):
         problems.append('%-10s no such zip: %s' % ('bios', zp))
 
     ok = [d for d in done if d[1] == d[2]]
-    print('installed %d/%d games (%d of %d files)' %
+    print('installed %d/%d games (%d of %d files, %d from the archive)' %
           (len(ok), len(done), sum(d[1] for d in done),
-           sum(d[2] for d in done)))
+           sum(d[2] for d in done), from_dist))
     for line in problems:
         print('  ! ' + line)
     return 1 if problems else 0

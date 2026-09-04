@@ -1,10 +1,14 @@
-# 68030 MMU: stale opcode executed at the interrupt vector after a frame-$B bus fault
+# 68030 MMU: stale stage-B opcode executed at the interrupt vector after a frame-$B bus fault
 
-Report against Hatari's WinUAE-derived CPU core. The observed event is a single
-mis-paired instruction dispatch: after an `RTE` from a format-$B (long) bus
-fault arms a retry, an interrupt is taken, and the preserved opcode is then
-executed at the *interrupt vector's* PC instead of at the faulted instruction.
-The resulting bogus branch target is unmapped, and the guest wedges.
+Report against Hatari's WinUAE-derived CPU core. **Root cause found and fixed**;
+the trigger site is shared UAE code, so the first patch below is believed to be
+an upstream WinUAE defect, not a Hatari divergence.
+
+The observed event is a single mis-paired instruction dispatch: an `RTE` from a
+format-$B (long) bus fault arms a retry and restores the frame's stage-B opcode;
+an interrupt is then taken before the retry dispatches; and the preserved opcode
+is executed at the *interrupt vector's* PC instead of at the faulted
+instruction. The resulting bogus branch target is unmapped, and the guest wedges.
 
 ## Environment
 
@@ -14,8 +18,7 @@ The resulting bogus branch target is unmapped, and the guest wedges.
 | CPU core | WinUAE 6.1.0 beta11+ (2026/08/07), per `src/cpu/winuae_readme.txt` |
 | Host | Windows 11, MSYS2 UCRT64, CMake Release |
 | Machine | `--machine falcon --tos tos404.img --memsize 14 --ttram 0 --cpulevel 3 --mmu true` |
-| Modes | `cachesize=0`, `cpu_compatible=1`, `cpu_memory_cycle_exact=1` (so the
-`m68k_do_rte_mmu030c` / `..._state` prefetch path is the one in use) |
+| Modes | `cachesize=0`, `cpu_compatible=1`, `cpu_memory_cycle_exact=1` (so the `m68k_do_rte_mmu030c` prefetch path is the one in use) |
 
 ## Guest
 
@@ -27,9 +30,118 @@ access from its bus error handler: it decodes SSW plus the frame's fault
 address, supplies read data via the frame's data input buffer at `+$2c`, clears
 SSW's DF bit to say "access already performed", and `RTE`s.
 
-## Local CPU-core patches (must be disclosed — the bug is observed *with* these)
+This is an unusually strict exerciser of the 030 fault/resume path: it takes
+*every* Neo Geo access as a bus fault, tens of thousands per second, with VBL
+and HBL interrupts live throughout. Any window between "RTE arms a retry" and
+"the retry dispatches" is hit constantly.
 
-Two changes were needed to get this far. Both are in the repo as a 26-line diff.
+## The defect
+
+Ring buffer of the last 128 executed `(m68k_getpci(), regs.opcode)` pairs,
+recorded in the `m68k_run_mmu030()` inner loop and dumped on the first
+supervisor-program (`FC=6`) fetch fault:
+
+```
+102 pc=00500292 op=4E73     rte at end of the guest's bus_error_handler
+103 pc=00C18394 op=51C9     resumes the guest's dbf d1 at $C18394     <- correct
+...
+126 pc=00500292 op=4E73     rte again
+127 pc=00500BF6 op=51C9     PC = vbl_handler entry, opcode STILL 51C9 <- wrong
+```
+
+Entry 103 is the intended behaviour: the `RTE` restores the opcode `$51C9` and
+the PC of the faulted `dbf`, and the retry executes it there.
+
+Entry 127 is the bug: between the `RTE` and the retry, the level-4 VBL is taken.
+The PC becomes `$500BF6` (the guest's `vbl_handler`, whose real opcode is
+`$48E7`, `movem.l d0-d1/a0,-(sp)`), but `regs.opcode` is still the preserved
+`$51C9`.
+
+`dbf` at `$500BF6` therefore takes its 16-bit displacement from `$500BF8`, which
+holds `$C080` — the second word of that `movem.l`:
+
+```
+$500BF8 + (int16)$C080 = $500BF8 - $3F80 = $4FCC78
+```
+
+`$4FCC78` is exactly the faulting fetch address, and it is outside the guest's
+mapped code (`emulator.o` `.text` is `$F80` bytes based at `$500000`). Every
+subsequent fetch there faults; the guest is wedged.
+
+```
+FETCHFAULT fetch=004FCC78 livepc=004FCC78 opcode=51C9
+```
+
+## Root cause
+
+`insretry` in `m68k_run_mmu030()` (`newcpu.c`) selects the opcode in this order:
+
+```
+mmu030_fake_prefetch  ->  mmu030_opcode_stageb  ->  regs.irc
+```
+
+`mmu030_opcode_stageb` outranks `regs.irc`. It is set unconditionally by the
+frame-$B restore in `m68k_do_rte_mmu030c()` (`cpummu030.c`, ~line 3398):
+
+```c
+regs.prefetch020[2] = stagesbc;
+regs.prefetch020[1] = stagesbc >> 16;
+regs.prefetch020[0] = oc >> 16;
+mmu030_opcode_stageb = (uae_u16)oc;     /* <-- survives an intervening exception */
+```
+
+`Exception_mmu030()` (`newcpu.c`) then does the right thing for the *pipe* but
+not for this variable:
+
+```c
+m68k_setpci (newpc);
+fill_prefetch ();          /* refreshes regs.irc for newpc -- measured correct */
+exception_check_trace (nr);
+```
+
+So when an interrupt lands in the window between the `RTE` and the retry
+dispatch, `regs.irc` is correctly refreshed to the vector's first opcode while
+`mmu030_opcode_stageb` still holds the *previous* instruction stream's stage-B
+word — and because stage B wins, the stale word is what executes.
+
+Tagging which branch of the run loop supplied `regs.opcode` catches it directly:
+
+```
+tag=4 pc=00500292 irc=FFFF op=FFFF     healthy: stageb=-1 -> takes irc
+tag=4 pc=00500BF6 irc=FFFF op=51C9     broken:  stageb=$51C9 stale
+tag=3 pc=00500BF6 irc=48E7 op=51C9     irc CORRECT; stageb won anyway
+```
+
+The last line is the whole bug in one row: `regs.irc` is right, and it is not
+the value used.
+
+Neither the ordering in `insretry` nor the assignment in
+`m68k_do_rte_mmu030c()` is inside `#ifdef WINUAE_FOR_HATARI`. This one looks
+like an upstream WinUAE defect that Hatari inherits.
+
+## The fix
+
+`newcpu.c`, `Exception_mmu030()`:
+
+```diff
+ 	m68k_setpci (newpc);
+ 	fill_prefetch ();
++	// The exception has moved the PC and fill_prefetch() has reloaded the pipe
++	// for it. A stage B opcode captured before the exception belongs to the old
++	// instruction stream, but insretry prefers mmu030_opcode_stageb over
++	// regs.irc, so it would be dispatched at the vector's PC. Drop it.
++	mmu030_opcode_stageb = -1;
+ 	exception_check_trace (nr);
+```
+
+Invalidating the stage-B latch at the same point the pipe is reloaded keeps the
+two consistent: after an exception, the only valid opcode source for the new PC
+is the one `fill_prefetch()` just produced.
+
+## Two further local patches (prerequisites, must be disclosed)
+
+The defect above is observed *with* these applied; without them the guest does
+not get far enough to reach it.
 
 1. **`gencpu.c`, `genastore_2()`** — suppress the last-write/format-$A path for
    absolute addressing only:
@@ -69,45 +181,29 @@ Two changes were needed to get this far. Both are in the repo as a 26-line diff.
    the instruction never retires; and the refill re-reads the instruction
    stream, splicing freshly-read words into the access being resumed (visible as
    a computed EA of `$4E714E71` — two `NOP`s — when the handler had patched the
-   instruction). Note this block is inside `#ifdef WINUAE_FOR_HATARI`, so
-   upstream WinUAE does not have it; the divergence is Hatari's.
+   instruction). This block *is* inside `#ifdef WINUAE_FOR_HATARI`, so upstream
+   WinUAE does not have it; that divergence is Hatari's.
 
-## The defect
+## Effect
 
-Ring buffer of the last 128 executed `(m68k_getpci(), regs.opcode)` pairs,
-recorded in the `m68k_run_mmu030()` inner loop and dumped on the first
-supervisor-program (`FC=6`) fetch fault:
+All three patches, same guest, same command line:
 
-```
-102 pc=00500292 op=4E73     rte at end of the guest's bus_error_handler
-103 pc=00C18394 op=51C9     resumes the guest's dbf d1 at $C18394     <- correct
-...
-126 pc=00500292 op=4E73     rte again
-127 pc=00500BF6 op=51C9     PC = vbl_handler entry, opcode STILL 51C9 <- wrong
-```
+| | before | after |
+| --- | --- | --- |
+| furthest guest PC reached | wedged in BIOS at `$C1100C` | runs past it |
+| framebuffer non-zero bytes | 0.00 % | 51.95 % |
+| speed | 45 VBL/s | 170.6 VBL/s |
+| screen | black | Neo Geo display area drawn |
 
-Entry 103 is the intended behaviour: the `RTE` restores `mmu030_opcode = $51C9`
-and the PC of the faulted `dbf`, and the retry executes it there.
+Total diff: 31 insertions across three files.
 
-Entry 127 is the bug: between the `RTE` and the retry, the level-4 VBL is taken.
-The PC becomes `$500BF6` (the guest's `vbl_handler`, whose real opcode is
-`$48E7`, `movem.l d0-d1/a0,-(sp)`), but `regs.opcode` is still the preserved
-`$51C9`.
-
-`dbf` at `$500BF6` therefore takes its 16-bit displacement from `$500BF8`, which
-holds `$C080` — the second word of that `movem.l`:
-
-```
-$500BF8 + (int16)$C080 = $500BF8 - $3F80 = $4FCC78
-```
-
-`$4FCC78` is exactly the faulting fetch address, and it is outside the guest's
-mapped code (`emulator.o` `.text` is `$F80` bytes based at `$500000`). Every
-subsequent fetch there faults; the guest is wedged.
-
-```
-FETCHFAULT fetch=004FCC78 livepc=004FCC78 opcode=51C9
-```
+Those numbers were taken before a guest-side problem unrelated to the CPU core
+was found: the emulator's compiled-tile cache had been poisoned by an earlier
+wedged run, so it drew only a flat backdrop. With a valid cache the same build
+renders the Neo Geo BIOS logo (VBL 1000), then Metal Slug's attract mode and
+title screen (VBL 3000 / 6000), 126 distinct colours on screen. Mentioning it
+because it is the sort of thing that makes a "still broken" report out of a
+working fix — the emulation was correct at the point those numbers were taken.
 
 ## What was excluded
 
@@ -119,70 +215,15 @@ Each candidate was instrumented and measured, not reasoned about:
 | inconsistent resume pipe | defer `fill_prefetch_030_ntx()` until after retirement | no change |
 | resume pending at exception entry | log `mmu030_retry`/`mmu030_opcode` in `Exception_mmu030()` | always `retry=0 opcode=-1` |
 | resume applied at wrong PC | guard the retry on `m68k_getpci()` == the RTE's restored PC | guard never fires |
-| stale `regs.irc` feeding `insretry` | log `regs.irc` around the exception's `fill_prefetch()` | `irc_after=$48E7`, correct |
+| stale `regs.irc` feeding `insretry` | log `regs.irc` around the exception's `fill_prefetch()` | `irc_after=$48E7`, correct — which is what pointed at stage B instead |
 
-`Exception_mmu030()`'s `fill_prefetch()` is also correct — measured for both
+`Exception_mmu030()`'s `fill_prefetch()` is correct — measured for both
 interrupts the guest hooks, the resulting pipe matches the real code bytes:
 
 | vector | newpc | pipe after refill | code there |
 | --- | --- | --- | --- |
 | 28 (VBL) | `$500BF6` | `C080/203A/0094` | `48E7 C080 203A 0094` |
 | 26 (HBL) | `$500BF0` | `0300/4E73/48E7` | `or #$0300,(sp)` / `rte` |
-
-## Where the stale opcode enters: `insretry` via `regs.irc`
-
-Tagging which branch of the run loop supplied `regs.opcode`, and triggering on
-the anomaly itself rather than on a sample count, catches it directly:
-
-```
-ANOMALY#1 pc=00500BF6 opcode=51C9 src=1 mmuop=000051C9 irc=51C9
-```
-
-`src=1` is the `insretry` path. So with the PC already moved to the interrupt
-vector `$500BF6`, `insretry` executed
-
-```c
-if (currprefs.cpu_compatible)
-    regs.opcode = regs.irc;
-```
-
-with `regs.irc` still holding `$51C9` — the previous instruction's opcode.
-
-This matters because `regs.irc` is written by the resume machinery itself.
-`m68k_do_rte_mmu030c()` does, right after restoring the PC:
-
-```c
-m68k_setpci (pc);
-if (mmu030_opcode != -1) {
-    regs.opcode = regs.irc = mmu030_opcode;   // <-- irc := the resumed opcode
-}
-```
-
-Tagging each dispatch with a global count of `Exception_mmu030()` entries shows
-the full sequence. Ring of the last dispatches before the anomaly:
-
-```
-44 pc=0050028C op=3081 irc=3081 src=1 exc=13649
-45 pc=0050028E op=4CDF irc=4CDF src=1 exc=13649
-46 pc=00500292 op=4E73 irc=4E73 src=1 exc=13649   <- the rte
-47 pc=00500BF6 op=51C9 irc=51C9 src=1 exc=13650   <- anomaly, one exception later
-```
-
-So, measured end to end:
-
-1. The `rte` at `$500292` sets `regs.irc = mmu030_opcode = $51C9` and rewinds
-   the PC to the faulted instruction.
-2. **Exactly one** exception intervenes before the resume dispatches — the
-   level-4 VBL — which sets the PC to `$500BF6`.
-3. `insretry` then takes `regs.opcode = regs.irc` and gets the stale `$51C9`.
-
-The one unresolved link: `Exception_mmu030()` calls `fill_prefetch()` after
-`m68k_setpci(newpc)`, and that *was* measured to refresh `regs.irc` correctly at
-this very PC (`irc_before=$4EBA → irc_after=$48E7` for `newpc=$500BF6`,
-`cachesize=0 compat=1`). On the occasion that produces the anomaly it evidently
-does not stick. Whether that is an ordering problem inside the exception path, or
-a later write restoring the old value, is the remaining question — and it is now
-a question about two adjacent lines rather than about the MMU.
 
 ### Methodology warning for anyone re-running these probes
 
@@ -198,9 +239,7 @@ first N events while the anomaly occurs later:
   an interrupt interleaving there. That exclusion should be treated as
   **inconclusive**, not proven.
 
-Trigger on the anomalous condition, not on a counter. `cpu_cycle_exact` is
-confirmed set, so the execute step is `(*cpufunctbl_noret[])` +
-`wait_memory_cycles()`.
+Trigger on the anomalous condition, not on a counter.
 
 ## Reproduction
 

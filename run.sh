@@ -22,12 +22,16 @@
 # Hatari's autostart cannot pass arguments to the program, so RUNNER.PRG
 # (runner.asm) Pexec()s the emulator with the game name as its command tail.
 #
-# Expect it to stop in the emulator's own hex dump partway into the Neo Geo
-# BIOS. That is an emulator-under-emulator limit, not a fault in this tree:
-# Hatari does not build a faithful 68030 bus fault frame, and the handler
-# decodes the frame's fault address and data output buffer to do its work. See
-# ../../DEBUGGING.md "The 68030 bus fault stack frame is not faithful". Judge
-# behaviour on real hardware, not on what this script shows.
+# This needs the patched Hatari in ../hatari: the stock CPU core mis-reports
+# the 68030 bus fault frame the emulator's handler decodes, and wedges in the
+# Neo Geo BIOS. Three fixes, ../hatari/src/cpu/{gencpu,cpummu030,newcpu}.c, are
+# documented in BUGREPORT-68030-busfault.md.
+#
+# It also needs each game's <game>/<game>.tls and .ubm, which install_roms.py
+# stages from the author's neogeo_full.zip. Without the .ubm the emulator
+# compiles no tiles and caches that as an all-zero .tls, after which every run
+# shows a flat backdrop and nothing else -- see ../../DEBUGGING.md
+# "Nothing but the backdrop: the compiled-tile cache".
 set -e
 cd "$(dirname "$0")"
 

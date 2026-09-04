@@ -13,6 +13,7 @@ __pycache__/
 # ROM sets staged into <game>/ by install_roms.py, the BIOS that sits beside
 # the program, and the tile caches the emulator writes next to the ROMs.
 /sp-s2.sp1
+/sfix.sfi
 /*/*.p1
 /*/*.p2
 /*/*.ep1
@@ -22,3 +23,6 @@ __pycache__/
 /*/*.bin
 /*/*.tls
 /*/*.ubm
+
+# The author's distribution archive, staged from by install_roms.py.
+/neogeo_full.zip
